@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { MedicalService } from '../../src/domain/entities/medical-service'
 
+definePageMeta({
+  middleware: 'auth',
+})
+
 const { data: services } = await useFetch<MedicalService[]>('/api/services')
 </script>
 

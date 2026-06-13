@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import { useAuthClient } from '~/utils/auth-client'
+
+const config = useRuntimeConfig()
+const isAuthEnabled = computed(() => config.public.authEnabled)
+const authClient = isAuthEnabled.value ? useAuthClient() : null
+const { data: session } = isAuthEnabled.value
+  ? await authClient!.useSession(useFetch)
+  : { data: ref(null) }
+
 const navigation = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Pacientes', to: '/patients' },
@@ -7,6 +16,15 @@ const navigation = [
   { label: 'Servicios', to: '/services' },
   { label: 'Ajustes', to: '/settings' },
 ]
+
+const handleSignOut = async () => {
+  if (!authClient) {
+    return
+  }
+
+  await authClient.signOut()
+  await navigateTo('/login')
+}
 </script>
 
 <template>
@@ -47,8 +65,16 @@ const navigation = [
           <p class="muted-text topbar-copy">MVP con Clean Architecture, mocks separados y backend Nuxt.</p>
         </div>
         <div class="topbar-actions">
-          <span class="pill">Dra. Ana Garcia</span>
-          <NuxtLink to="/login">
+          <span class="pill">{{ session?.user?.name ?? 'Modo MVP' }}</span>
+          <UButton
+            v-if="session"
+            color="neutral"
+            variant="outline"
+            @click="handleSignOut"
+          >
+            Salir
+          </UButton>
+          <NuxtLink v-else to="/login">
             <UButton color="neutral" variant="outline">Entrar</UButton>
           </NuxtLink>
         </div>

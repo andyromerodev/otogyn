@@ -4,6 +4,10 @@ import type {
   TodayAppointmentViewModel,
 } from '../../src/presentation/view-models/dashboard'
 
+definePageMeta({
+  middleware: 'auth',
+})
+
 const { data: summary, status: summaryStatus } = await useFetch<DashboardSummaryViewModel>('/api/dashboard/summary')
 const { data: appointments, status: appointmentsStatus } =
   await useFetch<TodayAppointmentViewModel[]>('/api/appointments/today')

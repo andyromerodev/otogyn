@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { Patient } from '../../../src/domain/entities/patient'
 
+definePageMeta({
+  middleware: 'auth',
+})
+
 const route = useRoute()
 const { data: patient } = await useFetch<Patient>(`/api/patients/${route.params.id}`)
 </script>
