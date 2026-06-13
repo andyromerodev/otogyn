@@ -13,9 +13,9 @@ const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
   no_show: 'No asistio',
 }
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser()
+    const session = await getCurrentUser(event)
     const items = await mockRuntime.useCases.getTodayAppointments.execute({
       organizationId: session.organizationId,
       day: new Date(),

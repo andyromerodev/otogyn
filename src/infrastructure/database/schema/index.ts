@@ -63,11 +63,26 @@ export const accounts = pgTable(
     providerId: varchar('provider_id', { length: 100 }).notNull(),
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
-    expiresAt: timestamp('expires_at', { withTimezone: true }),
-    passwordHash: text('password_hash'),
+    idToken: text('id_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
+    scope: text('scope'),
+    password: text('password'),
     ...timestamps,
   },
   (table) => [index('accounts_user_idx').on(table.userId)],
+)
+
+export const verifications = pgTable(
+  'verifications',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    identifier: varchar('identifier', { length: 255 }).notNull(),
+    value: text('value').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    ...timestamps,
+  },
+  (table) => [index('verifications_identifier_idx').on(table.identifier)],
 )
 
 export const profiles = pgTable('profiles', {
