@@ -2,7 +2,7 @@
 import type {
   DashboardSummaryViewModel,
   TodayAppointmentViewModel,
-} from '../../src/presentation/view-models/dashboard'
+} from '~~/src/presentation/view-models/dashboard'
 
 definePageMeta({
   middleware: 'auth',

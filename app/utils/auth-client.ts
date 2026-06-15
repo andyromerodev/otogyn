@@ -1,17 +1,7 @@
-import { createAuthClient } from 'better-auth/vue'
-
-let authClient: ReturnType<typeof createAuthClient> | null = null
+import { getBetterAuthClient } from '~~/src/infrastructure/auth/client/better-auth-client'
 
 export const useAuthClient = () => {
-  if (authClient) {
-    return authClient
-  }
-
   const config = useRuntimeConfig()
 
-  authClient = createAuthClient({
-    baseURL: config.public.authBaseURL,
-  })
-
-  return authClient
+  return getBetterAuthClient(config.public.authBaseURL)
 }

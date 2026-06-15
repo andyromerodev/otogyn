@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Patient } from '../../../src/domain/entities/patient'
+import type { Patient } from '~~/src/domain/entities/patient'
 
 definePageMeta({
   middleware: 'auth',

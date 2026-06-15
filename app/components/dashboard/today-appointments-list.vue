@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TodayAppointmentViewModel } from '../../../src/presentation/view-models/dashboard'
+import type { TodayAppointmentViewModel } from '~~/src/presentation/view-models/dashboard'
 
 defineProps<{
   appointments: TodayAppointmentViewModel[]

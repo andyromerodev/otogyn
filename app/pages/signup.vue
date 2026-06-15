@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LoginScreen from '~~/app/features/auth/login/LoginScreen.vue'
+import SignupScreen from '~~/app/features/auth/signup/SignupScreen.vue'
 
 definePageMeta({
   layout: false,
@@ -7,5 +7,5 @@ definePageMeta({
 </script>
 
 <template>
-  <LoginScreen />
+  <SignupScreen />
 </template>
