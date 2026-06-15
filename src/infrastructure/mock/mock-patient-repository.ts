@@ -11,4 +11,9 @@ export class MockPatientRepository implements PatientRepository {
   async findById(id: string): Promise<Patient | null> {
     return this.patients.find((patient) => patient.id === id && !patient.deletedAt) ?? null
   }
+
+  async create(patient: Patient): Promise<Patient> {
+    this.patients.push(patient)
+    return patient
+  }
 }

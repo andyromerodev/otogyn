@@ -1,3 +1,4 @@
+import { ZodError } from 'zod'
 import { BusinessRuleError } from '../../src/domain/errors/business-rule-error'
 
 export const handleApiError = (error: unknown) => {
@@ -14,6 +15,14 @@ export const handleApiError = (error: unknown) => {
     throw createError({
       statusCode: 400,
       statusMessage: error.message,
+    })
+  }
+
+  if (error instanceof ZodError) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Validation failed.',
+      data: error.flatten(),
     })
   }
 
