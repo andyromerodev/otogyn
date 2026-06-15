@@ -63,6 +63,16 @@
 - Para el MVP, priorizar `useAsyncData`, props y composables ligeros.
 - Evitar introducir Pinia hasta que exista una necesidad clara de estado compartido complejo.
 
+## Auth y autorizacion
+
+- `Better Auth` resuelve autenticacion y sesion.
+- `organization_members` es la fuente de verdad para permisos y rol operativo.
+- El frontend no infiere permisos desde formularios ni rutas por si solo.
+- La UI protegida usa middleware de Nuxt:
+  - `auth` para exigir sesion valida.
+  - `admin` para exigir rol `admin_doctor`.
+- El backend resuelve rol con `getCurrentUser(event, allowedRoles)` y debe seguir siendo la barrera final para operaciones criticas.
+
 ## Testing
 
 - Vitest para casos de uso y reglas criticas.

@@ -1,26 +1,25 @@
 <script setup lang="ts">
-interface AuthSession {
-  user?: {
-    name?: string | null
-  }
+interface SessionContext {
+  name?: string
+  role?: 'admin_doctor' | 'assistant'
 }
 
 const config = useRuntimeConfig()
 const isAuthEnabled = computed(() => config.public.authEnabled)
-const { data: session } = isAuthEnabled.value
-  ? await useFetch<AuthSession | null>('/api/auth/get-session', {
+const { data: sessionContext } = isAuthEnabled.value
+  ? await useFetch<SessionContext | null>('/api/auth/session-context', {
       headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
     })
-  : { data: ref<AuthSession | null>(null) }
+  : { data: ref<SessionContext | null>(null) }
 
-const navigation = [
+const navigation = computed(() => [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Pacientes', to: '/patients' },
   { label: 'Citas', to: '/appointments' },
   { label: 'Calendario', to: '/calendar' },
   { label: 'Servicios', to: '/services' },
-  { label: 'Ajustes', to: '/settings' },
-]
+  ...(sessionContext.value?.role === 'admin_doctor' ? [{ label: 'Ajustes', to: '/settings' }] : []),
+])
 
 const handleSignOut = async () => {
   if (!isAuthEnabled.value) {
@@ -79,9 +78,12 @@ const handleSignOut = async () => {
           <p class="muted-text topbar-copy">MVP con Clean Architecture, mocks separados y backend Nuxt.</p>
         </div>
         <div class="topbar-actions">
-          <span class="pill">{{ session?.user?.name ?? 'Modo MVP' }}</span>
+          <span class="pill">
+            {{ sessionContext?.name ?? 'Modo MVP' }}
+            <template v-if="sessionContext?.role"> · {{ sessionContext.role }}</template>
+          </span>
           <UButton
-            v-if="session"
+            v-if="sessionContext"
             color="neutral"
             variant="outline"
             @click="handleSignOut"

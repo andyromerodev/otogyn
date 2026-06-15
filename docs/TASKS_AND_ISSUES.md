@@ -131,6 +131,15 @@
 13. E13 UI/UX responsive
 14. E14 Deploy
 
+## Estado actual
+
+- E1: base de arquitectura, docs y subagentes creada.
+- E2: Drizzle, schema inicial y migracion base ya aplicados.
+- E3: Better Auth activo, session guards SSR-safe y rol resuelto por `organization_members`.
+- E3 pendiente: endurecer permisos por rol en mas paginas/endpoints criticos y exponer gestion de asistentes.
+- E4: dashboard inicial con mock data ya operativo.
+- E12: pruebas base de auth/use cases y reglas criticas ya integradas en `pnpm test`.
+
 ## Issues propuestos
 
 1. Crear base de arquitectura y documentacion del MVP.
@@ -147,3 +156,8 @@
 12. Aumentar cobertura de pruebas criticas.
 13. Pulir experiencia responsive y estados de UI.
 14. Preparar deploy, backups y checklist productivo.
+
+## Sincronizacion con GitHub
+
+- Issue `E3: Auth y roles`: ya cubre login, signup, persistencia de sesion, `session-context` y middleware `admin`.
+- Proximo update recomendado para `E3`: cerrar cuando existan permisos por rol aplicados tambien en endpoints de escritura y UI de configuracion/asistentes.

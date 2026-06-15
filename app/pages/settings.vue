@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: 'auth',
+  middleware: 'admin',
 })
 </script>
 
@@ -9,7 +9,7 @@ definePageMeta({
     <SharedSectionHeader
       eyebrow="Configuracion"
       title="Governance del MVP"
-      description="Las opciones criticas quedaran protegidas para `admin_doctor` cuando la sesion real de Better Auth este conectada."
+      description="Las opciones criticas del MVP ya quedan restringidas a `admin_doctor` con roles resueltos desde `organization_members`."
     />
 
     <div class="surface-card placeholder-panel">
