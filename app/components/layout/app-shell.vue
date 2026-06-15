@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { useAuthClient } from '~/utils/auth-client'
+interface AuthSession {
+  user?: {
+    name?: string | null
+  }
+}
 
 const config = useRuntimeConfig()
 const isAuthEnabled = computed(() => config.public.authEnabled)
-const authClient = isAuthEnabled.value ? useAuthClient() : null
 const { data: session } = isAuthEnabled.value
-  ? await authClient!.useSession(useFetch)
-  : { data: ref(null) }
+  ? await useFetch<AuthSession | null>('/api/auth/get-session', {
+      headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
+    })
+  : { data: ref<AuthSession | null>(null) }
 
 const navigation = [
   { label: 'Dashboard', to: '/dashboard' },
@@ -18,11 +23,20 @@ const navigation = [
 ]
 
 const handleSignOut = async () => {
-  if (!authClient) {
+  if (!isAuthEnabled.value) {
     return
   }
 
+  const { useAuthClient } = await import('~/utils/auth-client')
+  const authClient = useAuthClient()
+
   await authClient.signOut()
+
+  if (import.meta.client) {
+    window.location.replace('/login')
+    return
+  }
+
   await navigateTo('/login')
 }
 </script>

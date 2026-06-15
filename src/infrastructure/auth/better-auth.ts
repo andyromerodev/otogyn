@@ -92,7 +92,12 @@ const getOrCreateDefaultOrganizationId = async () => {
     .values(DEFAULT_ORGANIZATION)
     .returning({ id: organizations.id })
 
-  return created[0]?.id
+  if (created[0]?.id) {
+    return created[0].id
+  } else {
+    console.error('[auth][server][bootstrap] default organization insert returned no id')
+    return undefined
+  }
 }
 
 const bootstrapMembershipForUser = async (user: { id: string }) => {

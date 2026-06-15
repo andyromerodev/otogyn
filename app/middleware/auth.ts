@@ -7,10 +7,29 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
+  if (import.meta.server) {
+    const session = await $fetch<{ user?: unknown } | null>('/api/auth/get-session', {
+      headers: useRequestHeaders(['cookie']),
+    }).catch((error) => {
+      console.error('[auth][middleware] server session check failed', {
+        path: to.fullPath,
+        error: error instanceof Error ? error.message : 'Unknown session error',
+      })
+
+      return null
+    })
+
+    if (!session?.user) {
+      return navigateTo({ path: '/login', query: { redirect: to.fullPath } })
+    }
+
+    return
+  }
+
   const authClient = useAuthClient()
   const { data: session } = await authClient.useSession(useFetch)
 
-  if (!session.value) {
+  if (!session.value?.user) {
     return navigateTo({ path: '/login', query: { redirect: to.fullPath } })
   }
 })
