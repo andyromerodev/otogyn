@@ -1,3 +1,5 @@
+import { CreatePatientUseCase } from '../../src/application/use-cases/create-patient'
+import { CreateServiceUseCase } from '../../src/application/use-cases/create-service'
 import { GetDashboardSummaryUseCase } from '../../src/application/use-cases/get-dashboard-summary'
 import { GetTodayAppointmentsUseCase } from '../../src/application/use-cases/get-today-appointments'
 import { ListPatientsUseCase } from '../../src/application/use-cases/list-patients'
@@ -33,6 +35,8 @@ export const mockRuntime = {
       patientRepository,
       serviceRepository,
     ),
+    createPatient: new CreatePatientUseCase(patientRepository),
+    createService: new CreateServiceUseCase(serviceRepository),
     listPatients: new ListPatientsUseCase(patientRepository),
     listServices: new ListServicesUseCase(serviceRepository),
   },

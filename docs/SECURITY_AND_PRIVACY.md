@@ -75,3 +75,6 @@
 - Validar rol.
 - Validar organizacion.
 - Responder errores sanitizados.
+- Aplicar matrices explicitas por endpoint.
+  - `POST /api/patients`: `admin_doctor`, `assistant`
+  - `POST /api/services`: solo `admin_doctor`

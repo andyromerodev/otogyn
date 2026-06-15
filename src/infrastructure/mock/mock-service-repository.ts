@@ -11,4 +11,9 @@ export class MockServiceRepository implements ServiceRepository {
   async findById(id: string): Promise<MedicalService | null> {
     return this.services.find((service) => service.id === id) ?? null
   }
+
+  async create(service: MedicalService): Promise<MedicalService> {
+    this.services.push(service)
+    return service
+  }
 }
