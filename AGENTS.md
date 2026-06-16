@@ -21,6 +21,14 @@ Web app MVP para gestionar citas, pacientes, servicios y reservas de una doctora
 
 - Se aplica Clean Architecture en cuatro capas: `domain`, `application`, `infrastructure`, `presentation`.
 - La direccion de dependencias siempre apunta hacia adentro.
+- El patron obligatorio por feature debe parecerse al de Android: `Screen/Page -> ViewModel/Composable -> UseCase -> Repository -> RemoteDataSource`.
+- Ninguna `page` o componente de feature debe llamar `$fetch`, `useFetch`, Better Auth o Drizzle directamente para ejecutar casos de uso de negocio.
+- La `Screen/Page` solo renderiza estado, emite eventos de UI y delega al `ViewModel/Composable`.
+- El `ViewModel/Composable` coordina estado de pantalla, mensajes y navegacion. No contiene acceso HTTP ni SQL directo.
+- Los `UseCase` solo dependen de contratos y modelos del proyecto. No conocen Nuxt, Vue, H3, Better Auth ni Drizzle.
+- Los `Repository` son interfaces del dominio o aplicacion. Las implementaciones concretas viven en `infrastructure`.
+- Los `RemoteDataSource` encapsulan llamadas HTTP, auth client u otros SDKs remotos. Nunca se consumen desde `page` directamente.
+- El wiring de instancias compartidas debe resolverse via `ServiceLocator` o fabrica central, evitando reconstruir repositorios y data sources en cada pantalla.
 - `src/domain` no puede depender de Nuxt, Vue, Drizzle, Neon, Better Auth ni librerias de UI.
 - `src/application` solo puede depender de `domain` y de abstracciones.
 - `src/infrastructure` implementa repositorios, adaptadores, auth, persistencia y mappers.
@@ -55,6 +63,14 @@ Web app MVP para gestionar citas, pacientes, servicios y reservas de una doctora
 - `src/application/`: casos de uso, DTOs y puertos.
 - `src/infrastructure/`: Drizzle, auth, repositorios concretos, mock data y mappers.
 - `src/presentation/`: view models y validadores compartidos.
+- Estructura recomendada por feature:
+  - `app/pages/<feature>/...` para Screens.
+  - `app/composables/<feature>/...` para ViewModels/Composables de pantalla.
+  - `src/application/use-cases/<feature>/...` para UseCases.
+  - `src/domain/repositories/...` para contratos de Repository.
+  - `src/infrastructure/<feature>/remote/...` para RemoteDataSources.
+  - `src/infrastructure/<feature>/repositories/...` o `src/infrastructure/repositories/...` para RepositoryImpl.
+  - `src/infrastructure/<feature>/service-locator.ts` o locator central para wiring.
 - `docs/`: documentacion funcional y tecnica.
 - `.opencode/agents/`: definicion de subagentes especializados.
 
@@ -95,3 +111,9 @@ pnpm db:seed
 - Drizzle solo se usa del lado servidor.
 - Los repositorios concretos de infraestructura son los unicos que conocen la base de datos.
 - Los componentes nunca deben calcular reglas de negocio de agenda, choques o permisos.
+- Los modulos CRUD nuevos deben nacer ya con `Screen + ViewModel + UseCase + Repository + RemoteDataSource`.
+- Las features existentes que aun llaman `fetch` directo desde la `page` quedan marcadas para refactor progresivo hasta cumplir el patron Android-like.
+- Cuando exista consumo HTTP desde frontend, este debe vivir en `RemoteDataSource`.
+- Cuando exista acceso a base de datos desde backend, este debe vivir en `RepositoryImpl` de infraestructura.
+- La navegacion y mensajes de exito/error se resuelven en `ViewModel/Composable`, no en los `UseCase`.
+- Si hace falta compartir instancias entre pantallas, usar `ServiceLocator` en vez de reinstanciar manualmente en multiples archivos.
