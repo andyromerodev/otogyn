@@ -177,3 +177,89 @@ export const getOrganizationRoleForUser = async (userId: string, organizationSlu
 
   return rows[0] ?? null
 }
+
+const extractAuthErrorMessage = async (response: Response) => {
+  const payload = await response
+    .clone()
+    .json()
+    .catch(() => null)
+
+  if (payload && typeof payload === 'object') {
+    if ('message' in payload && typeof payload.message === 'string') {
+      return payload.message
+    }
+
+    if ('error' in payload && typeof payload.error === 'string') {
+      return payload.error
+    }
+  }
+
+  return 'No se pudo crear la cuenta del asistente.'
+}
+
+const createStatusError = (statusCode: number, statusMessage: string) =>
+  Object.assign(new Error(statusMessage), {
+    statusCode,
+    statusMessage,
+  })
+
+export interface ProvisionCredentialUserInput {
+  name: string
+  email: string
+  password: string
+}
+
+export interface ProvisionedCredentialUser {
+  id: string
+  name: string
+  email: string
+}
+
+export const provisionCredentialUser = async (
+  input: ProvisionCredentialUserInput,
+): Promise<ProvisionedCredentialUser> => {
+  const auth = getBetterAuth()
+
+  if (!auth) {
+    throw createStatusError(503, 'Authentication is not configured.')
+  }
+
+  const normalizedEmail = input.email.trim().toLowerCase()
+  const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000'
+
+  const response = await auth.handler(
+    new Request(`${baseUrl}/api/auth/sign-up/email`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify({
+        name: input.name.trim(),
+        email: normalizedEmail,
+        password: input.password,
+      }),
+    }),
+  )
+
+  if (!response.ok) {
+    throw createStatusError(response.status, await extractAuthErrorMessage(response))
+  }
+
+  const db = getDrizzleClient()
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+    })
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1)
+
+  if (!rows[0]) {
+    throw createStatusError(500, 'La cuenta se creo, pero no se pudo resolver el usuario.')
+  }
+
+  return rows[0]
+}
