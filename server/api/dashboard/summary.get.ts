@@ -1,12 +1,14 @@
+import { GetDashboardSummaryUseCase } from '../../../src/application/use-cases/get-dashboard-summary'
+import { DrizzleAppointmentRepository } from '../../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { getCurrentUser } from '../../utils/get-current-user'
 import { handleApiError } from '../../utils/handle-api-error'
-import { mockRuntime } from '../../utils/mock-runtime'
 
 export default defineEventHandler(async (event) => {
   try {
     const session = await getCurrentUser(event)
+    const useCase = new GetDashboardSummaryUseCase(new DrizzleAppointmentRepository())
 
-    return await mockRuntime.useCases.getDashboardSummary.execute({
+    return await useCase.execute({
       organizationId: session.organizationId,
       day: new Date(),
     })

@@ -1,7 +1,10 @@
+import { GetTodayAppointmentsUseCase } from '../../../src/application/use-cases/get-today-appointments'
+import { DrizzleAppointmentRepository } from '../../../src/infrastructure/repositories/drizzle-appointment-repository'
+import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
+import { DrizzleServiceRepository } from '../../../src/infrastructure/repositories/drizzle-service-repository'
 import type { TodayAppointmentViewModel } from '../../../src/presentation/view-models/dashboard'
 import { getCurrentUser } from '../../utils/get-current-user'
 import { handleApiError } from '../../utils/handle-api-error'
-import { mockRuntime } from '../../utils/mock-runtime'
 
 const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
   scheduled: 'Programada',
@@ -16,7 +19,13 @@ const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
 export default defineEventHandler(async (event) => {
   try {
     const session = await getCurrentUser(event)
-    const items = await mockRuntime.useCases.getTodayAppointments.execute({
+    const useCase = new GetTodayAppointmentsUseCase(
+      new DrizzleAppointmentRepository(),
+      new DrizzlePatientRepository(),
+      new DrizzleServiceRepository(),
+    )
+
+    const items = await useCase.execute({
       organizationId: session.organizationId,
       day: new Date(),
     })

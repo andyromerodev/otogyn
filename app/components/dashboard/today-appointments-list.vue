@@ -21,7 +21,7 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
     <div class="schedule-header">
       <div>
         <p class="schedule-title">Agenda de hoy</p>
-        <p class="muted-text">Datos servidos por Nuxt Server API sobre repositorios mock.</p>
+        <p class="muted-text">Datos servidos por Nuxt Server API desde PostgreSQL.</p>
       </div>
       <span class="pill">{{ appointments.length }} citas</span>
     </div>
