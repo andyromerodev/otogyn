@@ -142,6 +142,7 @@
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
 - E5: frontend de `patients` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E8: `GET/POST /api/services` ya persiste en PostgreSQL con Drizzle; faltan edicion, activacion/desactivacion y filtrado administrativo.
+- E8: frontend de `services` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E6: `POST /api/appointments` y `GET /api/appointments/today` ya operan con PostgreSQL validando paciente, servicio, disponibilidad inicial y choques; faltan edicion, cancelacion y cambio de estado.
 - E12: pruebas base de auth/use cases y reglas criticas ya integradas en `pnpm test`.
 
