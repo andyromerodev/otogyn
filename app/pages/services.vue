@@ -23,6 +23,21 @@ const { data: services, refresh } = await useFetch<MedicalService[]>('/api/servi
 
 const canCreateServices = computed(() => session.value?.role === 'admin_doctor')
 
+const normalizeOptionalPrice = (value: string | number) => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+
+  const normalized = value.trim()
+
+  if (!normalized) {
+    return null
+  }
+
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 const submitService = async () => {
   pending.value = true
   errorMessage.value = null
@@ -35,7 +50,7 @@ const submitService = async () => {
         name: form.name,
         description: form.description.trim() || null,
         defaultDurationMinutes: form.defaultDurationMinutes,
-        price: form.price.trim() ? Number(form.price) : null,
+        price: normalizeOptionalPrice(form.price),
         isActive: form.isActive,
       },
     })
@@ -49,6 +64,22 @@ const submitService = async () => {
     successMessage.value = 'Servicio registrado correctamente.'
     await refresh()
   } catch (error) {
+    console.error('[services][create][client] request failed', {
+      error,
+      statusCode:
+        error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number'
+          ? error.statusCode
+          : undefined,
+      statusMessage:
+        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
+          ? error.statusMessage
+          : undefined,
+      data:
+        error && typeof error === 'object' && 'data' in error
+          ? error.data
+          : undefined,
+    })
+
     errorMessage.value =
       error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
         ? error.statusMessage
