@@ -1,45 +1,11 @@
 <script setup lang="ts">
-import type {
-  DashboardSummaryViewModel,
-  TodayAppointmentViewModel,
-} from '~~/src/presentation/view-models/dashboard'
+import { useDashboardScreen } from '../composables/dashboard/use-dashboard-screen'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const { data: summary, status: summaryStatus } = await useFetch<DashboardSummaryViewModel>('/api/dashboard/summary')
-const { data: appointments, status: appointmentsStatus } =
-  await useFetch<TodayAppointmentViewModel[]>('/api/appointments/today')
-
-const metrics = computed(() => {
-  if (!summary.value) {
-    return []
-  }
-
-  return [
-    {
-      label: 'Pacientes hoy',
-      value: summary.value.totalToday,
-      note: 'Citas del dia en la agenda principal.',
-    },
-    {
-      label: 'Completadas',
-      value: summary.value.completedToday,
-      note: 'Consultas ya cerradas hoy.',
-    },
-    {
-      label: 'Pendientes',
-      value: summary.value.pendingToday,
-      note: 'Aun requieren atencion o seguimiento.',
-    },
-    {
-      label: 'Urgentes',
-      value: summary.value.urgentToday,
-      note: 'Casos marcados para priorizacion.',
-    },
-  ]
-})
+const screen = await useDashboardScreen()
 </script>
 
 <template>
@@ -50,13 +16,13 @@ const metrics = computed(() => {
       description="Base conectada a casos de uso limpios, repositorios mock y endpoints listos para migrar a Neon."
     />
 
-    <div v-if="summaryStatus === 'pending'" class="surface-card placeholder-panel">
+    <div v-if="screen.loading.value" class="surface-card placeholder-panel">
       Cargando resumen operativo...
     </div>
 
     <section v-else class="dashboard-metrics">
       <DashboardMetricCard
-        v-for="metric in metrics"
+        v-for="metric in screen.metrics.value"
         :key="metric.label"
         :label="metric.label"
         :value="metric.value"
@@ -66,20 +32,19 @@ const metrics = computed(() => {
 
     <div class="dashboard-panels">
       <DashboardTodayAppointmentsList
-        v-if="appointments"
-        :appointments="appointments"
+        :appointments="screen.appointments.value"
       />
 
       <aside class="surface-card insight-card">
         <p class="insight-title">Estado base del MVP</p>
         <ul class="insight-list">
           <li>Arquitectura limpia separada por capas.</li>
-          <li>Repositorios mock listos para cambiar a Drizzle.</li>
+          <li>Features administrativas ya siguen flujo Android-like en frontend.</li>
           <li>Reglas criticas de citas cubiertas por Vitest.</li>
           <li>Documentacion, issues y subagentes ya definidos.</li>
         </ul>
-        <p v-if="appointmentsStatus === 'pending'" class="muted-text">
-          Cargando agenda del dia...
+        <p v-if="screen.errorMessage.value" class="muted-text">
+          {{ screen.errorMessage.value }}
         </p>
       </aside>
     </div>

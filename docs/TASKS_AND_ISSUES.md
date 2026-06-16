@@ -139,6 +139,7 @@
 - E3: permisos de escritura ya diferenciados en backend base (`patients` para `assistant/admin`, `services` solo `admin_doctor`).
 - E3 pendiente: endurecer permisos por rol en mas endpoints criticos y exponer gestion de asistentes.
 - E4: dashboard inicial con mock data ya operativo.
+- E4: frontend de `dashboard` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
 - E5: frontend de `patients` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E8: `GET/POST /api/services` ya persiste en PostgreSQL con Drizzle; faltan edicion, activacion/desactivacion y filtrado administrativo.
