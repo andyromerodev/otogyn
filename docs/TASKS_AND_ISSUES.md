@@ -140,7 +140,7 @@
 - E3 pendiente: endurecer permisos por rol en mas endpoints criticos y exponer gestion de asistentes.
 - E4: dashboard inicial con mock data ya operativo.
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
-- E8: `GET/POST /api/services` ya existe sobre runtime mock; faltan edicion, activacion y UI administrativa.
+- E8: `GET/POST /api/services` ya persiste en PostgreSQL con Drizzle; faltan edicion, activacion/desactivacion y filtrado administrativo.
 - E12: pruebas base de auth/use cases y reglas criticas ya integradas en `pnpm test`.
 
 ## Issues propuestos
