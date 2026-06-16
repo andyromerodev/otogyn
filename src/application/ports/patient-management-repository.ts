@@ -1,0 +1,14 @@
+import type {
+  PatientDetailInput,
+  PatientListResult,
+  PatientMutationInput,
+  UpdatePatientDetailInput,
+} from '../dto/patient-management'
+import type { Patient } from '../../domain/entities/patient'
+
+export interface PatientManagementRepository {
+  listPatients(): Promise<PatientListResult>
+  getPatientDetail(input: PatientDetailInput): Promise<Patient>
+  createPatient(input: PatientMutationInput): Promise<Patient>
+  updatePatient(input: UpdatePatientDetailInput): Promise<Patient>
+}

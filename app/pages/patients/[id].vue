@@ -1,119 +1,64 @@
 <script setup lang="ts">
-import type { Patient } from '~~/src/domain/entities/patient'
+import { usePatientDetailScreen } from '../../composables/patients/use-patient-detail-screen'
 
 definePageMeta({
   middleware: 'auth',
 })
 
 const route = useRoute()
-const pending = ref(false)
-const errorMessage = ref<string | null>(null)
-const successMessage = ref<string | null>(null)
-
-const { data: patient, refresh } = await useFetch<Patient>(`/api/patients/${route.params.id}`)
-
-const form = reactive({
-  fullName: '',
-  phone: '',
-  email: '',
-  birthDate: '',
-  documentId: '',
-  administrativeNotes: '',
-})
-
-watchEffect(() => {
-  if (!patient.value) {
-    return
-  }
-
-  form.fullName = patient.value.fullName
-  form.phone = patient.value.phone
-  form.email = patient.value.email ?? ''
-  form.birthDate = patient.value.birthDate ?? ''
-  form.documentId = patient.value.documentId ?? ''
-  form.administrativeNotes = patient.value.administrativeNotes ?? ''
-})
-
-const submitPatient = async () => {
-  pending.value = true
-  errorMessage.value = null
-  successMessage.value = null
-
-  try {
-    await $fetch(`/api/patients/${route.params.id}`, {
-      method: 'PATCH',
-      body: {
-        fullName: form.fullName,
-        phone: form.phone,
-        email: form.email.trim() || null,
-        birthDate: form.birthDate || null,
-        documentId: form.documentId.trim() || null,
-        administrativeNotes: form.administrativeNotes.trim() || null,
-      },
-    })
-
-    successMessage.value = 'Paciente actualizado correctamente.'
-    await refresh()
-  } catch (error) {
-    errorMessage.value =
-      error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-        ? error.statusMessage
-        : 'No se pudo actualizar el paciente.'
-  } finally {
-    pending.value = false
-  }
-}
+const patientId = String(route.params.id)
+const screen = await usePatientDetailScreen(patientId)
 </script>
 
 <template>
   <div class="page-grid">
     <SharedSectionHeader
       eyebrow="Paciente"
-      :title="patient?.fullName ?? 'Detalle de paciente'"
+      :title="screen.patient.value?.fullName ?? 'Detalle de paciente'"
       description="Edicion administrativa del paciente. El MVP no incluye historia clinica completa."
     />
 
-    <article v-if="patient" class="surface-card detail-card">
-      <form class="detail-form" @submit.prevent="submitPatient">
+    <article v-if="screen.patient.value" class="surface-card detail-card">
+      <form class="detail-form" @submit.prevent="screen.submitPatient">
         <label class="field">
           <span>Nombre completo</span>
-          <input v-model="form.fullName" type="text" required>
+          <input v-model="screen.form.fullName" type="text" required>
         </label>
 
         <label class="field">
           <span>Telefono</span>
-          <input v-model="form.phone" type="text" required>
+          <input v-model="screen.form.phone" type="text" required>
         </label>
 
         <label class="field">
           <span>Email</span>
-          <input v-model="form.email" type="email">
+          <input v-model="screen.form.email" type="email">
         </label>
 
         <label class="field">
           <span>Fecha de nacimiento</span>
-          <input v-model="form.birthDate" type="date">
+          <input v-model="screen.form.birthDate" type="date">
         </label>
 
         <label class="field">
           <span>Documento</span>
-          <input v-model="form.documentId" type="text">
+          <input v-model="screen.form.documentId" type="text">
         </label>
 
         <label class="field field-wide">
           <span>Notas administrativas</span>
-          <textarea v-model="form.administrativeNotes" rows="5" />
+          <textarea v-model="screen.form.administrativeNotes" rows="5" />
         </label>
 
         <div class="detail-actions">
           <span class="pill">Paciente real en PostgreSQL</span>
-          <button class="submit-button" type="submit" :disabled="pending">
-            {{ pending ? 'Guardando...' : 'Guardar cambios' }}
+          <button class="submit-button" type="submit" :disabled="screen.pending.value">
+            {{ screen.pending.value ? 'Guardando...' : 'Guardar cambios' }}
           </button>
         </div>
 
-        <p v-if="errorMessage" class="message message-error">{{ errorMessage }}</p>
-        <p v-if="successMessage" class="message message-success">{{ successMessage }}</p>
+        <p v-if="screen.errorMessage.value" class="message message-error">{{ screen.errorMessage.value }}</p>
+        <p v-if="screen.successMessage.value" class="message message-success">{{ screen.successMessage.value }}</p>
       </form>
     </article>
   </div>

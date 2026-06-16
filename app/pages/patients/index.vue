@@ -1,61 +1,11 @@
 <script setup lang="ts">
-import type { Patient } from '~~/src/domain/entities/patient'
+import { usePatientsScreen } from '../../composables/patients/use-patients-screen'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const form = reactive({
-  fullName: '',
-  phone: '',
-  email: '',
-  birthDate: '',
-  documentId: '',
-  administrativeNotes: '',
-})
-
-const pending = ref(false)
-const errorMessage = ref<string | null>(null)
-const successMessage = ref<string | null>(null)
-
-const { data: patients, refresh } = await useFetch<Patient[]>('/api/patients')
-
-const submitPatient = async () => {
-  pending.value = true
-  errorMessage.value = null
-  successMessage.value = null
-
-  try {
-    await $fetch('/api/patients', {
-      method: 'POST',
-      body: {
-        fullName: form.fullName,
-        phone: form.phone,
-        email: form.email.trim() || null,
-        birthDate: form.birthDate || null,
-        documentId: form.documentId.trim() || null,
-        administrativeNotes: form.administrativeNotes.trim() || null,
-      },
-    })
-
-    form.fullName = ''
-    form.phone = ''
-    form.email = ''
-    form.birthDate = ''
-    form.documentId = ''
-    form.administrativeNotes = ''
-
-    successMessage.value = 'Paciente registrado correctamente.'
-    await refresh()
-  } catch (error) {
-    errorMessage.value =
-      error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-        ? error.statusMessage
-        : 'No se pudo registrar el paciente.'
-  } finally {
-    pending.value = false
-  }
-}
+const screen = await usePatientsScreen()
 </script>
 
 <template>
@@ -73,49 +23,49 @@ const submitPatient = async () => {
           <p class="muted-text">Solo datos administrativos para el MVP.</p>
         </div>
 
-        <form class="patient-form" @submit.prevent="submitPatient">
+        <form class="patient-form" @submit.prevent="screen.submitPatient">
           <label class="field">
             <span>Nombre completo</span>
-            <input v-model="form.fullName" type="text" placeholder="Maria Torres" required>
+            <input v-model="screen.form.fullName" type="text" placeholder="Maria Torres" required>
           </label>
 
           <label class="field">
             <span>Telefono</span>
-            <input v-model="form.phone" type="text" placeholder="999888777" required>
+            <input v-model="screen.form.phone" type="text" placeholder="999888777" required>
           </label>
 
           <label class="field">
             <span>Email</span>
-            <input v-model="form.email" type="email" placeholder="maria@example.com">
+            <input v-model="screen.form.email" type="email" placeholder="maria@example.com">
           </label>
 
           <label class="field">
             <span>Fecha de nacimiento</span>
-            <input v-model="form.birthDate" type="date">
+            <input v-model="screen.form.birthDate" type="date">
           </label>
 
           <label class="field">
             <span>Documento</span>
-            <input v-model="form.documentId" type="text" placeholder="DNI o cedula">
+            <input v-model="screen.form.documentId" type="text" placeholder="DNI o cedula">
           </label>
 
           <label class="field">
             <span>Notas administrativas</span>
-            <textarea v-model="form.administrativeNotes" rows="4" placeholder="Preferencias de agenda, contacto o seguimiento administrativo." />
+            <textarea v-model="screen.form.administrativeNotes" rows="4" placeholder="Preferencias de agenda, contacto o seguimiento administrativo." />
           </label>
 
-          <button class="submit-button" type="submit" :disabled="pending">
-            {{ pending ? 'Guardando...' : 'Registrar paciente' }}
+          <button class="submit-button" type="submit" :disabled="screen.pending.value">
+            {{ screen.pending.value ? 'Guardando...' : 'Registrar paciente' }}
           </button>
 
-          <p v-if="errorMessage" class="message message-error">{{ errorMessage }}</p>
-          <p v-if="successMessage" class="message message-success">{{ successMessage }}</p>
+          <p v-if="screen.errorMessage.value" class="message message-error">{{ screen.errorMessage.value }}</p>
+          <p v-if="screen.successMessage.value" class="message message-success">{{ screen.successMessage.value }}</p>
         </form>
       </article>
 
       <section class="patients-grid">
         <article
-          v-for="patient in patients ?? []"
+          v-for="patient in screen.patients.value"
           :key="patient.id"
           class="surface-card patient-card"
         >
