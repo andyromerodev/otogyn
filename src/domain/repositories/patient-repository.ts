@@ -4,4 +4,5 @@ export interface PatientRepository {
   listByOrganization(organizationId: string): Promise<Patient[]>
   findById(id: string): Promise<Patient | null>
   create(patient: Patient): Promise<Patient>
+  update(patient: Patient): Promise<Patient>
 }

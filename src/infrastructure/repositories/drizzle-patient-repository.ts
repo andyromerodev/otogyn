@@ -1,4 +1,5 @@
 import { and, asc, eq, isNull } from 'drizzle-orm'
+import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { Patient } from '../../domain/entities/patient'
 import type { PatientRepository } from '../../domain/repositories/patient-repository'
 import { getDrizzleClient } from '../database/drizzle/client'
@@ -68,5 +69,27 @@ export class DrizzlePatientRepository implements PatientRepository {
       .returning()
 
     return mapPatient(row[0]!)
+  }
+
+  async update(patient: Patient): Promise<Patient> {
+    const row = await this.db
+      .update(patients)
+      .set({
+        fullName: patient.fullName,
+        phone: patient.phone,
+        email: patient.email,
+        birthDate: toBirthDate(patient.birthDate),
+        documentId: patient.documentId,
+        administrativeNotes: patient.administrativeNotes,
+        updatedAt: patient.updatedAt,
+      })
+      .where(and(eq(patients.id, patient.id), isNull(patients.deletedAt)))
+      .returning()
+
+    if (!row[0]) {
+      throw new BusinessRuleError('Patient not found.')
+    }
+
+    return mapPatient(row[0])
   }
 }

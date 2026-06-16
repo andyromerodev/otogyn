@@ -16,4 +16,15 @@ export class MockPatientRepository implements PatientRepository {
     this.patients.push(patient)
     return patient
   }
+
+  async update(patient: Patient): Promise<Patient> {
+    const index = this.patients.findIndex((item) => item.id === patient.id)
+
+    if (index === -1) {
+      throw new Error('Patient not found in mock repository.')
+    }
+
+    this.patients[index] = patient
+    return patient
+  }
 }
