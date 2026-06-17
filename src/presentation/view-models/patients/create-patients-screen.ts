@@ -1,6 +1,6 @@
 import { reactive, ref } from 'vue'
-import type { Patient } from '../../../domain/entities/patient'
-import type { PatientMutationInput } from '../../../application/dto/patient-management'
+import type { Patient } from '~~/src/domain/entities/patient'
+import type { PatientMutationInput } from '~~/src/application/dto/patient-management'
 
 export interface PatientScreenPort<TInput, TResult> {
   execute(input: TInput): Promise<TResult>

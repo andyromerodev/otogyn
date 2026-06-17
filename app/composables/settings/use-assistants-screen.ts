@@ -4,7 +4,12 @@ import { createAssistantsScreen } from '~~/src/presentation/view-models/settings
 export const useAssistantsScreen = async () => {
   const screen = createAssistantsScreen({
     listAssistantsUseCase: assistantServiceLocator.listAssistantsUseCase,
+    checkAssistantEmailUseCase: assistantServiceLocator.checkAssistantEmailUseCase,
     createAssistantUseCase: assistantServiceLocator.createAssistantUseCase,
+    updateAssistantUseCase: assistantServiceLocator.updateAssistantUseCase,
+    deactivateAssistantUseCase: assistantServiceLocator.deactivateAssistantUseCase,
+    reactivateAssistantUseCase: assistantServiceLocator.reactivateAssistantUseCase,
+    deleteAssistantUseCase: assistantServiceLocator.deleteAssistantUseCase,
     getAssistantScreenContextUseCase: assistantServiceLocator.getAssistantScreenContextUseCase,
   })
 
