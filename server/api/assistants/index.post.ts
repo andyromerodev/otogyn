@@ -1,15 +1,15 @@
 import { CreateAssistantUseCase } from '../../../src/application/use-cases/create-assistant'
 import { provisionCredentialUser } from '../../../src/infrastructure/auth/better-auth'
 import { DrizzleAssistantRepository } from '../../../src/infrastructure/repositories/drizzle-assistant-repository'
-import { assistantSchema } from '../../../src/presentation/validators/assistant'
-import { getCurrentUser } from '../../utils/get-current-user'
+import { createAssistantSchema } from '../../../src/presentation/validators/assistant'
 import { handleApiError } from '../../utils/handle-api-error'
+import { requireAdminDoctorUser } from '../../utils/require-user'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event, ['admin_doctor'])
+    const session = await requireAdminDoctorUser(event)
     const payload = await readBody(event)
-    const input = assistantSchema.parse(payload)
+    const input = createAssistantSchema.parse(payload)
 
     console.info('[assistants][create] request received', {
       organizationId: session.organizationId,
@@ -24,6 +24,8 @@ export default defineEventHandler(async (event) => {
       name: input.name,
       email: input.email,
       password: input.password,
+      organizationId: session.organizationId,
+      reuseExistingUser: payload?.reuseExistingUser === true,
     })
 
     const assistantRepository = new DrizzleAssistantRepository()
@@ -32,6 +34,7 @@ export default defineEventHandler(async (event) => {
     const assistant = await useCase.execute({
       userId: createdUser.id,
       organizationId: session.organizationId,
+      name: createdUser.name,
       phone: input.phone,
       specialty: input.specialty,
     })

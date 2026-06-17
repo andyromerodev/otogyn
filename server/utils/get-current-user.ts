@@ -1,5 +1,9 @@
 import type { H3Event } from 'h3'
-import { getBetterAuth, getOrganizationRoleForUser, isBetterAuthEnabled } from '../../src/infrastructure/auth/better-auth'
+import {
+  getBetterAuth,
+  getOrganizationMembershipForUser,
+  isBetterAuthEnabled,
+} from '../../src/infrastructure/auth/better-auth'
 import { demoOrganization, demoUsers } from '../../src/infrastructure/mock/demo-data'
 
 export interface SessionUserContext {
@@ -29,12 +33,19 @@ export const getCurrentUser = async (
         })
       }
 
-      const membership = await getOrganizationRoleForUser(session.user.id)
+      const membership = await getOrganizationMembershipForUser(session.user.id)
 
       if (!membership) {
         throw createError({
           statusCode: 403,
           statusMessage: 'User has no organization role.',
+        })
+      }
+
+      if (!membership.isActive) {
+        throw createError({
+          statusCode: 403,
+          statusMessage: 'User account is deactivated.',
         })
       }
 

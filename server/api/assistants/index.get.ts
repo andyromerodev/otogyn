@@ -1,11 +1,11 @@
 import { ListAssistantsUseCase } from '../../../src/application/use-cases/list-assistants'
 import { DrizzleAssistantRepository } from '../../../src/infrastructure/repositories/drizzle-assistant-repository'
-import { getCurrentUser } from '../../utils/get-current-user'
 import { handleApiError } from '../../utils/handle-api-error'
+import { requireAdminDoctorUser } from '../../utils/require-user'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event, ['admin_doctor'])
+    const session = await requireAdminDoctorUser(event)
     const assistantRepository = new DrizzleAssistantRepository()
     const useCase = new ListAssistantsUseCase(assistantRepository)
 

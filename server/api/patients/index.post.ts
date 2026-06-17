@@ -1,12 +1,12 @@
 import { CreatePatientUseCase } from '../../../src/application/use-cases/create-patient'
 import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
 import { patientSchema } from '../../../src/presentation/validators/patient'
-import { getCurrentUser } from '../../utils/get-current-user'
 import { handleApiError } from '../../utils/handle-api-error'
+import { requireStaffUser } from '../../utils/require-user'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event, ['admin_doctor', 'assistant'])
+    const session = await requireStaffUser(event)
     const payload = await readBody(event)
     const input = patientSchema.parse(payload)
     const patientRepository = new DrizzlePatientRepository()

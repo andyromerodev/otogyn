@@ -5,12 +5,12 @@ import { DrizzleAvailabilityRepository } from '../../../src/infrastructure/repos
 import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
 import { DrizzleServiceRepository } from '../../../src/infrastructure/repositories/drizzle-service-repository'
 import { appointmentSchema } from '../../../src/presentation/validators/appointment'
-import { getCurrentUser } from '../../utils/get-current-user'
 import { handleApiError } from '../../utils/handle-api-error'
+import { requireStaffUser } from '../../utils/require-user'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event, ['admin_doctor', 'assistant'])
+    const session = await requireStaffUser(event)
     const payload = await readBody(event)
     const input = appointmentSchema.parse(payload)
 

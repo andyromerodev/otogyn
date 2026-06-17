@@ -1,4 +1,5 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
+import { hashPassword } from 'better-auth/crypto'
 import { betterAuth } from 'better-auth'
 import { and, asc, count, eq } from 'drizzle-orm'
 import { getDrizzleClient } from '../database/drizzle/client'
@@ -129,6 +130,8 @@ const bootstrapMembershipForUser = async (user: { id: string }) => {
       organizationId,
       userId: user.id,
       role: isFirstMember ? 'admin_doctor' : 'assistant',
+      isActive: true,
+      deactivatedAt: null,
     })
   }
 
@@ -162,16 +165,35 @@ export const getBetterAuth = () => {
 }
 
 export const getOrganizationRoleForUser = async (userId: string, organizationSlug = DEFAULT_ORGANIZATION.slug) => {
+  const membership = await getOrganizationMembershipForUser(userId, organizationSlug)
+
+  if (!membership?.isActive) {
+    return null
+  }
+
+  return membership
+}
+
+export const getOrganizationMembershipForUser = async (
+  userId: string,
+  organizationSlug = DEFAULT_ORGANIZATION.slug,
+) => {
   const db = getDrizzleClient()
 
   const rows = await db
     .select({
       organizationId: organizationMembers.organizationId,
       role: organizationMembers.role,
+      isActive: organizationMembers.isActive,
     })
     .from(organizationMembers)
     .innerJoin(organizations, eq(organizationMembers.organizationId, organizations.id))
-    .where(and(eq(organizationMembers.userId, userId), eq(organizations.slug, organizationSlug)))
+    .where(
+      and(
+        eq(organizationMembers.userId, userId),
+        eq(organizations.slug, organizationSlug),
+      ),
+    )
     .orderBy(asc(organizationMembers.createdAt))
     .limit(1)
 
@@ -207,12 +229,175 @@ export interface ProvisionCredentialUserInput {
   name: string
   email: string
   password: string
+  organizationId: string
+  reuseExistingUser?: boolean
 }
 
 export interface ProvisionedCredentialUser {
   id: string
   name: string
   email: string
+}
+
+export type ProvisionableAssistantEmailStatus =
+  | 'available'
+  | 'assistant_active'
+  | 'assistant_inactive'
+  | 'orphan_reusable'
+  | 'existing_unavailable'
+
+export interface ProvisionableAssistantEmailResult {
+  status: ProvisionableAssistantEmailStatus
+  userId?: string
+  name?: string
+  email: string
+}
+
+export const getProvisionableAssistantEmailStatus = async (
+  email: string,
+  organizationId: string,
+): Promise<ProvisionableAssistantEmailResult> => {
+  const normalizedEmail = email.trim().toLowerCase()
+  const db = getDrizzleClient()
+
+  const existingUsers = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+    })
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1)
+
+  const existingUser = existingUsers[0]
+
+  if (!existingUser) {
+    return {
+      status: 'available',
+      email: normalizedEmail,
+    }
+  }
+
+  const [userAccounts, organizationMemberships] = await Promise.all([
+    db
+      .select({
+        id: accounts.id,
+      })
+      .from(accounts)
+      .where(eq(accounts.userId, existingUser.id))
+      .limit(1),
+    db
+      .select({
+        organizationId: organizationMembers.organizationId,
+        isActive: organizationMembers.isActive,
+      })
+      .from(organizationMembers)
+      .where(eq(organizationMembers.userId, existingUser.id)),
+  ])
+
+  const currentOrganizationMembership = organizationMemberships.find(
+    (membership) => membership.organizationId === organizationId,
+  )
+
+  if (currentOrganizationMembership?.isActive) {
+    return {
+      status: 'assistant_active',
+      userId: existingUser.id,
+      name: existingUser.name,
+      email: normalizedEmail,
+    }
+  }
+
+  if (currentOrganizationMembership && !currentOrganizationMembership.isActive) {
+    return {
+      status: 'assistant_inactive',
+      userId: existingUser.id,
+      name: existingUser.name,
+      email: normalizedEmail,
+    }
+  }
+
+  if (!userAccounts[0] && organizationMemberships.length === 0) {
+    return {
+      status: 'orphan_reusable',
+      userId: existingUser.id,
+      name: existingUser.name,
+      email: normalizedEmail,
+    }
+  }
+
+  return {
+    status: 'existing_unavailable',
+    userId: existingUser.id,
+    name: existingUser.name,
+    email: normalizedEmail,
+  }
+}
+
+const reuseCredentialUser = async (
+  input: Required<Pick<ProvisionCredentialUserInput, 'name' | 'email' | 'password'>>,
+): Promise<ProvisionedCredentialUser> => {
+  const normalizedEmail = input.email.trim().toLowerCase()
+  const db = getDrizzleClient()
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+    })
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1)
+
+  const existingUser = rows[0]
+
+  if (!existingUser) {
+    throw createStatusError(404, 'No existe un usuario reutilizable con ese correo.')
+  }
+
+  const now = new Date()
+  const passwordHash = await hashPassword(input.password)
+  const existingCredentialAccount = await db
+    .select({
+      id: accounts.id,
+    })
+    .from(accounts)
+    .where(and(eq(accounts.userId, existingUser.id), eq(accounts.providerId, 'credential')))
+    .limit(1)
+
+  await db
+    .update(users)
+    .set({
+      name: input.name.trim(),
+      updatedAt: now,
+    })
+    .where(eq(users.id, existingUser.id))
+
+  if (existingCredentialAccount[0]) {
+    await db
+      .update(accounts)
+      .set({
+        password: passwordHash,
+        updatedAt: now,
+      })
+      .where(eq(accounts.id, existingCredentialAccount[0].id))
+  } else {
+    await db.insert(accounts).values({
+      userId: existingUser.id,
+      accountId: existingUser.id,
+      providerId: 'credential',
+      password: passwordHash,
+      createdAt: now,
+      updatedAt: now,
+    })
+  }
+
+  return {
+    id: existingUser.id,
+    name: input.name.trim(),
+    email: normalizedEmail,
+  }
 }
 
 export const provisionCredentialUser = async (
@@ -225,6 +410,20 @@ export const provisionCredentialUser = async (
   }
 
   const normalizedEmail = input.email.trim().toLowerCase()
+  const provisionStatus = await getProvisionableAssistantEmailStatus(normalizedEmail, input.organizationId)
+
+  if (input.reuseExistingUser) {
+    if (provisionStatus.status !== 'orphan_reusable') {
+      throw createStatusError(409, 'Ese correo ya no esta disponible para reutilizacion segura.')
+    }
+
+    return reuseCredentialUser({
+      name: input.name,
+      email: normalizedEmail,
+      password: input.password,
+    })
+  }
+
   const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000'
 
   const response = await auth.handler(
