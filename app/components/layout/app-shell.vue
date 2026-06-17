@@ -6,6 +6,8 @@ interface SessionContext {
 
 const config = useRuntimeConfig()
 const isAuthEnabled = computed(() => config.public.authEnabled)
+const isRouteLoading = ref(false)
+const nuxtApp = useNuxtApp()
 const { data: sessionContext } = isAuthEnabled.value
   ? await useFetch<SessionContext | null>('/api/auth/session-context', {
       headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
@@ -38,88 +40,157 @@ const handleSignOut = async () => {
 
   await navigateTo('/login')
 }
+
+if (import.meta.client) {
+  let finishTimer: ReturnType<typeof setTimeout> | null = null
+
+  const clearFinishTimer = () => {
+    if (!finishTimer) {
+      return
+    }
+
+    clearTimeout(finishTimer)
+    finishTimer = null
+  }
+
+  const stopLoading = () => {
+    clearFinishTimer()
+    finishTimer = setTimeout(() => {
+      isRouteLoading.value = false
+      finishTimer = null
+    }, 140)
+  }
+
+  onMounted(() => {
+    const removePageStart = nuxtApp.hook('page:start', () => {
+      clearFinishTimer()
+      isRouteLoading.value = true
+    })
+    const removePageFinish = nuxtApp.hook('page:finish', stopLoading)
+    const removePageLoadingEnd = nuxtApp.hook('page:loading:end', stopLoading)
+    const removeAppError = nuxtApp.hook('app:error', () => {
+      clearFinishTimer()
+      isRouteLoading.value = false
+    })
+
+    onBeforeUnmount(() => {
+      clearFinishTimer()
+      removePageStart()
+      removePageFinish()
+      removePageLoadingEnd()
+      removeAppError()
+    })
+  })
+}
 </script>
 
 <template>
-  <div class="shell">
-    <aside class="surface-card shell-sidebar">
-      <div class="brand">
-        <span class="brand-mark">ORL</span>
-        <div>
-          <p class="brand-title">OtoGyn</p>
-          <p class="brand-copy">Agenda clinica MVP</p>
+  <div class="shell-frame">
+    <div class="shell" :class="{ 'shell-loading-active': isRouteLoading }">
+      <aside class="surface-card shell-sidebar">
+        <div class="brand">
+          <span class="brand-mark">ORL</span>
+          <div>
+            <p class="brand-title">OtoGyn</p>
+            <p class="brand-copy">Agenda clinica MVP</p>
+          </div>
         </div>
-      </div>
 
-      <nav class="sidebar-nav">
+        <nav class="sidebar-nav">
+          <NuxtLink
+            v-for="item in navigation"
+            :key="item.to"
+            :to="item.to"
+            class="sidebar-link"
+            active-class="sidebar-link-active"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </nav>
+
+        <div class="sidebar-foot">
+          <span class="pill">Base lista para Better Auth</span>
+          <NuxtLink to="/book">
+            <UButton color="primary" variant="soft" block>Reserva publica</UButton>
+          </NuxtLink>
+        </div>
+      </aside>
+
+      <main class="shell-main">
+        <header class="surface-card shell-topbar">
+          <div>
+            <p class="topbar-title">Plataforma de citas OtoGyn</p>
+            <p class="muted-text topbar-copy">MVP con Clean Architecture, mocks separados y backend Nuxt.</p>
+          </div>
+          <div class="topbar-actions">
+            <span class="pill">
+              {{ sessionContext?.name ?? 'Modo MVP' }}
+              <template v-if="sessionContext?.role"> · {{ sessionContext.role }}</template>
+            </span>
+            <UButton
+              v-if="sessionContext"
+              color="neutral"
+              variant="outline"
+              @click="handleSignOut"
+            >
+              Salir
+            </UButton>
+            <NuxtLink v-else to="/login">
+              <UButton color="neutral" variant="outline">Entrar</UButton>
+            </NuxtLink>
+          </div>
+        </header>
+
+        <section class="shell-content">
+          <slot />
+        </section>
+      </main>
+
+      <nav class="surface-card bottom-nav">
         <NuxtLink
-          v-for="item in navigation"
+          v-for="item in navigation.slice(0, 5)"
           :key="item.to"
           :to="item.to"
-          class="sidebar-link"
-          active-class="sidebar-link-active"
+          class="bottom-nav-link"
+          active-class="bottom-nav-link-active"
         >
           {{ item.label }}
         </NuxtLink>
       </nav>
+    </div>
 
-      <div class="sidebar-foot">
-        <span class="pill">Base lista para Better Auth</span>
-        <NuxtLink to="/book">
-          <UButton color="primary" variant="soft" block>Reserva publica</UButton>
-        </NuxtLink>
-      </div>
-    </aside>
-
-    <main class="shell-main">
-      <header class="surface-card shell-topbar">
-        <div>
-          <p class="topbar-title">Plataforma de citas OtoGyn</p>
-          <p class="muted-text topbar-copy">MVP con Clean Architecture, mocks separados y backend Nuxt.</p>
-        </div>
-        <div class="topbar-actions">
-          <span class="pill">
-            {{ sessionContext?.name ?? 'Modo MVP' }}
-            <template v-if="sessionContext?.role"> · {{ sessionContext.role }}</template>
-          </span>
-          <UButton
-            v-if="sessionContext"
-            color="neutral"
-            variant="outline"
-            @click="handleSignOut"
-          >
-            Salir
-          </UButton>
-          <NuxtLink v-else to="/login">
-            <UButton color="neutral" variant="outline">Entrar</UButton>
-          </NuxtLink>
-        </div>
-      </header>
-
-      <section class="shell-content">
-        <slot />
-      </section>
-    </main>
-
-    <nav class="surface-card bottom-nav">
-      <NuxtLink
-        v-for="item in navigation.slice(0, 5)"
-        :key="item.to"
-        :to="item.to"
-        class="bottom-nav-link"
-        active-class="bottom-nav-link-active"
-      >
-        {{ item.label }}
-      </NuxtLink>
-    </nav>
+    <Transition name="shell-loading-fade">
+      <LayoutAppShellLoading
+        v-if="isRouteLoading"
+        class="shell-loading-overlay"
+        :show-settings="sessionContext?.role === 'admin_doctor'"
+      />
+    </Transition>
   </div>
 </template>
 
 <style scoped>
+.shell-frame {
+  position: relative;
+}
+
 .shell {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   gap: 1.5rem;
+  padding: 1.5rem;
+  transition: opacity 160ms ease;
+}
+
+.shell-loading-active {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.shell-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
   padding: 1.5rem;
 }
 
@@ -238,6 +309,16 @@ const handleSignOut = async () => {
   font-size: 0.82rem;
 }
 
+.shell-loading-fade-enter-active,
+.shell-loading-fade-leave-active {
+  transition: opacity 180ms ease;
+}
+
+.shell-loading-fade-enter-from,
+.shell-loading-fade-leave-to {
+  opacity: 0;
+}
+
 @media (max-width: 960px) {
   .shell {
     grid-template-columns: 1fr;
@@ -255,6 +336,10 @@ const handleSignOut = async () => {
 
   .bottom-nav {
     display: grid;
+  }
+
+  .shell-loading-overlay {
+    padding: 1rem;
   }
 }
 </style>
