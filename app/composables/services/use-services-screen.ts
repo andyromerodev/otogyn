@@ -5,6 +5,7 @@ export const useServicesScreen = async () => {
   const screen = createServicesScreen({
     listServicesUseCase: serviceServiceLocator.listServicesUseCase,
     createServiceUseCase: serviceServiceLocator.createServiceUseCase,
+    updateServiceUseCase: serviceServiceLocator.updateServiceUseCase,
     getServiceScreenContextUseCase: serviceServiceLocator.getServiceScreenContextUseCase,
   })
 

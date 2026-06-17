@@ -2,6 +2,7 @@ import type {
   ServiceListResult,
   ServiceMutationInput,
   ServiceScreenContextDto,
+  ServiceUpdateInput,
 } from '../../../application/dto/service-management'
 import type { ServiceManagementRepository } from '../../../application/ports/service-management-repository'
 import type { MedicalService } from '../../../domain/entities/medical-service'
@@ -16,6 +17,10 @@ export class ServiceManagementRepositoryImpl implements ServiceManagementReposit
 
   createService(input: ServiceMutationInput): Promise<MedicalService> {
     return this.remoteDataSource.createService(input)
+  }
+
+  updateService(input: ServiceUpdateInput): Promise<MedicalService> {
+    return this.remoteDataSource.updateService(input)
   }
 
   getScreenContext(): Promise<ServiceScreenContextDto> {

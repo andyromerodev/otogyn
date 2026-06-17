@@ -1,6 +1,6 @@
 import { asc, eq } from 'drizzle-orm'
 import type { MedicalService } from '../../domain/entities/medical-service'
-import type { ServiceRepository } from '../../domain/repositories/service-repository'
+import type { ServiceRepository, UpdateServiceInput } from '../../domain/repositories/service-repository'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { services } from '../database/schema'
 
@@ -54,6 +54,35 @@ export class DrizzleServiceRepository implements ServiceRepository {
         updatedAt: service.updatedAt,
       })
       .returning()
+
+    return mapService(rows[0]!)
+  }
+
+  async update(input: UpdateServiceInput): Promise<MedicalService> {
+    const now = new Date()
+
+    await this.db
+      .update(services)
+      .set({
+        name: input.name,
+        description: input.description,
+        defaultDurationMinutes: input.defaultDurationMinutes,
+        price:
+          input.price === undefined
+            ? undefined
+            : input.price === null
+              ? null
+              : input.price.toFixed(2),
+        isActive: input.isActive,
+        updatedAt: now,
+      })
+      .where(eq(services.id, input.id))
+
+    const rows = await this.db
+      .select()
+      .from(services)
+      .where(eq(services.id, input.id))
+      .limit(1)
 
     return mapService(rows[0]!)
   }

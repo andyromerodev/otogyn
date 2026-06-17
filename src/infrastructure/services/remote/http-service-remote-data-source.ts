@@ -1,6 +1,7 @@
 import type {
   ServiceMutationInput,
   ServiceScreenContextDto,
+  ServiceUpdateInput,
 } from '../../../application/dto/service-management'
 import type { MedicalService } from '../../../domain/entities/medical-service'
 import type { ServiceRemoteDataSource } from './service-remote-data-source'
@@ -14,6 +15,19 @@ export class HttpServiceRemoteDataSource implements ServiceRemoteDataSource {
     return $fetch<MedicalService>('/api/services', {
       method: 'POST',
       body: input,
+    })
+  }
+
+  async updateService(input: ServiceUpdateInput): Promise<MedicalService> {
+    return $fetch<MedicalService>(`/api/services/${input.id}`, {
+      method: 'PATCH',
+      body: {
+        name: input.name,
+        description: input.description,
+        defaultDurationMinutes: input.defaultDurationMinutes,
+        price: input.price,
+        isActive: input.isActive,
+      },
     })
   }
 

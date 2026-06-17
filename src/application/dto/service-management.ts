@@ -8,6 +8,15 @@ export interface ServiceMutationInput {
   isActive?: boolean
 }
 
+export interface ServiceUpdateInput {
+  id: string
+  name?: string
+  description?: string | null
+  defaultDurationMinutes?: number
+  price?: number | null
+  isActive?: boolean
+}
+
 export interface ServiceScreenContextDto {
   userId: string
   organizationId: string

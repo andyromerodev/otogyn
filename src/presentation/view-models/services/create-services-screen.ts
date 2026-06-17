@@ -3,6 +3,7 @@ import type { MedicalService } from '../../../domain/entities/medical-service'
 import type {
   ServiceMutationInput,
   ServiceScreenContextDto,
+  ServiceUpdateInput,
 } from '../../../application/dto/service-management'
 
 export interface ServiceScreenPort<TInput, TResult> {
@@ -12,10 +13,20 @@ export interface ServiceScreenPort<TInput, TResult> {
 export interface ServicesScreenDependencies {
   listServicesUseCase: { execute(): Promise<MedicalService[]> }
   createServiceUseCase: ServiceScreenPort<ServiceMutationInput, MedicalService>
+  updateServiceUseCase: ServiceScreenPort<ServiceUpdateInput, MedicalService>
   getServiceScreenContextUseCase: { execute(): Promise<ServiceScreenContextDto> }
 }
 
 const createInitialForm = () => ({
+  name: '',
+  description: '',
+  defaultDurationMinutes: 30,
+  price: '',
+  isActive: true,
+})
+
+const createEditForm = () => ({
+  id: '',
   name: '',
   description: '',
   defaultDurationMinutes: 30,
@@ -44,10 +55,13 @@ export const createServicesScreen = (dependencies: ServicesScreenDependencies) =
   const loading = ref(false)
   const contextLoading = ref(false)
   const pending = ref(false)
+  const togglingServiceId = ref<string | null>(null)
+  const editingServiceId = ref<string | null>(null)
   const errorMessage = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
 
   const form = reactive(createInitialForm())
+  const editForm = reactive(createEditForm())
 
   const canCreateServices = computed(() => screenContext.value?.role === 'admin_doctor')
 
@@ -125,18 +139,139 @@ export const createServicesScreen = (dependencies: ServicesScreenDependencies) =
     }
   }
 
+  const startEditingService = (service: MedicalService) => {
+    editingServiceId.value = service.id
+    editForm.id = service.id
+    editForm.name = service.name
+    editForm.description = service.description ?? ''
+    editForm.defaultDurationMinutes = service.defaultDurationMinutes
+    editForm.price = service.price === null ? '' : String(service.price)
+    editForm.isActive = service.isActive
+    errorMessage.value = null
+    successMessage.value = null
+  }
+
+  const cancelEditingService = () => {
+    editingServiceId.value = null
+    Object.assign(editForm, createEditForm())
+  }
+
+  const submitServiceUpdate = async () => {
+    if (!editingServiceId.value) {
+      return
+    }
+
+    pending.value = true
+    errorMessage.value = null
+    successMessage.value = null
+
+    try {
+      await dependencies.updateServiceUseCase.execute({
+        id: editForm.id,
+        name: editForm.name.trim(),
+        description: editForm.description.trim() || null,
+        defaultDurationMinutes: editForm.defaultDurationMinutes,
+        price: normalizeOptionalPrice(editForm.price),
+        isActive: editForm.isActive,
+      })
+
+      cancelEditingService()
+      successMessage.value = 'Servicio actualizado correctamente.'
+      await loadServices()
+    } catch (error) {
+      console.error('[services][update][client] request failed', {
+        error,
+        statusCode:
+          error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number'
+            ? error.statusCode
+            : undefined,
+        statusMessage:
+          error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
+            ? error.statusMessage
+            : undefined,
+        data:
+          error && typeof error === 'object' && 'data' in error
+            ? error.data
+            : undefined,
+      })
+
+      errorMessage.value =
+        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
+          ? error.statusMessage
+          : 'No se pudo actualizar el servicio.'
+    } finally {
+      pending.value = false
+    }
+  }
+
+  const toggleServiceActive = async (serviceId: string) => {
+    const service = services.value.find((s) => s.id === serviceId)
+
+    if (!service) {
+      return
+    }
+
+    togglingServiceId.value = serviceId
+    errorMessage.value = null
+    successMessage.value = null
+
+    const nextActive = !service.isActive
+
+    try {
+      await dependencies.updateServiceUseCase.execute({
+        id: serviceId,
+        isActive: nextActive,
+      })
+
+      if (editingServiceId.value === serviceId) {
+        cancelEditingService()
+      }
+
+      successMessage.value = nextActive
+        ? 'Servicio activado correctamente.'
+        : 'Servicio desactivado correctamente.'
+      await loadServices()
+    } catch (error) {
+      console.error('[services][toggle][client] request failed', {
+        error,
+        statusCode:
+          error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number'
+            ? error.statusCode
+            : undefined,
+        statusMessage:
+          error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
+            ? error.statusMessage
+            : undefined,
+      })
+
+      errorMessage.value =
+        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
+          ? error.statusMessage
+          : 'No se pudo cambiar el estado del servicio.'
+    } finally {
+      togglingServiceId.value = null
+    }
+  }
+
   return {
     services,
     screenContext,
     form,
+    editForm,
     loading,
     contextLoading,
     pending,
+    togglingServiceId,
+    editingServiceId,
     errorMessage,
     successMessage,
     canCreateServices,
     loadServices,
     loadScreenContext,
     submitService,
+    startEditingService,
+    cancelEditingService,
+    submitServiceUpdate,
+    toggleServiceActive,
   }
 }

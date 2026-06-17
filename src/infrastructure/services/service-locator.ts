@@ -1,6 +1,7 @@
 import { CreateServiceUseCase } from '../../application/use-cases/services/create-service'
 import { GetServiceScreenContextUseCase } from '../../application/use-cases/services/get-service-screen-context'
 import { ListServicesUseCase } from '../../application/use-cases/services/list-services'
+import { UpdateServiceUseCase } from '../../application/use-cases/services/update-service'
 import { HttpServiceRemoteDataSource } from './remote/http-service-remote-data-source'
 import { ServiceManagementRepositoryImpl } from './repositories/service-management-repository-impl'
 
@@ -10,5 +11,6 @@ const serviceRepository = new ServiceManagementRepositoryImpl(serviceRemoteDataS
 export const serviceServiceLocator = {
   listServicesUseCase: new ListServicesUseCase(serviceRepository),
   createServiceUseCase: new CreateServiceUseCase(serviceRepository),
+  updateServiceUseCase: new UpdateServiceUseCase(serviceRepository),
   getServiceScreenContextUseCase: new GetServiceScreenContextUseCase(serviceRepository),
 }
