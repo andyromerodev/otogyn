@@ -1,6 +1,12 @@
 # Tasks And Issues
 
-## Epicas
+## Modulos
+
+Convencion sugerida de nombre visible:
+
+- `Modulo E1: Arquitectura base del MVP`
+- `Modulo E2: Backend y base de datos con Neon`
+- `Modulo E3: Auth y roles`
 
 ### E1. Arquitectura base
 
@@ -8,6 +14,7 @@
 - Aceptacion: estructura base creada, AGENTS listo, docs y subagentes disponibles.
 - Prioridad: alta
 - Labels: `epic`, `architecture`, `docs`, `mvp`
+  Nota: se mantiene el label tecnico `epic` en GitHub, aunque en documentacion funcional usamos `modulo`.
 - Estimacion: M
 
 ### E2. Backend y base de datos con Neon
@@ -144,8 +151,10 @@
 - E4: frontend de `dashboard` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
 - E5: frontend de `patients` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
-- E8: `GET/POST /api/services` ya persiste en PostgreSQL con Drizzle; faltan edicion, activacion/desactivacion y filtrado administrativo.
-- E8: frontend de `services` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
+- E8: CRUD completo de servicios implementado: `GET/POST/PATCH /api/services` persisten en PostgreSQL con Drizzle.
+- E8: edicion de servicio con formulario inline y activacion/desactivacion via toggle ya implementados en UI.
+- E8: permisos endurecidos: asistentes solo leen servicios, admin_doctor escribe (create/update/toggle).
+- E8: tests para `UpdateServiceUseCase` (5 tests) y view model de services (5 tests) integrados.
 - E6: crear, editar, cancelar y cambiar estado de citas ya operan con PostgreSQL validando paciente, servicio, disponibilidad inicial y choques.
 - E6: frontend de `appointments` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E12: pruebas base de auth/use cases y reglas criticas ya integradas en `pnpm test`.
