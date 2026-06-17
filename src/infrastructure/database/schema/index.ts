@@ -113,6 +113,8 @@ export const organizationMembers = pgTable(
       .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     role: varchar('role', { length: 40 }).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    deactivatedAt: timestamp('deactivated_at', { withTimezone: true }),
     ...timestamps,
   },
   (table) => [

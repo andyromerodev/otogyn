@@ -1,0 +1,2 @@
+ALTER TABLE "organization_members" ADD COLUMN "is_active" boolean DEFAULT true NOT NULL;--> statement-breakpoint
+ALTER TABLE "organization_members" ADD COLUMN "deactivated_at" timestamp with time zone;

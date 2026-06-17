@@ -7,6 +7,8 @@ export interface Assistant {
   role: 'admin_doctor' | 'assistant'
   phone: string | null
   specialty: string | null
+  isActive: boolean
+  deactivatedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
