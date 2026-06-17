@@ -1,34 +1,5 @@
 import { useAuthClient } from '~/utils/auth-client'
-
-const getAuthErrorStatus = (error: unknown) => {
-  if (
-    error &&
-    typeof error === 'object' &&
-    'statusCode' in error &&
-    typeof error.statusCode === 'number'
-  ) {
-    return {
-      statusCode: error.statusCode,
-      statusMessage:
-        'statusMessage' in error && typeof error.statusMessage === 'string'
-          ? error.statusMessage
-          : undefined,
-    }
-  }
-
-  return {
-    statusCode: 500,
-    statusMessage: undefined,
-  }
-}
-
-const buildLoginRedirect = (path: string, reason?: 'deactivated') => ({
-  path: '/login',
-  query: {
-    redirect: path,
-    ...(reason ? { reason } : {}),
-  },
-})
+import { buildLoginRedirect, getAuthErrorStatus, resolveSessionContext } from '~/utils/auth/session-context'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const config = useRuntimeConfig()
@@ -38,9 +9,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (import.meta.server) {
-    const sessionContext = await $fetch('/api/auth/session-context', {
-      headers: useRequestHeaders(['cookie']),
-    }).catch((error) => {
+    const sessionContext = await resolveSessionContext(useRequestHeaders(['cookie'])).catch((error) => {
       const { statusCode, statusMessage } = getAuthErrorStatus(error)
 
       console.error('[auth][middleware] server session check failed', {
@@ -49,18 +18,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
         statusMessage,
         error: error instanceof Error ? error.message : 'Unknown session error',
       })
-
-      if (statusCode === 401) {
-        return null
-      }
-
-      if (statusCode === 403 && statusMessage === 'User account is deactivated.') {
-        return 'deactivated' as const
-      }
-
-      if (statusCode === 403) {
-        return null
-      }
 
       return null
     })
@@ -77,20 +34,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const authClient = useAuthClient()
-  const sessionContext = await $fetch('/api/auth/session-context').catch(async (error) => {
-    const { statusCode, statusMessage } = getAuthErrorStatus(error)
-
-    if (statusCode === 403 && statusMessage === 'User account is deactivated.') {
-      await authClient.signOut()
-      return 'deactivated' as const
-    }
-
-    if (statusCode === 401 || statusCode === 403) {
-      return null
-    }
-
+  const sessionContext = await resolveSessionContext().catch((error) => {
     throw error
   })
+
+  if (sessionContext === 'deactivated') {
+    await authClient.signOut()
+  }
 
   if (sessionContext === 'deactivated') {
     return navigateTo(buildLoginRedirect(to.fullPath, 'deactivated'))

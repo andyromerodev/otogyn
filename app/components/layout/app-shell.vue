@@ -1,18 +1,15 @@
 <script setup lang="ts">
-interface SessionContext {
-  name?: string
-  role?: 'admin_doctor' | 'assistant'
-}
+import type { AppSessionContext } from '~/utils/auth/session-context'
 
 const config = useRuntimeConfig()
 const isAuthEnabled = computed(() => config.public.authEnabled)
 const isRouteLoading = ref(false)
 const nuxtApp = useNuxtApp()
 const { data: sessionContext } = isAuthEnabled.value
-  ? await useFetch<SessionContext | null>('/api/auth/session-context', {
+  ? await useFetch<AppSessionContext | null>('/api/auth/session-context', {
       headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
     })
-  : { data: ref<SessionContext | null>(null) }
+  : { data: ref<AppSessionContext | null>(null) }
 
 const navigation = computed(() => [
   { label: 'Dashboard', to: '/dashboard' },
