@@ -1,15 +1,12 @@
-import { ListServicesUseCase } from '../../../src/application/use-cases/list-services'
-import { DrizzleServiceRepository } from '../../../src/infrastructure/repositories/drizzle-service-repository'
-import { getCurrentUser } from '../../utils/get-current-user'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event)
-    const serviceRepository = new DrizzleServiceRepository()
-    const useCase = new ListServicesUseCase(serviceRepository)
+    const session = await requireAuthorizedUser(event, 'services:read')
 
-    return await useCase.execute({
+    return await serverServiceLocator.services.listServicesUseCase.execute({
       organizationId: session.organizationId,
     })
   } catch (error) {

@@ -1,18 +1,15 @@
-import { CreatePatientUseCase } from '../../../src/application/use-cases/create-patient'
-import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
 import { patientSchema } from '../../../src/presentation/validators/patient'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireStaffUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireStaffUser(event)
+    const session = await requireAuthorizedUser(event, 'patients:write')
     const payload = await readBody(event)
     const input = patientSchema.parse(payload)
-    const patientRepository = new DrizzlePatientRepository()
-    const createPatientUseCase = new CreatePatientUseCase(patientRepository)
 
-    return await createPatientUseCase.execute({
+    return await serverServiceLocator.patients.createPatientUseCase.execute({
       organizationId: session.organizationId,
       fullName: input.fullName,
       phone: input.phone,

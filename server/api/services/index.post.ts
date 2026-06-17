@@ -1,12 +1,11 @@
-import { CreateServiceUseCase } from '../../../src/application/use-cases/create-service'
-import { DrizzleServiceRepository } from '../../../src/infrastructure/repositories/drizzle-service-repository'
 import { serviceSchema } from '../../../src/presentation/validators/service'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireAdminDoctorUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireAdminDoctorUser(event)
+    const session = await requireAuthorizedUser(event, 'services:write')
     const payload = await readBody(event)
 
     console.info('[services][create] request received', {
@@ -19,10 +18,7 @@ export default defineEventHandler(async (event) => {
     })
 
     const input = serviceSchema.parse(payload)
-    const serviceRepository = new DrizzleServiceRepository()
-    const useCase = new CreateServiceUseCase(serviceRepository)
-
-    const service = await useCase.execute({
+    const service = await serverServiceLocator.services.createServiceUseCase.execute({
       organizationId: session.organizationId,
       name: input.name,
       description: input.description ?? null,

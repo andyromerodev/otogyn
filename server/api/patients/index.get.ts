@@ -1,15 +1,12 @@
-import { ListPatientsUseCase } from '../../../src/application/use-cases/list-patients'
-import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
-import { getCurrentUser } from '../../utils/get-current-user'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event)
-    const patientRepository = new DrizzlePatientRepository()
-    const listPatientsUseCase = new ListPatientsUseCase(patientRepository)
+    const session = await requireAuthorizedUser(event, 'patients:read')
 
-    return await listPatientsUseCase.execute({
+    return await serverServiceLocator.patients.listPatientsUseCase.execute({
       organizationId: session.organizationId,
     })
   } catch (error) {

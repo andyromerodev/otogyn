@@ -1,19 +1,23 @@
-import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { getCurrentUser } from '../../utils/get-current-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event)
+    const session = await requireAuthorizedUser(event, 'patients:read')
     const patientId = getRouterParam(event, 'id')
-    const patientRepository = new DrizzlePatientRepository()
-    const patient = patientId ? await patientRepository.findById(patientId) : null
 
-    if (!patient || patient.organizationId !== session.organizationId) {
-      throw createError({ statusCode: 404, statusMessage: 'Patient not found.' })
+    if (!patientId) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Patient id is required.',
+      })
     }
 
-    return patient
+    return await serverServiceLocator.patients.getPatientDetailUseCase.execute({
+      patientId,
+      organizationId: session.organizationId,
+    })
   } catch (error) {
     handleApiError(error)
   }

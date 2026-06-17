@@ -1,15 +1,12 @@
-import { ListAssistantsUseCase } from '../../../src/application/use-cases/list-assistants'
-import { DrizzleAssistantRepository } from '../../../src/infrastructure/repositories/drizzle-assistant-repository'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireAdminDoctorUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireAdminDoctorUser(event)
-    const assistantRepository = new DrizzleAssistantRepository()
-    const useCase = new ListAssistantsUseCase(assistantRepository)
+    const session = await requireAuthorizedUser(event, 'assistants:read')
 
-    return await useCase.execute({
+    return await serverServiceLocator.assistants.listAssistantsUseCase.execute({
       organizationId: session.organizationId,
     })
   } catch (error) {

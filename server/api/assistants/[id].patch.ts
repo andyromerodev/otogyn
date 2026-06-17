@@ -1,12 +1,11 @@
-import { UpdateAssistantUseCase } from '../../../src/application/use-cases/update-assistant'
-import { DrizzleAssistantRepository } from '../../../src/infrastructure/repositories/drizzle-assistant-repository'
 import { updateAssistantSchema } from '../../../src/presentation/validators/assistant'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireAdminDoctorUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireAdminDoctorUser(event)
+    const session = await requireAuthorizedUser(event, 'assistants:write')
     const assistantUserId = getRouterParam(event, 'id')
 
     if (!assistantUserId) {
@@ -18,10 +17,8 @@ export default defineEventHandler(async (event) => {
 
     const payload = await readBody(event)
     const input = updateAssistantSchema.parse(payload)
-    const assistantRepository = new DrizzleAssistantRepository()
-    const useCase = new UpdateAssistantUseCase(assistantRepository)
 
-    return await useCase.execute({
+    return await serverServiceLocator.assistants.updateAssistantUseCase.execute({
       userId: assistantUserId,
       organizationId: session.organizationId,
       name: input.name,

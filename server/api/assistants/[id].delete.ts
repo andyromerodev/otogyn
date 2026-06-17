@@ -1,10 +1,10 @@
-import { DrizzleAssistantRepository } from '../../../src/infrastructure/repositories/drizzle-assistant-repository'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireAdminDoctorUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireAdminDoctorUser(event)
+    const session = await requireAuthorizedUser(event, 'assistants:write')
     const assistantUserId = getRouterParam(event, 'id')
 
     if (!assistantUserId) {
@@ -14,9 +14,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const assistantRepository = new DrizzleAssistantRepository()
-
-    await assistantRepository.deleteAssistant(session.organizationId, assistantUserId)
+    await serverServiceLocator.assistants.deleteAssistantUseCase.execute({
+      organizationId: session.organizationId,
+      userId: assistantUserId,
+    })
 
     return {
       success: true,

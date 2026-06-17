@@ -1,25 +1,15 @@
 import { BusinessRuleError } from '../../../src/domain/errors/business-rule-error'
-import { ScheduleAppointmentUseCase } from '../../../src/application/use-cases/schedule-appointment'
-import { DrizzleAppointmentRepository } from '../../../src/infrastructure/repositories/drizzle-appointment-repository'
-import { DrizzleAvailabilityRepository } from '../../../src/infrastructure/repositories/drizzle-availability-repository'
-import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
-import { DrizzleServiceRepository } from '../../../src/infrastructure/repositories/drizzle-service-repository'
 import { appointmentSchema } from '../../../src/presentation/validators/appointment'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireStaffUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireStaffUser(event)
+    const session = await requireAuthorizedUser(event, 'appointments:create')
     const payload = await readBody(event)
     const input = appointmentSchema.parse(payload)
-
-    const appointmentRepository = new DrizzleAppointmentRepository()
-    const patientRepository = new DrizzlePatientRepository()
-    const serviceRepository = new DrizzleServiceRepository()
-    const availabilityRepository = new DrizzleAvailabilityRepository()
-
-    const service = await serviceRepository.findById(input.serviceId)
+    const service = await serverServiceLocator.repositories.serviceRepository.findById(input.serviceId)
 
     if (!service) {
       throw new BusinessRuleError('No puede existir una cita sin servicio.')
@@ -37,14 +27,7 @@ export default defineEventHandler(async (event) => {
     const endAt = new Date(startAt)
     endAt.setMinutes(endAt.getMinutes() + service.defaultDurationMinutes)
 
-    const useCase = new ScheduleAppointmentUseCase(
-      appointmentRepository,
-      patientRepository,
-      serviceRepository,
-      availabilityRepository,
-    )
-
-    return await useCase.execute({
+    return await serverServiceLocator.appointments.scheduleAppointmentUseCase.execute({
       id: crypto.randomUUID(),
       organizationId: session.organizationId,
       patientId: input.patientId,

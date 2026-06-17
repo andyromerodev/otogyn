@@ -1,14 +1,12 @@
-import { GetDashboardSummaryUseCase } from '../../../src/application/use-cases/get-dashboard-summary'
-import { DrizzleAppointmentRepository } from '../../../src/infrastructure/repositories/drizzle-appointment-repository'
-import { getCurrentUser } from '../../utils/get-current-user'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event)
-    const useCase = new GetDashboardSummaryUseCase(new DrizzleAppointmentRepository())
+    const session = await requireAuthorizedUser(event, 'dashboard:read')
 
-    return await useCase.execute({
+    return await serverServiceLocator.dashboard.getDashboardSummaryUseCase.execute({
       organizationId: session.organizationId,
       day: new Date(),
     })

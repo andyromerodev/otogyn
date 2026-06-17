@@ -1,17 +1,12 @@
-import { UpdatePatientUseCase } from '../../../src/application/use-cases/update-patient'
-import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
 import { patientSchema } from '../../../src/presentation/validators/patient'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
-import { requireStaffUser } from '../../utils/require-user'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await requireStaffUser(event)
+    const session = await requireAuthorizedUser(event, 'patients:write')
     const patientId = getRouterParam(event, 'id')
-    const payload = await readBody(event)
-    const input = patientSchema.parse(payload)
-    const patientRepository = new DrizzlePatientRepository()
-    const updatePatientUseCase = new UpdatePatientUseCase(patientRepository)
 
     if (!patientId) {
       throw createError({
@@ -20,7 +15,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return await updatePatientUseCase.execute({
+    const payload = await readBody(event)
+    const input = patientSchema.parse(payload)
+
+    return await serverServiceLocator.patients.updatePatientUseCase.execute({
       patientId,
       organizationId: session.organizationId,
       fullName: input.fullName,

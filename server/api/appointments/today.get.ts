@@ -1,10 +1,7 @@
-import { GetTodayAppointmentsUseCase } from '../../../src/application/use-cases/get-today-appointments'
-import { DrizzleAppointmentRepository } from '../../../src/infrastructure/repositories/drizzle-appointment-repository'
-import { DrizzlePatientRepository } from '../../../src/infrastructure/repositories/drizzle-patient-repository'
-import { DrizzleServiceRepository } from '../../../src/infrastructure/repositories/drizzle-service-repository'
 import type { TodayAppointmentViewModel } from '../../../src/presentation/view-models/dashboard'
-import { getCurrentUser } from '../../utils/get-current-user'
+import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
+import { serverServiceLocator } from '../../utils/server-service-locator'
 
 const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
   scheduled: 'Programada',
@@ -18,20 +15,16 @@ const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = await getCurrentUser(event)
-    const useCase = new GetTodayAppointmentsUseCase(
-      new DrizzleAppointmentRepository(),
-      new DrizzlePatientRepository(),
-      new DrizzleServiceRepository(),
-    )
-
-    const items = await useCase.execute({
+    const session = await requireAuthorizedUser(event, 'appointments:read')
+    const items = await serverServiceLocator.appointments.getTodayAppointmentsUseCase.execute({
       organizationId: session.organizationId,
       day: new Date(),
     })
 
     return items.map((item): TodayAppointmentViewModel => ({
       ...item,
+      startAt: item.startAt.toISOString(),
+      endAt: item.endAt.toISOString(),
       timeLabel: `${item.startAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })} - ${item.endAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
       statusLabel: statusLabels[item.status],
     }))
