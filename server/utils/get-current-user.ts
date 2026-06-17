@@ -1,85 +1,23 @@
 import type { H3Event } from 'h3'
-import {
-  getBetterAuth,
-  getOrganizationMembershipForUser,
-  isBetterAuthEnabled,
-} from '../../src/infrastructure/auth/better-auth'
-import { demoOrganization, demoUsers } from '../../src/infrastructure/mock/demo-data'
+import { serverAuthServiceLocator } from '../../src/infrastructure/auth/server-service-locator'
+import type { ServerSessionContextDto } from '../../src/application/dto/server-auth'
 
-export interface SessionUserContext {
-  userId: string
-  organizationId: string
-  role: 'admin_doctor' | 'assistant'
-  email?: string
-  name?: string
-}
+export type SessionUserContext = ServerSessionContextDto
 
 export const getCurrentUser = async (
   event?: H3Event,
   allowedRoles: Array<SessionUserContext['role']> = ['admin_doctor', 'assistant'],
 ): Promise<SessionUserContext> => {
-  if (event && isBetterAuthEnabled()) {
-    const auth = getBetterAuth()
+  const session = await serverAuthServiceLocator.resolveServerSessionUseCase.execute({
+    headers: event?.headers,
+  })
 
-    if (auth) {
-      const session = await auth.api.getSession({
-        headers: event.headers,
-      })
-
-      if (!session?.user) {
-        throw createError({
-          statusCode: 401,
-          statusMessage: 'Unauthorized',
-        })
-      }
-
-      const membership = await getOrganizationMembershipForUser(session.user.id)
-
-      if (!membership) {
-        throw createError({
-          statusCode: 403,
-          statusMessage: 'User has no organization role.',
-        })
-      }
-
-      if (!membership.isActive) {
-        throw createError({
-          statusCode: 403,
-          statusMessage: 'User account is deactivated.',
-        })
-      }
-
-      if (!allowedRoles.includes(membership.role as SessionUserContext['role'])) {
-        throw createError({
-          statusCode: 403,
-          statusMessage: 'Forbidden',
-        })
-      }
-
-      return {
-        userId: session.user.id,
-        organizationId: membership.organizationId,
-        role: membership.role as SessionUserContext['role'],
-        email: session.user.email,
-        name: session.user.name,
-      }
-    }
-  }
-
-  const defaultUser = demoUsers[0]
-
-  if (!defaultUser) {
+  if (!allowedRoles.includes(session.role)) {
     throw createError({
-      statusCode: 500,
-      statusMessage: 'No mock users configured.',
+      statusCode: 403,
+      statusMessage: 'Forbidden',
     })
   }
 
-  return {
-    userId: defaultUser.id,
-    organizationId: demoOrganization.id,
-    role: defaultUser.role === 'patient_future' ? 'assistant' : defaultUser.role,
-    email: defaultUser.email,
-    name: defaultUser.name,
-  }
+  return session
 }

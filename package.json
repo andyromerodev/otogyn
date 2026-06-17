@@ -13,6 +13,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/infrastructure/database/seed/index.ts",
+    "docs:inventory": "node scripts/generate-agent-docs.mjs",
+    "docs:update": "pnpm docs:inventory",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"

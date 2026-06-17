@@ -136,17 +136,20 @@
 - E1: base de arquitectura, docs y subagentes creada.
 - E2: Drizzle, schema inicial y migracion base ya aplicados.
 - E3: Better Auth activo, session guards SSR-safe y rol resuelto por `organization_members`.
-- E3: permisos de escritura ya diferenciados en backend base (`patients` para `assistant/admin`, `services` solo `admin_doctor`).
-- E3 pendiente: endurecer permisos por rol en mas endpoints criticos y exponer gestion de asistentes.
+- E3: permisos por accion ya centralizados en backend con `requireAuthorizedUser(event, action)`.
+- E3: resolucion server-side de sesion y autorizacion ya separada en mini-feature de auth con `server auth repository`, use cases y service locator.
+- E3: gestion de asistentes ya implementada con crear, editar, desvincular, reactivar y eliminar.
+- E3 pendiente: permisos finos adicionales por modulo si se amplian configuraciones criticas.
 - E4: dashboard inicial con mock data ya operativo.
 - E4: frontend de `dashboard` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
 - E5: frontend de `patients` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E8: `GET/POST /api/services` ya persiste en PostgreSQL con Drizzle; faltan edicion, activacion/desactivacion y filtrado administrativo.
 - E8: frontend de `services` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
-- E6: `POST /api/appointments` y `GET /api/appointments/today` ya operan con PostgreSQL validando paciente, servicio, disponibilidad inicial y choques; faltan edicion, cancelacion y cambio de estado.
+- E6: crear, editar, cancelar y cambiar estado de citas ya operan con PostgreSQL validando paciente, servicio, disponibilidad inicial y choques.
 - E6: frontend de `appointments` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E12: pruebas base de auth/use cases y reglas criticas ya integradas en `pnpm test`.
+- Existe `pnpm docs:update` para regenerar el inventario tecnico consumido por otros agentes.
 
 ## Issues propuestos
 

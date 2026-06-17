@@ -1,15 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const authMocks = vi.hoisted(() => ({
-  getBetterAuth: vi.fn(),
-  getOrganizationMembershipForUser: vi.fn(),
-  isBetterAuthEnabled: vi.fn(),
-}))
+const resolveServerSessionMock = vi.hoisted(() => vi.fn())
 
-vi.mock('../../src/infrastructure/auth/better-auth', () => authMocks)
-vi.mock('../../src/infrastructure/mock/demo-data', () => ({
-  demoOrganization: { id: 'demo-org' },
-  demoUsers: [{ id: 'demo-user', role: 'admin_doctor', email: 'demo@otogyn.test', name: 'Demo' }],
+vi.mock('../../src/infrastructure/auth/server-service-locator', () => ({
+  serverAuthServiceLocator: {
+    resolveServerSessionUseCase: {
+      execute: resolveServerSessionMock,
+    },
+  },
 }))
 
 describe('getCurrentUser', () => {
@@ -25,23 +23,13 @@ describe('getCurrentUser', () => {
         })
   })
 
-  it('returns the current active session user when membership is active', async () => {
-    authMocks.isBetterAuthEnabled.mockReturnValue(true)
-    authMocks.getBetterAuth.mockReturnValue({
-      api: {
-        getSession: vi.fn().mockResolvedValue({
-          user: {
-            id: 'user-1',
-            email: 'ana@otogyn.test',
-            name: 'Dra. Ana',
-          },
-        }),
-      },
-    })
-    authMocks.getOrganizationMembershipForUser.mockResolvedValue({
+  it('returns the resolved active session user when the role is allowed', async () => {
+    resolveServerSessionMock.mockResolvedValue({
+      userId: 'user-1',
       organizationId: 'org-1',
       role: 'admin_doctor',
-      isActive: true,
+      email: 'ana@otogyn.test',
+      name: 'Dra. Ana',
     })
 
     const { getCurrentUser } = await import('./get-current-user')
@@ -55,24 +43,13 @@ describe('getCurrentUser', () => {
     })
   })
 
-  it('throws 403 when the user membership is deactivated', async () => {
-    authMocks.isBetterAuthEnabled.mockReturnValue(true)
-    authMocks.getBetterAuth.mockReturnValue({
-      api: {
-        getSession: vi.fn().mockResolvedValue({
-          user: {
-            id: 'user-2',
-            email: 'assistant@otogyn.test',
-            name: 'Asistente',
-          },
-        }),
-      },
-    })
-    authMocks.getOrganizationMembershipForUser.mockResolvedValue({
-      organizationId: 'org-1',
-      role: 'assistant',
-      isActive: false,
-    })
+  it('propagates repository session errors such as deactivated membership', async () => {
+    resolveServerSessionMock.mockRejectedValue(
+      Object.assign(new Error('User account is deactivated.'), {
+        statusCode: 403,
+        statusMessage: 'User account is deactivated.',
+      }),
+    )
 
     const { getCurrentUser } = await import('./get-current-user')
 
@@ -83,22 +60,12 @@ describe('getCurrentUser', () => {
   })
 
   it('throws 403 when the user role is not allowed for the endpoint', async () => {
-    authMocks.isBetterAuthEnabled.mockReturnValue(true)
-    authMocks.getBetterAuth.mockReturnValue({
-      api: {
-        getSession: vi.fn().mockResolvedValue({
-          user: {
-            id: 'user-3',
-            email: 'assistant@otogyn.test',
-            name: 'Asistente',
-          },
-        }),
-      },
-    })
-    authMocks.getOrganizationMembershipForUser.mockResolvedValue({
+    resolveServerSessionMock.mockResolvedValue({
+      userId: 'user-3',
       organizationId: 'org-1',
       role: 'assistant',
-      isActive: true,
+      email: 'assistant@otogyn.test',
+      name: 'Asistente',
     })
 
     const { getCurrentUser } = await import('./get-current-user')

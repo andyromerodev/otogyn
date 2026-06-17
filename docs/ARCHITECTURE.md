@@ -68,10 +68,17 @@
 - `Better Auth` resuelve autenticacion y sesion.
 - `organization_members` es la fuente de verdad para permisos y rol operativo.
 - El frontend no infiere permisos desde formularios ni rutas por si solo.
+- La resolucion server-side de sesion y permisos ya fue separada en una feature propia de auth:
+  - DTOs en `src/application/dto/server-auth.ts`
+  - Use cases en `src/application/use-cases/auth`
+  - Repositorio server auth en `src/domain/repositories/server-auth-repository.ts`
+  - Implementacion concreta en `src/infrastructure/auth/repositories/better-auth-server-repository.ts`
+  - Wiring compartido en `src/infrastructure/auth/server-service-locator.ts`
 - La UI protegida usa middleware de Nuxt:
   - `auth` para exigir sesion valida.
   - `admin` para exigir rol `admin_doctor`.
-- El backend resuelve rol con `getCurrentUser(event, allowedRoles)` y debe seguir siendo la barrera final para operaciones criticas.
+- El backend resuelve permisos con `requireAuthorizedUser(event, action)` y debe seguir siendo la barrera final para operaciones criticas.
+- Los endpoints no deben instanciar repositorios o use cases manualmente; deben delegar a `server/utils/server-service-locator.ts`.
 
 ## Testing
 
