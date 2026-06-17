@@ -3,9 +3,13 @@ import { createAppointmentsScreen } from '~~/src/presentation/view-models/appoin
 
 export const useAppointmentsScreen = async () => {
   const screen = createAppointmentsScreen({
+    getAppointmentSessionContextUseCase: appointmentServiceLocator.getAppointmentSessionContextUseCase,
     listAppointmentPatientsUseCase: appointmentServiceLocator.listAppointmentPatientsUseCase,
     listAppointmentServicesUseCase: appointmentServiceLocator.listAppointmentServicesUseCase,
     listTodayAppointmentsUseCase: appointmentServiceLocator.listTodayAppointmentsUseCase,
+    updateAppointmentUseCase: appointmentServiceLocator.updateAppointmentUseCase,
+    cancelAppointmentUseCase: appointmentServiceLocator.cancelAppointmentUseCase,
+    changeAppointmentStatusUseCase: appointmentServiceLocator.changeAppointmentStatusUseCase,
     createAppointmentUseCase: appointmentServiceLocator.createAppointmentUseCase,
   })
 

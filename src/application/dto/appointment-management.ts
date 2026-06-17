@@ -1,5 +1,6 @@
 import type { MedicalService } from '../../domain/entities/medical-service'
 import type { Patient } from '../../domain/entities/patient'
+import type { AppointmentStatus } from '../../domain/value-objects/appointment-status'
 import type { TodayAppointmentViewModel } from '../../presentation/view-models/dashboard'
 
 export interface AppointmentMutationInput {
@@ -10,6 +11,19 @@ export interface AppointmentMutationInput {
   isUrgent?: boolean
   reason?: string | null
   notes?: string | null
+}
+
+export interface AppointmentStatusMutationInput {
+  appointmentId: string
+  status: Exclude<AppointmentStatus, 'cancelled'>
+}
+
+export interface AppointmentCancellationInput {
+  appointmentId: string
+}
+
+export interface AppointmentSessionContextDto {
+  role: 'admin_doctor' | 'assistant'
 }
 
 export type AppointmentPatientListResult = Patient[]

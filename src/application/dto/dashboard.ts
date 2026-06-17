@@ -10,10 +10,15 @@ export interface DashboardSummaryDto {
 
 export interface TodayAppointmentDto {
   id: string
+  patientId: string
+  serviceId: string
+  professionalId: string | null
   patientName: string
   serviceName: string
   startAt: Date
   endAt: Date
   status: AppointmentStatus
   isUrgent: boolean
+  reason: string | null
+  notes: string | null
 }

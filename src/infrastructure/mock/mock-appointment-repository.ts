@@ -5,6 +5,10 @@ import { activeAppointmentStatuses } from '../../domain/value-objects/appointmen
 export class MockAppointmentRepository implements AppointmentRepository {
   constructor(private readonly appointments: Appointment[]) {}
 
+  async findById(appointmentId: string): Promise<Appointment | null> {
+    return this.appointments.find((appointment) => appointment.id === appointmentId) ?? null
+  }
+
   async listByDay(organizationId: string, day: Date): Promise<Appointment[]> {
     const start = new Date(day)
     start.setHours(0, 0, 0, 0)

@@ -19,7 +19,9 @@ const screen = await useAppointmentsScreen()
     <section class="grid gap-4 xl:grid-cols-[minmax(340px,440px)_minmax(0,1fr)]">
       <article class="surface-card space-y-4 rounded-[28px] p-5">
         <div class="space-y-1">
-          <p class="text-lg font-semibold text-slate-900">Nueva cita</p>
+          <p class="text-lg font-semibold text-slate-900">
+            {{ screen.editingAppointmentId.value ? 'Editar cita' : 'Nueva cita' }}
+          </p>
           <p class="text-sm text-slate-500">
             Si no hay disponibilidad configurada, se crea una base inicial de lunes a viernes, 09:00 a 18:00.
           </p>
@@ -99,7 +101,16 @@ const screen = await useAppointmentsScreen()
             type="submit"
             :disabled="screen.pending.value"
           >
-            {{ screen.pending.value ? 'Guardando...' : 'Registrar cita' }}
+            {{ screen.pending.value ? 'Guardando...' : screen.editingAppointmentId.value ? 'Guardar cambios' : 'Registrar cita' }}
+          </button>
+
+          <button
+            v-if="screen.editingAppointmentId.value"
+            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            type="button"
+            @click="screen.cancelEditingAppointment"
+          >
+            Cancelar edicion
           </button>
 
           <p v-if="screen.errorMessage.value" class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
@@ -131,12 +142,53 @@ const screen = await useAppointmentsScreen()
                 <p class="text-sm font-semibold text-teal-700">{{ appointment.timeLabel }}</p>
                 <p class="text-base font-semibold text-slate-900">{{ appointment.patientName }}</p>
                 <p class="text-sm text-slate-500">{{ appointment.serviceName }}</p>
+                <p v-if="appointment.reason" class="text-sm text-slate-600">
+                  Motivo: {{ appointment.reason }}
+                </p>
               </div>
 
               <div class="flex flex-wrap gap-2">
                 <span class="pill">{{ appointment.statusLabel }}</span>
                 <span v-if="appointment.isUrgent" class="pill">Urgente</span>
               </div>
+            </div>
+
+            <div class="mt-4 grid gap-3 border-t border-slate-100 pt-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+              <label class="grid gap-1">
+                <span class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Estado</span>
+                <select
+                  :value="appointment.status"
+                  class="rounded-2xl border border-teal-100 bg-white/90 px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="!screen.canChangeAppointmentStatus(appointment) || screen.appointmentActionPendingId.value === appointment.id"
+                  @change="screen.submitAppointmentStatusSelection(appointment, ($event.target as HTMLSelectElement).value)"
+                >
+                  <option
+                    v-for="statusOption in screen.appointmentStatusesForUi"
+                    :key="statusOption.value"
+                    :value="statusOption.value"
+                  >
+                    {{ statusOption.label }}
+                  </option>
+                </select>
+              </label>
+
+              <button
+                class="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                :disabled="!screen.canEditAppointment(appointment) || screen.appointmentActionPendingId.value === appointment.id"
+                @click="screen.startEditingAppointment(appointment)"
+              >
+                Editar
+              </button>
+
+              <button
+                class="rounded-2xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                :disabled="!screen.canCancelAppointment(appointment) || screen.appointmentActionPendingId.value === appointment.id"
+                @click="screen.submitAppointmentCancellation(appointment)"
+              >
+                {{ screen.appointmentActionPendingId.value === appointment.id ? 'Procesando...' : 'Cancelar cita' }}
+              </button>
             </div>
           </article>
         </div>

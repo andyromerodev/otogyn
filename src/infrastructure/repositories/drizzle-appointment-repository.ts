@@ -27,6 +27,16 @@ const mapAppointment = (row: typeof appointments.$inferSelect): Appointment => (
 export class DrizzleAppointmentRepository implements AppointmentRepository {
   private readonly db = getDrizzleClient()
 
+  async findById(appointmentId: string): Promise<Appointment | null> {
+    const rows = await this.db
+      .select()
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1)
+
+    return rows[0] ? mapAppointment(rows[0]) : null
+  }
+
   async listByDay(organizationId: string, day: Date): Promise<Appointment[]> {
     const start = new Date(day)
     start.setHours(0, 0, 0, 0)

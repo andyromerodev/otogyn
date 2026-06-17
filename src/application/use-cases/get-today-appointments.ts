@@ -21,12 +21,17 @@ export class GetTodayAppointmentsUseCase {
       .sort((left, right) => left.startAt.getTime() - right.startAt.getTime())
       .map((appointment) => ({
         id: appointment.id,
+        patientId: appointment.patientId,
+        serviceId: appointment.serviceId,
+        professionalId: appointment.professionalId,
         patientName: patients.find((patient) => patient.id === appointment.patientId)?.fullName ?? 'Paciente desconocido',
         serviceName: services.find((service) => service.id === appointment.serviceId)?.name ?? 'Servicio desconocido',
         startAt: appointment.startAt,
         endAt: appointment.endAt,
         status: appointment.status,
         isUrgent: appointment.isUrgent,
+        reason: appointment.reason,
+        notes: appointment.notes,
       }))
   }
 }

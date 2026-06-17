@@ -10,10 +10,17 @@ export interface DashboardSummaryViewModel {
 
 export interface TodayAppointmentViewModel {
   id: string
+  patientId: string
+  serviceId: string
+  professionalId: string | null
   patientName: string
   serviceName: string
+  startAt: string
+  endAt: string
   timeLabel: string
   status: AppointmentStatus
   statusLabel: string
   isUrgent: boolean
+  reason: string | null
+  notes: string | null
 }
