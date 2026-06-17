@@ -1,4 +1,5 @@
 import type {
+  AuthAccessStatusDto,
   AuthOperationResult,
   AuthSessionDto,
   SignInInput,
@@ -9,4 +10,6 @@ export interface AuthRepository {
   signIn(input: SignInInput): Promise<AuthOperationResult>
   signUp(input: SignUpInput): Promise<AuthOperationResult>
   getCurrentSession(): Promise<AuthSessionDto | null>
+  getAccessStatus(): Promise<AuthAccessStatusDto>
+  signOut(): Promise<void>
 }

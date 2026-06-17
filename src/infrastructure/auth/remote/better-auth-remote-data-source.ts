@@ -1,4 +1,5 @@
 import type {
+  AuthAccessStatusDto,
   AuthOperationResult,
   AuthSessionDto,
   SignInInput,
@@ -89,5 +90,40 @@ export class BetterAuthRemoteDataSource implements AuthRemoteDataSource {
       email: session.user.email,
       name: session.user.name ?? null,
     }
+  }
+
+  async getAccessStatus(): Promise<AuthAccessStatusDto> {
+    try {
+      await $fetch('/api/auth/session-context')
+
+      return {
+        allowed: true,
+      }
+    } catch (error) {
+      const authError = error as {
+        statusCode?: number
+        statusMessage?: string
+      }
+
+      if (authError.statusCode === 403 && authError.statusMessage === 'User account is deactivated.') {
+        return {
+          allowed: false,
+          reason: 'deactivated',
+        }
+      }
+
+      if (authError.statusCode === 401 || authError.statusCode === 403) {
+        return {
+          allowed: false,
+          reason: 'missing_role',
+        }
+      }
+
+      throw error
+    }
+  }
+
+  async signOut(): Promise<void> {
+    await this.authClient.signOut()
   }
 }

@@ -1,20 +1,52 @@
 <script setup lang="ts">
-import { useAuthClient } from '~/utils/auth-client'
+const resolveLoginPath = (reason?: 'deactivated') =>
+  reason ? `/login?reason=${reason}` : '/login'
 
 const config = useRuntimeConfig()
 
 if (config.public.authEnabled) {
   if (import.meta.server) {
-    const session = await $fetch<{ user?: unknown } | null>('/api/auth/get-session', {
+    const destination = await $fetch('/api/auth/session-context', {
       headers: useRequestHeaders(['cookie']),
-    }).catch(() => null)
+    })
+      .then(() => '/dashboard')
+      .catch((error) => {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'statusCode' in error &&
+          error.statusCode === 403 &&
+          'statusMessage' in error &&
+          error.statusMessage === 'User account is deactivated.'
+        ) {
+          return resolveLoginPath('deactivated')
+        }
 
-    await navigateTo(session?.user ? '/dashboard' : '/login')
+        return resolveLoginPath()
+      })
+
+    await navigateTo(destination)
   } else {
-    const authClient = useAuthClient()
-    const { data: session } = await authClient.useSession(useFetch)
+    const destination = await $fetch('/api/auth/session-context')
+      .then(() => '/dashboard')
+      .catch(async (error) => {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'statusCode' in error &&
+          error.statusCode === 403 &&
+          'statusMessage' in error &&
+          error.statusMessage === 'User account is deactivated.'
+        ) {
+          const { useAuthClient } = await import('~/utils/auth-client')
+          await useAuthClient().signOut()
+          return resolveLoginPath('deactivated')
+        }
 
-    await navigateTo(session.value?.user ? '/dashboard' : '/login')
+        return resolveLoginPath()
+      })
+
+    await navigateTo(destination)
   }
 } else {
   await navigateTo('/login')

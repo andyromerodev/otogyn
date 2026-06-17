@@ -1,13 +1,17 @@
+import { GetAccessStatusUseCase } from '~~/src/application/use-cases/auth/get-access-status'
 import { GetCurrentSessionUseCase } from '~~/src/application/use-cases/auth/get-current-session'
 import { SignInUseCase } from '~~/src/application/use-cases/auth/sign-in'
+import { SignOutUseCase } from '~~/src/application/use-cases/auth/sign-out'
 import { SignUpUseCase } from '~~/src/application/use-cases/auth/sign-up'
 import { BetterAuthRemoteDataSource } from '~~/src/infrastructure/auth/remote/better-auth-remote-data-source'
 import { BetterAuthRepository } from '~~/src/infrastructure/auth/repositories/better-auth-repository'
 import { useAuthClient } from '~/utils/auth-client'
 
 interface AuthServices {
+  getAccessStatusUseCase: GetAccessStatusUseCase
   getCurrentSessionUseCase: GetCurrentSessionUseCase
   signInUseCase: SignInUseCase
+  signOutUseCase: SignOutUseCase
   signUpUseCase: SignUpUseCase
 }
 
@@ -23,8 +27,10 @@ export const useAuthServices = (): AuthServices => {
   const authRepository = new BetterAuthRepository(remoteDataSource)
 
   authServices = {
+    getAccessStatusUseCase: new GetAccessStatusUseCase(authRepository),
     getCurrentSessionUseCase: new GetCurrentSessionUseCase(authRepository),
     signInUseCase: new SignInUseCase(authRepository),
+    signOutUseCase: new SignOutUseCase(authRepository),
     signUpUseCase: new SignUpUseCase(authRepository),
   }
 

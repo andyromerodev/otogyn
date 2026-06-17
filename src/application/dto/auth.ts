@@ -17,6 +17,13 @@ export interface AuthSessionDto {
   name: string | null
 }
 
+export type AuthAccessReason = 'deactivated' | 'missing_role'
+
+export interface AuthAccessStatusDto {
+  allowed: boolean
+  reason?: AuthAccessReason
+}
+
 export type AuthResult<T = null> =
   | {
       success: true

@@ -1,4 +1,5 @@
 import type {
+  AuthAccessStatusDto,
   AuthOperationResult,
   AuthSessionDto,
   SignInInput,
@@ -20,5 +21,13 @@ export class BetterAuthRepository implements AuthRepository {
 
   async getCurrentSession(): Promise<AuthSessionDto | null> {
     return this.remoteDataSource.getCurrentSession()
+  }
+
+  async getAccessStatus(): Promise<AuthAccessStatusDto> {
+    return this.remoteDataSource.getAccessStatus()
+  }
+
+  async signOut(): Promise<void> {
+    return this.remoteDataSource.signOut()
   }
 }
