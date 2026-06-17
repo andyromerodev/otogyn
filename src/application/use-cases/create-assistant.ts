@@ -4,6 +4,7 @@ import type { AssistantRepository } from '../../domain/repositories/assistant-re
 export interface CreateAssistantInput {
   userId: string
   organizationId: string
+  name?: string
   phone?: string | null
   specialty?: string | null
 }
@@ -16,6 +17,7 @@ export class CreateAssistantUseCase {
       userId: input.userId,
       organizationId: input.organizationId,
       role: 'assistant',
+      name: input.name,
       phone: input.phone ?? null,
       specialty: input.specialty ?? null,
     })

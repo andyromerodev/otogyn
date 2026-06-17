@@ -6,6 +6,32 @@ export interface AssistantMutationInput {
   password: string
   phone?: string | null
   specialty?: string | null
+  reuseExistingUser?: boolean
+}
+
+export interface AssistantUpdateInput {
+  userId: string
+  name: string
+  phone?: string | null
+  specialty?: string | null
+}
+
+export interface AssistantActivationInput {
+  userId: string
+}
+
+export type AssistantEmailStatus =
+  | 'available'
+  | 'assistant_active'
+  | 'assistant_inactive'
+  | 'orphan_reusable'
+  | 'existing_unavailable'
+
+export interface AssistantEmailCheckResult {
+  status: AssistantEmailStatus
+  userId?: string
+  name?: string
+  email: string
 }
 
 export interface AssistantScreenContextDto {
