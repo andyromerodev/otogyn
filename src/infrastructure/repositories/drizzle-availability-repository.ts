@@ -1,5 +1,11 @@
 import { and, asc, eq, gt, lt } from 'drizzle-orm'
-import type { AvailabilityRepository } from '../../domain/repositories/availability-repository'
+import type {
+  AvailabilityRepository,
+  CreateBlockedSlotInput,
+  SaveAvailabilityInput,
+  UpdateAvailabilityInput,
+} from '../../domain/repositories/availability-repository'
+import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { BlockedTimeSlot } from '../../domain/entities/blocked-time-slot'
 import type { DoctorAvailability } from '../../domain/entities/doctor-availability'
 import { getDrizzleClient } from '../database/drizzle/client'
@@ -81,5 +87,114 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
       .orderBy(asc(blockedTimeSlots.startsAt))
 
     return rows.map(mapBlockedSlot)
+  }
+
+  async saveAvailability(input: SaveAvailabilityInput): Promise<DoctorAvailability> {
+    const id = crypto.randomUUID()
+    const now = new Date()
+
+    const rows = await this.db
+      .insert(doctorAvailability)
+      .values({
+        id,
+        organizationId: input.organizationId,
+        weekday: input.weekday,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        isActive: input.isActive,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [doctorAvailability.organizationId, doctorAvailability.weekday],
+        set: {
+          startTime: input.startTime,
+          endTime: input.endTime,
+          isActive: input.isActive,
+          updatedAt: now,
+        },
+      })
+      .returning()
+
+    return mapAvailability(rows[0]!)
+  }
+
+  async updateAvailability(id: string, input: UpdateAvailabilityInput): Promise<DoctorAvailability> {
+    const now = new Date()
+
+    await this.db
+      .update(doctorAvailability)
+      .set({
+        weekday: input.weekday,
+        startTime: input.startTime,
+        endTime: input.endTime,
+        isActive: input.isActive,
+        updatedAt: now,
+      })
+      .where(eq(doctorAvailability.id, id))
+
+    const rows = await this.db
+      .select()
+      .from(doctorAvailability)
+      .where(eq(doctorAvailability.id, id))
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new BusinessRuleError('Availability not found.')
+    }
+
+    return mapAvailability(rows[0])
+  }
+
+  async toggleAvailabilityActive(id: string, isActive: boolean): Promise<DoctorAvailability> {
+    const now = new Date()
+
+    await this.db
+      .update(doctorAvailability)
+      .set({
+        isActive,
+        updatedAt: now,
+      })
+      .where(eq(doctorAvailability.id, id))
+
+    const rows = await this.db
+      .select()
+      .from(doctorAvailability)
+      .where(eq(doctorAvailability.id, id))
+      .limit(1)
+
+    if (!rows[0]) {
+      throw new BusinessRuleError('Availability not found.')
+    }
+
+    return mapAvailability(rows[0])
+  }
+
+  async createBlockedSlot(input: CreateBlockedSlotInput): Promise<BlockedTimeSlot> {
+    if (input.startsAt.getTime() >= input.endsAt.getTime()) {
+      throw new BusinessRuleError('Blocked slot start must be before end.')
+    }
+
+    const id = crypto.randomUUID()
+    const now = new Date()
+
+    const rows = await this.db
+      .insert(blockedTimeSlots)
+      .values({
+        id,
+        organizationId: input.organizationId,
+        startsAt: input.startsAt,
+        endsAt: input.endsAt,
+        reason: input.reason ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .returning()
+
+    return mapBlockedSlot(rows[0]!)
+  }
+
+  async deleteBlockedSlot(id: string): Promise<void> {
+    await this.db.delete(blockedTimeSlots).where(eq(blockedTimeSlots.id, id))
   }
 }

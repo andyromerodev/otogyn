@@ -24,4 +24,6 @@ export type ServerAuthorizationAction =
   | 'services:write'
   | 'assistants:read'
   | 'assistants:write'
+  | 'availability:read'
+  | 'availability:write'
 

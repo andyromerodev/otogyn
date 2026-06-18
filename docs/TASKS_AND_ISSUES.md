@@ -158,6 +158,11 @@ Convencion sugerida de nombre visible:
 - E6: crear, editar, cancelar y cambiar estado de citas ya operan con PostgreSQL validando paciente, servicio, disponibilidad inicial y choques.
 - E6: frontend de `appointments` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E12: pruebas base de auth/use cases y reglas criticas ya integradas en `pnpm test`.
+- E9: base de disponibilidad implementada: `GET/POST/PATCH/POST toggle /api/availability` y `POST/DELETE /api/availability/blocked` persisten en PostgreSQL con Drizzle.
+- E9: UI administrativa de disponibilidad con grid semanal, edicion inline, toggle activo/inactivo, y gestion de bloqueos horarios.
+- E9: permisos endurecidos: assistant read-only, admin_doctor full CRUD en availability:read/write.
+- E9: tests de use cases de disponibilidad y bloqueos integrados (6 tests).
+- E9: indices agregados a `doctor_availability` y `blocked_time_slots`.
 - Existe `pnpm docs:update` para regenerar el inventario tecnico consumido por otros agentes.
 
 ## Issues propuestos

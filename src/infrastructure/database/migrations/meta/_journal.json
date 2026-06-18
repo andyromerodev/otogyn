@@ -15,6 +15,13 @@
       "when": 1781632298423,
       "tag": "0001_flat_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781740451115,
+      "tag": "0002_special_mordo",
+      "breakpoints": true
     }
   ]
 }

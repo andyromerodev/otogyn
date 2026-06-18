@@ -1,0 +1,2 @@
+CREATE INDEX "blocked_time_slots_org_range_idx" ON "blocked_time_slots" USING btree ("organization_id","starts_at","ends_at");--> statement-breakpoint
+CREATE INDEX "doctor_availability_org_weekday_idx" ON "doctor_availability" USING btree ("organization_id","weekday");

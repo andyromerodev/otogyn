@@ -192,28 +192,40 @@ export const appointments = pgTable(
   ],
 )
 
-export const doctorAvailability = pgTable('doctor_availability', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  organizationId: uuid('organization_id')
-    .references(() => organizations.id, { onDelete: 'cascade' })
-    .notNull(),
-  weekday: integer('weekday').notNull(),
-  startTime: varchar('start_time', { length: 5 }).notNull(),
-  endTime: varchar('end_time', { length: 5 }).notNull(),
-  isActive: boolean('is_active').default(true).notNull(),
-  ...timestamps,
-})
+export const doctorAvailability = pgTable(
+  'doctor_availability',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    weekday: integer('weekday').notNull(),
+    startTime: varchar('start_time', { length: 5 }).notNull(),
+    endTime: varchar('end_time', { length: 5 }).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index('doctor_availability_org_weekday_idx').on(table.organizationId, table.weekday),
+  ],
+)
 
-export const blockedTimeSlots = pgTable('blocked_time_slots', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  organizationId: uuid('organization_id')
-    .references(() => organizations.id, { onDelete: 'cascade' })
-    .notNull(),
-  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
-  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
-  reason: varchar('reason', { length: 255 }),
-  ...timestamps,
-})
+export const blockedTimeSlots = pgTable(
+  'blocked_time_slots',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    reason: varchar('reason', { length: 255 }),
+    ...timestamps,
+  },
+  (table) => [
+    index('blocked_time_slots_org_range_idx').on(table.organizationId, table.startsAt, table.endsAt),
+  ],
+)
 
 export const appointmentStatusHistory = pgTable(
   'appointment_status_history',
