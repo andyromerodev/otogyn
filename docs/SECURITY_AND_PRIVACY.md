@@ -78,3 +78,28 @@
 - Aplicar matrices explicitas por endpoint.
   - `POST /api/patients`: `admin_doctor`, `assistant`
   - `POST /api/services`: solo `admin_doctor`
+
+## Matriz de permisos por accion
+
+Fuente de verdad: `src/application/use-cases/auth/authorize-server-action.ts`
+
+| Accion             | admin_doctor | assistant | Endpoints que la requieren |
+|--------------------|:---:|:---:|---|
+| `session:read`     | ✅ | ✅ | `GET /api/auth/session-context` |
+| `dashboard:read`   | ✅ | ✅ | `GET /api/dashboard/summary` |
+| `patients:read`    | ✅ | ✅ | `GET /api/patients`, `GET /api/patients/:id` |
+| `patients:write`   | ✅ | ✅ | `POST /api/patients`, `PATCH /api/patients/:id` |
+| `appointments:read`   | ✅ | ✅ | `GET /api/appointments/today` |
+| `appointments:create` | ✅ | ✅ | `POST /api/appointments` |
+| `appointments:update` | ✅ | ✅ | `PATCH /api/appointments/:id` |
+| `appointments:cancel` | ✅ | ✅ | `POST /api/appointments/:id/cancel` |
+| `appointments:status` | ✅ | ✅ | `POST /api/appointments/:id/status` |
+| `services:read`    | ✅ | ✅ | `GET /api/services` |
+| `services:write`   | ✅ | ❌ | `POST /api/services`, `PATCH /api/services/:id` |
+| `assistants:read`  | ✅ | ❌ | `GET /api/assistants` |
+| `assistants:write` | ✅ | ❌ | `POST /api/assistants`, `PATCH /api/assistants/:id`, `DELETE /api/assistants/:id`, `/deactivate`, `/reactivate` |
+| `availability:read`  | ✅ | ✅ | `GET /api/availability` |
+| `availability:write` | ✅ | ❌ | `POST /api/availability`, `PATCH /api/availability/:id`, `POST .../toggle`, `POST .../blocked`, `DELETE .../blocked/:id` |
+| `calendar:read`    | ✅ | ✅ | `GET /api/calendar/day`, `GET /api/calendar/week` |
+
+Los endpoints `/api/public/*` no requieren sesion ni rol (flujo de reserva publica).

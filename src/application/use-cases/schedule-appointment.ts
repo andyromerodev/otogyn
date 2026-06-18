@@ -64,7 +64,7 @@ export class ScheduleAppointmentUseCase {
       throw new BusinessRuleError('No puede existir una cita que choque con otra cita activa.')
     }
 
-    return this.appointmentRepository.save(appointment)
+    return this.appointmentRepository.saveWithLock(appointment)
   }
 
   private toTimeLabel(date: Date) {

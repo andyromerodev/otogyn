@@ -59,4 +59,8 @@ export class MockAppointmentRepository implements AppointmentRepository {
 
     return appointment
   }
+
+  async saveWithLock(appointment: Appointment): Promise<Appointment> {
+    return this.save(appointment)
+  }
 }

@@ -22,7 +22,6 @@ export const handleApiError = (error: unknown) => {
     throw createError({
       statusCode: 400,
       statusMessage: 'Validation failed.',
-      data: error.flatten(),
     })
   }
 

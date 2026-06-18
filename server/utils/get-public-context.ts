@@ -8,9 +8,11 @@ interface PublicContext {
 }
 
 let cached: PublicContext | null = null
+let cacheExpiresAt = 0
+const CACHE_TTL_MS = 5 * 60 * 1000
 
 export async function getPublicContext(): Promise<PublicContext> {
-  if (cached) return cached
+  if (cached && Date.now() < cacheExpiresAt) return cached
 
   const db = getDrizzleClient()
 
@@ -41,5 +43,6 @@ export async function getPublicContext(): Promise<PublicContext> {
   }
 
   cached = { organizationId: org.id, systemUserId: member.userId }
+  cacheExpiresAt = Date.now() + CACHE_TTL_MS
   return cached
 }

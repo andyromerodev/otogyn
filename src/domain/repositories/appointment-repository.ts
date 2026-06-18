@@ -11,4 +11,5 @@ export interface AppointmentRepository {
     ignoredAppointmentId?: string,
   ): Promise<Appointment[]>
   save(appointment: Appointment): Promise<Appointment>
+  saveWithLock(appointment: Appointment): Promise<Appointment>
 }
