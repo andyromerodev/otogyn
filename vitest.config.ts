@@ -13,6 +13,11 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       include: ['src/**/*.ts'],
+      thresholds: {
+        lines: 35,
+        functions: 30,
+        branches: 20,
+      },
     },
   },
 })
