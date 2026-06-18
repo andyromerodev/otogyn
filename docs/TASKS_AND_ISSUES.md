@@ -85,13 +85,19 @@ Convencion sugerida de nombre visible:
 - Labels: `epic`, `appointments`, `database`
 - Estimacion: M
 
-### E10. Reserva publica
+### E10. Reserva publica ✅ IMPLEMENTADO
 
-- Formulario y flujo publico de reserva.
+- Formulario y flujo publico de reserva sin autenticacion.
 - Aceptacion: nunca expone datos de otros pacientes.
 - Prioridad: media
 - Labels: `epic`, `ui`, `security`
 - Estimacion: M
+- Endpoints publicos: `GET /api/public/services`, `GET /api/public/slots`, `POST /api/public/booking`
+- Use cases: `GetPublicServicesUseCase`, `GetPublicSlotsUseCase`, `CreatePublicBookingUseCase`
+- Helper: `getPublicContext()` resuelve organizacionId + systemUserId sin sesion
+- UI: wizard 4 pasos — servicio → fecha/slot → datos → confirmacion
+- Layout: `layouts/public.vue` limpio sin nav admin
+- Tests: `create-public-booking.test.ts` (3 casos)
 
 ### E11. Seguridad y privacidad
 

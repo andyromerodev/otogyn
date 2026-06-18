@@ -26,6 +26,9 @@ import { UpdateAvailabilityUseCase } from '../../src/application/use-cases/avail
 import { UpdateAssistantUseCase } from '../../src/application/use-cases/update-assistant'
 import { UpdatePatientUseCase } from '../../src/application/use-cases/update-patient'
 import { UpdateServiceUseCase } from '../../src/application/use-cases/update-service'
+import { CreatePublicBookingUseCase } from '../../src/application/use-cases/booking/create-public-booking'
+import { GetPublicServicesUseCase } from '../../src/application/use-cases/booking/get-public-services'
+import { GetPublicSlotsUseCase } from '../../src/application/use-cases/booking/get-public-slots'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
 import { DrizzleAvailabilityRepository } from '../../src/infrastructure/repositories/drizzle-availability-repository'
@@ -98,6 +101,19 @@ export const serverServiceLocator = {
   },
   dashboard: {
     getDashboardSummaryUseCase: new GetDashboardSummaryUseCase(appointmentRepository),
+  },
+  booking: {
+    getPublicServicesUseCase: new GetPublicServicesUseCase(serviceRepository),
+    getPublicSlotsUseCase: new GetPublicSlotsUseCase(
+      appointmentRepository,
+      availabilityRepository,
+      serviceRepository,
+    ),
+    createPublicBookingUseCase: new CreatePublicBookingUseCase(
+      patientRepository,
+      serviceRepository,
+      scheduleAppointmentUseCase,
+    ),
   },
   calendar: {
     getCalendarDayUseCase: new GetCalendarDayUseCase(
