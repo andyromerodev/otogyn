@@ -72,6 +72,23 @@ Crear una web app ligera y mantenible para que una otorrinolaringologa y su asis
 - Reserva publica
 - Seguridad y auditoria minima
 
+## Modulos del MVP
+
+- `E1` Arquitectura base
+- `E2` Backend y base de datos con Neon
+- `E3` Auth y roles
+- `E4` Dashboard administrativo
+- `E5` Pacientes
+- `E6` Citas
+- `E7` Agenda y calendario
+- `E8` Servicios medicos
+- `E9` Disponibilidad
+- `E10` Reserva publica
+- `E11` Seguridad y privacidad
+- `E12` Testing
+- `E13` UI/UX responsive
+- `E14` Deploy
+
 ## Reglas de negocio base
 
 - No existe cita sin paciente.

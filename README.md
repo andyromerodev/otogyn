@@ -2,6 +2,34 @@
 
 MVP para gestion de citas, pacientes, servicios y reservas de una doctora otorrinolaringologa. La base actual prioriza arquitectura limpia, privacidad de datos y una transicion controlada desde mock data hacia Neon PostgreSQL con Better Auth y Drizzle.
 
+## Forma de trabajo
+
+Este repositorio se organiza por **modulos** grandes de producto, por ejemplo:
+
+- `Modulo E3: Auth y roles`
+- `Modulo E5: Pacientes`
+- `Modulo E6: Citas`
+
+Cada modulo se divide en tareas o issues mas pequenos.
+
+El patron obligatorio de implementacion es:
+
+- frontend: `Screen/Page -> ViewModel/Composable -> UseCase -> Repository -> RemoteDataSource`
+- backend: `API Route -> Authorization/Validation -> UseCase -> Repository`
+
+Antes de continuar trabajo con otros agentes:
+
+```bash
+pnpm docs:update
+```
+
+Luego revisar:
+
+- `AGENTS.md`
+- `docs/ANDROID_STYLE_ARCHITECTURE.md`
+- `docs/AGENT_WORKFLOW.md`
+- `docs/AGENT_FILE_MAP.md`
+
 ## Stack
 
 - Nuxt 4 + TypeScript
@@ -42,10 +70,12 @@ pnpm dev
 pnpm build
 pnpm lint
 pnpm test
+pnpm typecheck
 pnpm db:generate
 pnpm db:migrate
 pnpm db:studio
 pnpm db:seed
+pnpm docs:update
 ```
 
 ## Estructura
@@ -73,7 +103,18 @@ docs/
 
 - Better Auth queda definido como stack base.
 - Los permisos deben resolverse con `organization_members`.
-- La capa actual usa contexto mock mientras se conecta la sesion real server-side.
+- La sesion real server-side ya esta separada en una feature de auth con repositorio y use cases propios.
+- `requireAuthorizedUser(event, action)` es la barrera principal para permisos en backend.
+
+## Estado actual
+
+- `auth` real implementado con Better Auth
+- `dashboard` funcional
+- `patients` con persistencia real
+- `services` con persistencia real
+- `appointments` con persistencia real
+- `assistants` con gestion real y permisos base
+- `pnpm docs:update` disponible para regenerar inventario tecnico para agentes
 
 ## Seed y demo data
 
@@ -85,6 +126,14 @@ docs/
 ## Testing
 
 - Vitest cubre las reglas iniciales del dashboard y los choques de agenda.
+- El flujo minimo recomendado antes de cerrar cambios es:
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
 
 ## Roadmap MVP
 

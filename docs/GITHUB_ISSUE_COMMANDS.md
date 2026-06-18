@@ -2,6 +2,8 @@
 
 ## Labels
 
+Nota: en documentacion de producto usamos `modulo`, pero en GitHub se mantiene el label tecnico `epic` para no romper la convencion ya creada.
+
 ```bash
 gh label create epic --repo andyromerodev/otogyn --color B60205 --description "Epic umbrella issue"
 gh label create feature --repo andyromerodev/otogyn --color 1D76DB --description "Feature work"
@@ -27,18 +29,18 @@ gh label create low-priority --repo andyromerodev/otogyn --color 0E8A16 --descri
 ## Issues
 
 ```bash
-gh issue create --repo andyromerodev/otogyn --title "E1: Arquitectura base del MVP" --label epic --label architecture --label docs --label mvp
-gh issue create --repo andyromerodev/otogyn --title "E2: Backend y base de datos con Neon" --label epic --label backend --label database --label mvp
-gh issue create --repo andyromerodev/otogyn --title "E3: Auth y roles" --label epic --label auth --label security --label assistant-role
-gh issue create --repo andyromerodev/otogyn --title "E4: Dashboard administrativo" --label epic --label dashboard --label ui --label mvp
-gh issue create --repo andyromerodev/otogyn --title "E5: Pacientes" --label epic --label patients --label backend --label ui
-gh issue create --repo andyromerodev/otogyn --title "E6: Citas" --label epic --label appointments --label backend --label high-priority
-gh issue create --repo andyromerodev/otogyn --title "E7: Agenda y calendario" --label epic --label appointments --label ui --label medium-priority
-gh issue create --repo andyromerodev/otogyn --title "E8: Servicios medicos" --label epic --label backend --label ui --label medium-priority
-gh issue create --repo andyromerodev/otogyn --title "E9: Disponibilidad" --label epic --label database --label appointments --label medium-priority
-gh issue create --repo andyromerodev/otogyn --title "E10: Reserva publica" --label epic --label ui --label security --label medium-priority
-gh issue create --repo andyromerodev/otogyn --title "E11: Seguridad y privacidad" --label epic --label security --label mvp --label high-priority
-gh issue create --repo andyromerodev/otogyn --title "E12: Testing" --label epic --label testing --label high-priority
-gh issue create --repo andyromerodev/otogyn --title "E13: UI/UX responsive" --label epic --label ui --label mvp --label medium-priority
-gh issue create --repo andyromerodev/otogyn --title "E14: Deploy" --label epic --label docs --label backend --label low-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E1: Arquitectura base del MVP" --label epic --label architecture --label docs --label mvp
+gh issue create --repo andyromerodev/otogyn --title "Modulo E2: Backend y base de datos con Neon" --label epic --label backend --label database --label mvp
+gh issue create --repo andyromerodev/otogyn --title "Modulo E3: Auth y roles" --label epic --label auth --label security --label assistant-role
+gh issue create --repo andyromerodev/otogyn --title "Modulo E4: Dashboard administrativo" --label epic --label dashboard --label ui --label mvp
+gh issue create --repo andyromerodev/otogyn --title "Modulo E5: Pacientes" --label epic --label patients --label backend --label ui
+gh issue create --repo andyromerodev/otogyn --title "Modulo E6: Citas" --label epic --label appointments --label backend --label high-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E7: Agenda y calendario" --label epic --label appointments --label ui --label medium-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E8: Servicios medicos" --label epic --label backend --label ui --label medium-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E9: Disponibilidad" --label epic --label database --label appointments --label medium-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E10: Reserva publica" --label epic --label ui --label security --label medium-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E11: Seguridad y privacidad" --label epic --label security --label mvp --label high-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E12: Testing" --label epic --label testing --label high-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E13: UI/UX responsive" --label epic --label ui --label mvp --label medium-priority
+gh issue create --repo andyromerodev/otogyn --title "Modulo E14: Deploy" --label epic --label docs --label backend --label low-priority
 ```

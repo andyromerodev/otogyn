@@ -4,6 +4,12 @@
 
 Este documento es la guia operativa para cualquier agente que continue el trabajo en OtoGyn sin romper el patron arquitectonico actual.
 
+Convencion de gestion funcional:
+
+- usamos `modulo` como nombre visible para cada bloque grande de trabajo
+- formato sugerido: `Modulo Ex: Nombre`
+- en GitHub puede mantenerse el label tecnico `epic` por compatibilidad, pero la documentacion funcional debe hablar de `modulos`
+
 La regla principal es:
 
 `Screen/Page -> ViewModel/Composable -> UseCase -> Repository -> RemoteDataSource`
