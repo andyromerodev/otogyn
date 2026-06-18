@@ -26,6 +26,7 @@ export interface CreateBlockedSlotInput {
 export interface AvailabilityRepository {
   listWeeklyAvailability(organizationId: string): Promise<DoctorAvailability[]>
   listBlockedSlots(organizationId: string, day: Date): Promise<BlockedTimeSlot[]>
+  listBlockedSlotsRange(organizationId: string, start: Date, end: Date): Promise<BlockedTimeSlot[]>
   saveAvailability(input: SaveAvailabilityInput): Promise<DoctorAvailability>
   updateAvailability(id: string, input: UpdateAvailabilityInput): Promise<DoctorAvailability>
   toggleAvailabilityActive(id: string, isActive: boolean): Promise<DoctorAvailability>

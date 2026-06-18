@@ -20,6 +20,7 @@ const permissionMatrix: Record<ServerSessionContextDto['role'], ServerAuthorizat
     'assistants:write',
     'availability:read',
     'availability:write',
+    'calendar:read',
   ],
   assistant: [
     'session:read',
@@ -33,6 +34,7 @@ const permissionMatrix: Record<ServerSessionContextDto['role'], ServerAuthorizat
     'appointments:status',
     'services:read',
     'availability:read',
+    'calendar:read',
   ],
 }
 

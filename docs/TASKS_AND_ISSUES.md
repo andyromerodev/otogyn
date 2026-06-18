@@ -57,13 +57,17 @@ Convencion sugerida de nombre visible:
 - Labels: `epic`, `appointments`, `backend`
 - Estimacion: L
 
-### E7. Agenda y calendario
+### E7. Agenda y calendario ✅ IMPLEMENTADO
 
 - Vista diaria y semanal basica con huecos disponibles.
 - Aceptacion: calendario usable en desktop y mobile.
 - Prioridad: media
 - Labels: `epic`, `appointments`, `ui`
 - Estimacion: M
+- Endpoints: `GET /api/calendar/day?date=YYYY-MM-DD`, `GET /api/calendar/week?date=YYYY-MM-DD`
+- Use cases: `GetCalendarDayUseCase`, `GetCalendarWeekUseCase` (backend + frontend)
+- UI: `/calendar` — vista dia y semana, bloqueos, huecos libres, disponibilidad
+- Tests: `get-calendar-day.test.ts` (4 casos)
 
 ### E8. Servicios medicos
 

@@ -89,6 +89,22 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
     return rows.map(mapBlockedSlot)
   }
 
+  async listBlockedSlotsRange(organizationId: string, start: Date, end: Date): Promise<BlockedTimeSlot[]> {
+    const rows = await this.db
+      .select()
+      .from(blockedTimeSlots)
+      .where(
+        and(
+          eq(blockedTimeSlots.organizationId, organizationId),
+          lt(blockedTimeSlots.startsAt, end),
+          gt(blockedTimeSlots.endsAt, start),
+        ),
+      )
+      .orderBy(asc(blockedTimeSlots.startsAt))
+
+    return rows.map(mapBlockedSlot)
+  }
+
   async saveAvailability(input: SaveAvailabilityInput): Promise<DoctorAvailability> {
     const id = crypto.randomUUID()
     const now = new Date()

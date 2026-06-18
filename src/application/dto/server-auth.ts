@@ -26,4 +26,5 @@ export type ServerAuthorizationAction =
   | 'assistants:write'
   | 'availability:read'
   | 'availability:write'
+  | 'calendar:read'
 

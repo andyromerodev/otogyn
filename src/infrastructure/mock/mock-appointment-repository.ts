@@ -39,6 +39,15 @@ export class MockAppointmentRepository implements AppointmentRepository {
     )
   }
 
+  async listByRange(organizationId: string, start: Date, end: Date): Promise<Appointment[]> {
+    return this.appointments.filter(
+      (appointment) =>
+        appointment.organizationId === organizationId &&
+        appointment.startAt >= start &&
+        appointment.startAt < end,
+    )
+  }
+
   async save(appointment: Appointment): Promise<Appointment> {
     const index = this.appointments.findIndex((item) => item.id === appointment.id)
 

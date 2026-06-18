@@ -17,7 +17,12 @@ const navigation = computed(() => [
   { label: 'Citas', to: '/appointments' },
   { label: 'Calendario', to: '/calendar' },
   { label: 'Servicios', to: '/services' },
-  ...(sessionContext.value?.role === 'admin_doctor' ? [{ label: 'Ajustes', to: '/settings' }] : []),
+  ...(sessionContext.value?.role === 'admin_doctor'
+    ? [
+        { label: 'Disponibilidad', to: '/availability' },
+        { label: 'Ajustes', to: '/settings' },
+      ]
+    : []),
 ])
 
 const handleSignOut = async () => {

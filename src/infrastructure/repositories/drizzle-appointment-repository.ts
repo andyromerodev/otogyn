@@ -59,6 +59,22 @@ export class DrizzleAppointmentRepository implements AppointmentRepository {
     return rows.map(mapAppointment)
   }
 
+  async listByRange(organizationId: string, start: Date, end: Date): Promise<Appointment[]> {
+    const rows = await this.db
+      .select()
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.organizationId, organizationId),
+          gte(appointments.startAt, start),
+          lt(appointments.startAt, end),
+        ),
+      )
+      .orderBy(asc(appointments.startAt))
+
+    return rows.map(mapAppointment)
+  }
+
   async listCollisions(
     organizationId: string,
     startAt: Date,

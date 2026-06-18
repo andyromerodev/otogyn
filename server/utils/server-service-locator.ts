@@ -1,4 +1,6 @@
 import { CancelAppointmentUseCase } from '../../src/application/use-cases/cancel-appointment'
+import { GetCalendarDayUseCase } from '../../src/application/use-cases/calendar/get-calendar-day'
+import { GetCalendarWeekUseCase } from '../../src/application/use-cases/calendar/get-calendar-week'
 import { ChangeAppointmentStatusUseCase } from '../../src/application/use-cases/change-appointment-status'
 import { CreateAvailabilityUseCase } from '../../src/application/use-cases/availability/create-availability'
 import { CreateBlockedSlotUseCase } from '../../src/application/use-cases/availability/create-blocked-slot'
@@ -96,5 +98,19 @@ export const serverServiceLocator = {
   },
   dashboard: {
     getDashboardSummaryUseCase: new GetDashboardSummaryUseCase(appointmentRepository),
+  },
+  calendar: {
+    getCalendarDayUseCase: new GetCalendarDayUseCase(
+      appointmentRepository,
+      availabilityRepository,
+      patientRepository,
+      serviceRepository,
+    ),
+    getCalendarWeekUseCase: new GetCalendarWeekUseCase(
+      appointmentRepository,
+      availabilityRepository,
+      patientRepository,
+      serviceRepository,
+    ),
   },
 }

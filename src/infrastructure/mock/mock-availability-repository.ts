@@ -105,6 +105,15 @@ export class MockAvailabilityRepository implements AvailabilityRepository {
     return slot
   }
 
+  async listBlockedSlotsRange(organizationId: string, start: Date, end: Date): Promise<BlockedTimeSlot[]> {
+    return this.blockedSlots.filter(
+      (slot) =>
+        slot.organizationId === organizationId &&
+        slot.startsAt < end &&
+        slot.endsAt > start,
+    )
+  }
+
   async deleteBlockedSlot(id: string): Promise<void> {
     const index = this.blockedSlots.findIndex((slot) => slot.id === id)
 
