@@ -39,7 +39,8 @@ Los mocks siguen existiendo solo como respaldo y referencia en `src/infrastructu
 4. Revisar `docs/AGENT_FILE_MAP.md` para ubicar las piezas actuales.
 5. Trabajar issue por issue, sin mezclar features.
 6. Mantener cambios pequenos y por responsabilidad.
-7. Ejecutar validacion minima antes de cerrar:
+7. Si el trabajo toca deploy o release, leer `docs/DEPLOY_NETLIFY.md` y `docs/DEPLOY_RELEASE_AGENT.md`.
+8. Ejecutar validacion minima antes de cerrar:
    - `pnpm typecheck`
    - `pnpm lint`
    - `pnpm test`
@@ -204,5 +205,6 @@ Actualizar documentacion cuando ocurra cualquiera de estos casos:
 4. Ejecutar `pnpm docs:update`
 5. Revisar `docs/AGENT_FILE_MAP.md`
 6. Implementar una sola feature
-7. Ejecutar `pnpm typecheck && pnpm lint && pnpm test && pnpm build`
-8. Actualizar `docs/TASKS_AND_ISSUES.md` si cambia el estado
+7. Si toca deploy, leer `docs/DEPLOY_NETLIFY.md` y `docs/DEPLOY_RELEASE_AGENT.md`
+8. Ejecutar `pnpm typecheck && pnpm lint && pnpm test && pnpm build`
+9. Actualizar `docs/TASKS_AND_ISSUES.md` si cambia el estado

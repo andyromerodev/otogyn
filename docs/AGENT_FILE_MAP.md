@@ -1,6 +1,6 @@
 # Agent File Map
 
-Generated: 2026-06-20T17:20:00.088Z
+Generated: 2026-06-21T18:49:25.198Z
 
 Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual del codigo por capa y feature.
 
@@ -407,6 +407,7 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 - `server/api/appointments/[id]/cancel.post.ts`
 - `server/api/appointments/[id]/status.post.ts`
 - `server/api/appointments/index.post.ts`
+- `server/api/appointments/patients.get.ts`
 - `server/api/appointments/today.get.ts`
 
 ### assistants

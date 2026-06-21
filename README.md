@@ -29,6 +29,7 @@ Luego revisar:
 - `docs/ANDROID_STYLE_ARCHITECTURE.md`
 - `docs/AGENT_WORKFLOW.md`
 - `docs/AGENT_FILE_MAP.md`
+- `docs/DEPLOY_NETLIFY.md`
 
 ## Stack
 
