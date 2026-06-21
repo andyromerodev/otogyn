@@ -38,7 +38,6 @@ const permissionGroups = [
     <SharedSectionHeader
       eyebrow="Permisos"
       title="Gestion de asistentes"
-      description="Solo `admin_doctor` puede crear cuentas de asistentes y revisar el alcance operativo de cada rol."
     />
 
     <section class="grid gap-4 xl:grid-cols-[minmax(360px,440px)_minmax(0,1fr)]">
@@ -48,9 +47,6 @@ const permissionGroups = [
       >
         <div class="space-y-1">
           <p class="text-lg font-semibold text-slate-900">Nuevo asistente</p>
-          <p class="text-sm text-slate-500">
-            La cuenta se crea en Better Auth y su rol operativo queda vinculado a la organizacion actual.
-          </p>
         </div>
 
         <form class="space-y-4" @submit.prevent="screen.submitAssistant">
@@ -132,7 +128,6 @@ const permissionGroups = [
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div class="space-y-1">
               <p class="text-lg font-semibold text-slate-900">Equipo asistente</p>
-              <p class="text-sm text-slate-500">Listado persistido desde PostgreSQL para la organizacion activa.</p>
             </div>
             <span class="pill">{{ screen.assistantsCount.value }} asistentes</span>
           </div>
@@ -294,9 +289,9 @@ const permissionGroups = [
 
     <div
       v-if="screen.reuseDialog.open"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-sm"
     >
-      <div class="w-full max-w-lg rounded-[32px] border border-teal-100 bg-white p-6 shadow-2xl">
+      <div class="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-[32px] border border-teal-100 bg-white p-6 shadow-2xl">
         <div class="space-y-2">
           <p class="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">Correo existente</p>
           <h3 class="text-2xl font-semibold text-slate-900">Reutilizar usuario huérfano</h3>

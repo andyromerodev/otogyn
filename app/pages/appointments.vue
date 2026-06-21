@@ -13,7 +13,6 @@ const screen = await useAppointmentsScreen()
     <SharedSectionHeader
       eyebrow="Citas"
       title="Agenda y registro de citas"
-      description="Las citas nuevas ya se guardan en PostgreSQL validando paciente, servicio, horario disponible y choques activos."
     />
 
     <section class="grid gap-4 xl:grid-cols-[minmax(340px,440px)_minmax(0,1fr)]">
@@ -126,7 +125,6 @@ const screen = await useAppointmentsScreen()
         <div class="mb-4 flex items-center justify-between gap-4">
           <div>
             <p class="text-lg font-semibold text-slate-900">Agenda de hoy</p>
-            <p class="text-sm text-slate-500">Listado real desde PostgreSQL.</p>
           </div>
           <span class="pill">{{ screen.appointments.value.length }} citas</span>
         </div>

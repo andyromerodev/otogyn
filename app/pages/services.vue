@@ -13,7 +13,6 @@ const screen = await useServicesScreen()
     <SharedSectionHeader
       eyebrow="Servicios"
       title="Catalogo de servicios"
-      description="Los servicios se guardan en PostgreSQL y quedan listos para usarse en citas reales."
     />
 
     <p v-if="screen.errorMessage.value" class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">

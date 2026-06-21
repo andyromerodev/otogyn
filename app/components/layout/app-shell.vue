@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import type { AppSessionContext } from '~/utils/auth/session-context'
+import { resolveRouteLoadingVariant } from '~/utils/route-loading'
 
 const config = useRuntimeConfig()
 const isAuthEnabled = computed(() => config.public.authEnabled)
 const isRouteLoading = ref(false)
 const nuxtApp = useNuxtApp()
+const route = useRoute()
+const routeLoadingTarget = useState<string>('route-loading-target', () => route.path)
+const loadingVariant = computed(() => resolveRouteLoadingVariant(routeLoadingTarget.value || route.path))
+
 const { data: sessionContext } = isAuthEnabled.value
   ? await useFetch<AppSessionContext | null>('/api/auth/session-context', {
       headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
@@ -24,6 +29,13 @@ const navigation = computed(() => [
       ]
     : []),
 ])
+
+const bottomNavigation = [
+  { label: 'Inicio', to: '/dashboard', icon: 'i-heroicons-home' },
+  { label: 'Pacientes', to: '/patients', icon: 'i-heroicons-users' },
+  { label: 'Agenda', to: '/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: 'Consultas', to: '/consultations', icon: 'i-heroicons-clipboard-document-list' },
+]
 
 const handleSignOut = async () => {
   if (!isAuthEnabled.value) {
@@ -59,6 +71,7 @@ if (import.meta.client) {
     clearFinishTimer()
     finishTimer = setTimeout(() => {
       isRouteLoading.value = false
+      routeLoadingTarget.value = route.path
       finishTimer = null
     }, 140)
   }
@@ -66,6 +79,7 @@ if (import.meta.client) {
   onMounted(() => {
     const removePageStart = nuxtApp.hook('page:start', () => {
       clearFinishTimer()
+      routeLoadingTarget.value ||= route.path
       isRouteLoading.value = true
     })
     const removePageFinish = nuxtApp.hook('page:finish', stopLoading)
@@ -88,13 +102,13 @@ if (import.meta.client) {
 
 <template>
   <div class="shell-frame">
-    <div class="shell" :class="{ 'shell-loading-active': isRouteLoading }">
+    <div class="shell">
       <aside class="surface-card shell-sidebar">
         <div class="brand">
           <span class="brand-mark">ORL</span>
           <div>
             <p class="brand-title">OtoGyn</p>
-            <p class="brand-copy">Agenda clinica MVP</p>
+            <p class="brand-copy">Agenda clínica</p>
           </div>
         </div>
 
@@ -120,13 +134,13 @@ if (import.meta.client) {
 
       <main class="shell-main">
         <header class="surface-card shell-topbar">
-          <div>
-            <p class="topbar-title">Plataforma de citas OtoGyn</p>
-            <p class="muted-text topbar-copy">MVP con Clean Architecture, mocks separados y backend Nuxt.</p>
+          <div class="topbar-text">
+            <p class="muted-text topbar-copy">Agenda clínica para pacientes, citas y disponibilidad.</p>
           </div>
+
           <div class="topbar-actions">
             <span class="pill">
-              {{ sessionContext?.name ?? 'Modo MVP' }}
+              {{ sessionContext?.name ?? 'OtoGyn' }}
               <template v-if="sessionContext?.role"> · {{ sessionContext.role }}</template>
             </span>
             <UButton
@@ -144,30 +158,36 @@ if (import.meta.client) {
         </header>
 
         <section class="shell-content">
-          <slot />
+          <div
+            class="shell-content-body"
+            :class="{ 'shell-content-body-loading': isRouteLoading }"
+          >
+            <slot />
+          </div>
+
+          <Transition name="shell-loading-fade">
+            <LayoutAppShellLoading
+              v-if="isRouteLoading"
+              class="shell-loading-overlay"
+              :variant="loadingVariant"
+            />
+          </Transition>
         </section>
       </main>
-
-      <nav class="surface-card bottom-nav">
-        <NuxtLink
-          v-for="item in navigation.slice(0, 5)"
-          :key="item.to"
-          :to="item.to"
-          class="bottom-nav-link"
-          active-class="bottom-nav-link-active"
-        >
-          {{ item.label }}
-        </NuxtLink>
-      </nav>
     </div>
 
-    <Transition name="shell-loading-fade">
-      <LayoutAppShellLoading
-        v-if="isRouteLoading"
-        class="shell-loading-overlay"
-        :show-settings="sessionContext?.role === 'admin_doctor'"
-      />
-    </Transition>
+    <nav class="surface-card bottom-nav" aria-label="Navegacion principal">
+      <NuxtLink
+        v-for="item in bottomNavigation"
+        :key="item.to"
+        :to="item.to"
+        class="bottom-nav-link"
+        active-class="bottom-nav-link-active"
+      >
+        <UIcon :name="item.icon" class="bottom-nav-icon" />
+        <span>{{ item.label }}</span>
+      </NuxtLink>
+    </nav>
   </div>
 </template>
 
@@ -184,16 +204,12 @@ if (import.meta.client) {
   transition: opacity 160ms ease;
 }
 
-.shell-loading-active {
-  opacity: 0.3;
-  pointer-events: none;
-}
-
 .shell-loading-overlay {
   position: absolute;
   inset: 0;
-  z-index: 30;
-  padding: 1.5rem;
+  z-index: 10;
+  padding: 0;
+  border-radius: inherit;
 }
 
 .shell-sidebar {
@@ -241,8 +257,7 @@ if (import.meta.client) {
   gap: 0.5rem;
 }
 
-.sidebar-link,
-.bottom-nav-link {
+.sidebar-link {
   border-radius: 1rem;
   padding: 0.8rem 1rem;
   color: var(--text-soft);
@@ -252,14 +267,12 @@ if (import.meta.client) {
     transform 160ms ease;
 }
 
-.sidebar-link:hover,
-.bottom-nav-link:hover {
+.sidebar-link:hover {
   color: var(--text-main);
   transform: translateY(-1px);
 }
 
-.sidebar-link-active,
-.bottom-nav-link-active {
+.sidebar-link-active {
   background: rgba(20, 184, 166, 0.14);
   color: var(--teal-strong);
   font-weight: 600;
@@ -291,24 +304,19 @@ if (import.meta.client) {
 }
 
 .shell-content {
+  position: relative;
   display: grid;
   gap: 1.5rem;
+  min-height: 28rem;
 }
 
-.bottom-nav {
-  position: sticky;
-  bottom: 1rem;
-  z-index: 20;
-  display: none;
-  grid-column: 1 / -1;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.35rem;
-  padding: 0.6rem;
+.shell-content-body {
+  transition: opacity 160ms ease;
 }
 
-.bottom-nav-link {
-  text-align: center;
-  font-size: 0.82rem;
+.shell-content-body-loading {
+  opacity: 0.16;
+  pointer-events: none;
 }
 
 .shell-loading-fade-enter-active,
@@ -321,10 +329,15 @@ if (import.meta.client) {
   opacity: 0;
 }
 
+.bottom-nav {
+  display: none;
+}
+
 @media (max-width: 960px) {
   .shell {
     grid-template-columns: 1fr;
     padding: 1rem;
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 
   .shell-sidebar {
@@ -332,16 +345,70 @@ if (import.meta.client) {
   }
 
   .shell-topbar {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0.25rem 0.1rem 1rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
-  .bottom-nav {
-    display: grid;
+  .topbar-actions {
+    display: none;
+  }
+
+  .topbar-text {
+    order: 2;
+    flex: 1 0 100%;
+    margin-top: 0.9rem;
+  }
+
+  .topbar-copy {
+    display: none;
+  }
+
+  .topbar-title {
+    font-size: 1.05rem;
   }
 
   .shell-loading-overlay {
-    padding: 1rem;
+    inset: 0;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem;
+    padding: 0.6rem 0.5rem calc(0.6rem + env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+
+  .bottom-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.4rem 0.2rem;
+    border-radius: 0.85rem;
+    color: var(--text-soft);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .bottom-nav-icon {
+    font-size: 1.4rem;
+  }
+
+  .bottom-nav-link-active {
+    color: var(--teal-strong);
+    background: rgba(20, 184, 166, 0.12);
   }
 }
 </style>

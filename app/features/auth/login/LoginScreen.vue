@@ -16,13 +16,13 @@ const { signInForm, errorMessage, pending, submitSignIn } = useLoginViewModel()
       description="Accede a expedientes, agenda citas y gestiona tu operacion diaria desde un solo lugar."
     />
 
-    <section class="grid min-h-screen place-items-center px-8 py-12">
+    <section class="grid min-h-screen place-items-center px-5 py-10 sm:px-8 sm:py-12">
       <div class="w-full max-w-[36rem]">
-        <header class="mb-10">
-          <h2 class="m-0 text-[2.35rem] font-black leading-tight text-[#071b1a]">
+        <header class="mb-8 sm:mb-10">
+          <h2 class="m-0 text-[1.85rem] font-black leading-tight text-[#071b1a] sm:text-[2.35rem]">
             Bienvenida, Dra. Garcia
           </h2>
-          <p class="m-0 mt-4 text-lg font-medium text-[#739895]">
+          <p class="m-0 mt-3 text-base font-medium text-[#739895] sm:mt-4 sm:text-lg">
             Ingresa tus credenciales para continuar
           </p>
         </header>
@@ -32,12 +32,12 @@ const { signInForm, errorMessage, pending, submitSignIn } = useLoginViewModel()
           <p class="m-0">Configura `DATABASE_URL` y `AUTH_SECRET` para activar Better Auth.</p>
         </div>
 
-        <form v-else class="grid gap-6" @submit.prevent="submitSignIn">
+        <form v-else class="grid gap-5 sm:gap-6" @submit.prevent="submitSignIn">
           <label class="grid gap-3 text-base font-extrabold text-[#304c49]">
             <span>Correo electronico</span>
             <input
               v-model="signInForm.email"
-              class="min-h-16 rounded-lg border border-[#b9d8d5] bg-[#dfeeed] px-6 text-lg font-semibold text-[#071b1a] outline-none placeholder:text-[#739895] focus:border-[#216960]"
+              class="min-h-14 rounded-lg border border-[#b9d8d5] bg-[#dfeeed] px-5 text-base font-semibold text-[#071b1a] outline-none placeholder:text-[#739895] focus:border-[#216960] sm:min-h-16 sm:px-6 sm:text-lg"
               type="email"
               placeholder="ana.garcia@otogyn.mx"
               autocomplete="email"
@@ -45,20 +45,20 @@ const { signInForm, errorMessage, pending, submitSignIn } = useLoginViewModel()
           </label>
 
           <label class="grid gap-3 text-base font-extrabold text-[#304c49]">
-            <span class="flex items-center justify-between gap-4">
+            <span class="flex flex-wrap items-center justify-between gap-2">
               <span>Contrasena</span>
-              <NuxtLink to="/login" class="text-[#216960]">Olvidaste tu contrasena?</NuxtLink>
+              <NuxtLink to="/login" class="text-sm text-[#216960] sm:text-base">Olvidaste tu contrasena?</NuxtLink>
             </span>
-            <span class="grid min-h-16 grid-cols-[1fr_auto] items-center overflow-hidden rounded-lg border border-[#b9d8d5] bg-[#dfeeed] focus-within:border-[#216960]">
+            <span class="grid min-h-14 grid-cols-[1fr_auto] items-center overflow-hidden rounded-lg border border-[#b9d8d5] bg-[#dfeeed] focus-within:border-[#216960] sm:min-h-16">
               <input
                 v-model="signInForm.password"
-                class="min-h-16 bg-transparent px-6 text-lg font-semibold text-[#071b1a] outline-none placeholder:text-[#739895]"
+                class="min-h-14 bg-transparent px-5 text-base font-semibold text-[#071b1a] outline-none placeholder:text-[#739895] sm:min-h-16 sm:px-6 sm:text-lg"
                 :type="showPassword ? 'text' : 'password'"
                 placeholder="********"
                 autocomplete="current-password"
               >
               <button
-                class="px-6 text-base font-extrabold text-[#739895]"
+                class="px-4 text-sm font-extrabold text-[#739895] sm:px-6 sm:text-base"
                 type="button"
                 @click="showPassword = !showPassword"
               >
@@ -68,21 +68,21 @@ const { signInForm, errorMessage, pending, submitSignIn } = useLoginViewModel()
           </label>
 
           <button
-            class="mt-2 min-h-16 rounded-lg bg-[#216960] text-lg font-black text-[#f7fffd] transition-opacity disabled:cursor-wait disabled:opacity-70"
+            class="mt-2 min-h-14 rounded-lg bg-[#216960] text-base font-black text-[#f7fffd] transition-opacity disabled:cursor-wait disabled:opacity-70 sm:min-h-16 sm:text-lg"
             type="submit"
             :disabled="pending"
           >
             {{ pending ? 'Ingresando...' : 'Iniciar sesion' }}
           </button>
 
-          <div class="my-3 grid grid-cols-[1fr_auto_1fr] items-center gap-6 text-[#739895]">
+          <div class="my-2 grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-[#739895] sm:my-3 sm:gap-6">
             <span class="h-px bg-[#a8cfcb]" />
-            <p class="m-0 font-bold">o continua con</p>
+            <p class="m-0 text-sm font-bold sm:text-base">o continua con</p>
             <span class="h-px bg-[#a8cfcb]" />
           </div>
 
           <button
-            class="min-h-16 rounded-lg border border-[#b9d8d5] bg-transparent text-lg font-black text-[#304c49]"
+            class="min-h-14 rounded-lg border border-[#b9d8d5] bg-transparent text-base font-black text-[#304c49] sm:min-h-16 sm:text-lg"
             type="button"
           >
             <span class="mr-3 text-[#2563eb]">G</span>
@@ -97,7 +97,7 @@ const { signInForm, errorMessage, pending, submitSignIn } = useLoginViewModel()
           </p>
         </form>
 
-        <footer class="mt-10 grid justify-items-center gap-4 text-base font-bold text-[#739895]">
+        <footer class="mt-8 grid justify-items-center gap-3 text-sm font-bold text-[#739895] sm:mt-10 sm:gap-4 sm:text-base">
           <p class="m-0">No tienes cuenta? <NuxtLink class="font-black text-[#216960]" to="/signup">Crear cuenta</NuxtLink></p>
           <p class="m-0">OtoGyn 2026 · Soporte</p>
         </footer>

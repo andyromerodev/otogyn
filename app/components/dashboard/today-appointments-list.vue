@@ -21,24 +21,29 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
     <div class="schedule-header">
       <div>
         <p class="schedule-title">Agenda de hoy</p>
-        <p class="muted-text">Datos servidos por Nuxt Server API desde PostgreSQL.</p>
       </div>
-      <span class="pill">{{ appointments.length }} citas</span>
+      <NuxtLink to="/calendar" class="schedule-see-all">Ver todo</NuxtLink>
     </div>
 
     <div class="schedule-list">
       <article v-for="appointment in appointments" :key="appointment.id" class="schedule-item">
-        <div>
-          <p class="schedule-time">{{ appointment.timeLabel }}</p>
+        <SharedAvatarInitials :name="appointment.patientName" size="sm" />
+
+        <div class="schedule-item-body">
           <p class="schedule-patient">{{ appointment.patientName }}</p>
-          <p class="muted-text schedule-service">{{ appointment.serviceName }}</p>
+          <p class="muted-text schedule-service">{{ appointment.serviceName }} · {{ appointment.timeLabel }}</p>
         </div>
 
         <div class="schedule-meta">
-          <UBadge :color="statusTone[appointment.status]" variant="soft">
+          <span v-if="appointment.isUrgent" class="pill">Urgente</span>
+          <UIcon
+            v-if="appointment.status === 'completed'"
+            name="i-heroicons-check-circle-solid"
+            class="schedule-status-icon"
+          />
+          <UBadge v-else :color="statusTone[appointment.status]" variant="soft">
             {{ appointment.statusLabel }}
           </UBadge>
-          <span v-if="appointment.isUrgent" class="pill">Urgente</span>
         </div>
       </article>
     </div>
@@ -52,14 +57,14 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
 
 .schedule-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
 .schedule-title,
-.schedule-time,
 .schedule-patient {
   margin: 0;
 }
@@ -72,7 +77,6 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
 .schedule-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
   border-radius: 1.1rem;
@@ -80,12 +84,12 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
   border: 1px solid rgba(15, 118, 110, 0.08);
 }
 
-.schedule-time {
-  font-weight: 700;
+.schedule-item-body {
+  min-width: 0;
+  flex: 1;
 }
 
 .schedule-patient {
-  margin-top: 0.25rem;
   font-size: 1.05rem;
 }
 
@@ -95,14 +99,30 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
 
 .schedule-meta {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 0.5rem;
 }
 
+.schedule-status-icon {
+  font-size: 1.4rem;
+  color: #15803d;
+}
+
+.schedule-see-all {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--teal-strong);
+}
+
 @media (max-width: 640px) {
-  .schedule-item {
-    flex-direction: column;
-    align-items: flex-start;
+  .schedule-card {
+    padding: 1.1rem;
+  }
+
+  .schedule-meta {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 </style>
