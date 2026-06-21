@@ -38,6 +38,7 @@ export class CreatePublicBookingUseCase {
       birthDate: null,
       documentId: null,
       administrativeNotes: null,
+      isUrgent: false,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,

@@ -12,7 +12,7 @@ import type { AppointmentRemoteDataSource } from './appointment-remote-data-sour
 
 export class HttpAppointmentRemoteDataSource implements AppointmentRemoteDataSource {
   async listPatients(): Promise<AppointmentPatientListResult> {
-    return $fetch<AppointmentPatientListResult>('/api/patients' as string)
+    return $fetch<AppointmentPatientListResult>('/api/appointments/patients' as string)
   }
 
   async listServices(): Promise<AppointmentServiceListResult> {

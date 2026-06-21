@@ -1,5 +1,6 @@
 import type {
   PatientDetailInput,
+  ListPatientsInput,
   PatientListResult,
   PatientMutationInput,
   UpdatePatientDetailInput,
@@ -7,7 +8,7 @@ import type {
 import type { Patient } from '../../domain/entities/patient'
 
 export interface PatientManagementRepository {
-  listPatients(): Promise<PatientListResult>
+  listPatients(input: ListPatientsInput): Promise<PatientListResult>
   getPatientDetail(input: PatientDetailInput): Promise<Patient>
   createPatient(input: PatientMutationInput): Promise<Patient>
   updatePatient(input: UpdatePatientDetailInput): Promise<Patient>
