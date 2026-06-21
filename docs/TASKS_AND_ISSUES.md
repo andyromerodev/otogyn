@@ -161,6 +161,9 @@ Convencion sugerida de nombre visible:
 - E4: frontend de `dashboard` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
 - E5: frontend de `patients` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
+- E5.1: listado de `patients` ahora soporta filtros server-side (`all`, `today`, `urgent`, `follow_up`), busqueda por `fullName + administrativeNotes`, chips mobile en una sola fila y paginacion server-side.
+- E5.1: `GET /api/patients` ahora acepta `search`, `filter`, `page` y `pageSize`, y responde resultado paginado con `items`, `total`, `allTotal`, `page`, `pageSize`, `totalPages`.
+- E5.2: `patients` ya soporta prioridad urgente persistida (`isUrgent`) en create/edit, badge visual rojo en listado y compatibilidad del filtro `urgent` con pacientes urgentes y citas urgentes activas.
 - E8: CRUD completo de servicios implementado: `GET/POST/PATCH /api/services` persisten en PostgreSQL con Drizzle.
 - E8: edicion de servicio con formulario inline y activacion/desactivacion via toggle ya implementados en UI.
 - E8: permisos endurecidos: asistentes solo leen servicios, admin_doctor escribe (create/update/toggle).
@@ -173,6 +176,11 @@ Convencion sugerida de nombre visible:
 - E9: permisos endurecidos: assistant read-only, admin_doctor full CRUD en availability:read/write.
 - E9: tests de use cases de disponibilidad y bloqueos integrados (6 tests).
 - E9: indices agregados a `doctor_availability` y `blocked_time_slots`.
+- E13: responsividad mobile revisada y cerrada en auth (`login`/`signup`), `dashboard`, `app-shell`, `patients` (lista/detalle), `services`, `settings`, `appointments`, `calendar` y `book`.
+- E13: corregido bug de movimiento lateral en mobile (causa raiz: `grid-template-columns` con `1fr` sin `minmax(0, 1fr)`); agregado safety net global `overflow-x: hidden` en `main.css`.
+- E13: `book` (reserva publica) ya cumplia los criterios de responsividad sin cambios, validado con el layout `public.vue` (max-width 640px centrado, viewport meta confirmado).
+- E13: navegacion mobile rediseñada: bottom-nav fijo de 4 items (Inicio, Pacientes, Agenda, Consultas) reemplaza el menu hamburguesa con drawer; rutas secundarias (Citas, Servicios, Disponibilidad, Ajustes, Reserva publica) se agrupan en el nuevo hub `/consultations`. `app-shell-loading.vue` (skeleton de carga) actualizado para reflejar el bottom-nav.
+- E13: `dashboard` rediseñado para acercarse al mockup de referencia: encabezado con saludo dinamico y avatar de iniciales, metricas 2x2 con icono y color por tono, tarjeta de "consulta activa" (derivada del estado `in_progress` ya existente, sin cambios de backend) y agenda de hoy con avatares e icono de completado.
 - Existe `pnpm docs:update` para regenerar el inventario tecnico consumido por otros agentes.
 
 ## Issues propuestos
