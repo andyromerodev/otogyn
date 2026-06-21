@@ -1,0 +1,11 @@
+[build]
+  command = "pnpm build"
+  publish = "dist"
+
+[build.environment]
+  PNPM_FLAGS = "--shamefully-hoist"
+
+[dev]
+  command = "pnpm dev"
+  targetPort = 3000
+  port = 8888

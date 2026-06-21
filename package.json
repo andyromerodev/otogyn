@@ -6,6 +6,9 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "netlify:dev": "netlify dev",
+    "netlify:init": "netlify init",
+    "netlify:link": "netlify link",
     "lint": "eslint .",
     "test": "vitest run --coverage",
     "typecheck": "nuxt typecheck",
@@ -38,6 +41,7 @@
     "eslint": "^10.5.0",
     "eslint-plugin-vue": "^10.9.2",
     "globals": "^17.6.0",
+    "netlify-cli": "^26.1.0",
     "prettier": "^3.8.4",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.22.4",

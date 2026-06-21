@@ -68,6 +68,9 @@ AUTH_URL="http://localhost:3000"
 ```bash
 pnpm dev
 pnpm build
+pnpm netlify:dev
+pnpm netlify:init
+pnpm netlify:link
 pnpm lint
 pnpm test
 pnpm typecheck
@@ -151,3 +154,35 @@ pnpm build
 - Endurecer permisos server-side
 - Confirmar que no se guardan datos medicos sensibles
 - Revisar logs, observabilidad y secretos
+
+## Deploy en Netlify
+
+Configuracion dejada en el repo:
+
+- `netlify.toml`
+- `netlify-cli` como dependencia de desarrollo
+
+Pasos:
+
+```bash
+pnpm exec netlify login
+pnpm netlify:init
+```
+
+O si el sitio ya existe:
+
+```bash
+pnpm netlify:link
+```
+
+Variables de entorno que debes configurar en Netlify:
+
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_URL`
+
+Notas importantes:
+
+- `AUTH_URL` en Netlify debe apuntar al dominio real del sitio, por ejemplo `https://tu-sitio.netlify.app`.
+- Para `pnpm`, Netlify necesita `PNPM_FLAGS=--shamefully-hoist`; esto ya queda definido en `netlify.toml`.
+- El build configurado es `pnpm build` y el publish directory es `dist`, siguiendo la guia oficial de Nuxt/Nitro para Netlify.
