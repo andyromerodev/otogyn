@@ -15,11 +15,13 @@ describe('CreatePatientUseCase', () => {
       birthDate: null,
       documentId: null,
       administrativeNotes: 'Paciente nueva',
+      isUrgent: true,
     })
 
     expect(patient.organizationId).toBe('org_otogyn_demo')
     expect(patient.fullName).toBe('Ana Torres')
     expect(patient.phone).toBe('999888777')
+    expect(patient.isUrgent).toBe(true)
     expect(patient.deletedAt).toBeNull()
   })
 })

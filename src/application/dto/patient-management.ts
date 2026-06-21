@@ -1,4 +1,5 @@
 import type { Patient } from '../../domain/entities/patient'
+import type { PatientListFilter, PatientListItem } from '../../domain/repositories/patient-repository'
 
 export interface PatientMutationInput {
   fullName: string
@@ -7,6 +8,7 @@ export interface PatientMutationInput {
   birthDate?: string | null
   documentId?: string | null
   administrativeNotes?: string | null
+  isUrgent?: boolean
 }
 
 export interface PatientDetailInput {
@@ -17,4 +19,18 @@ export interface UpdatePatientDetailInput extends PatientMutationInput {
   patientId: string
 }
 
-export type PatientListResult = Patient[]
+export interface ListPatientsInput {
+  search?: string
+  filter?: PatientListFilter
+  page?: number
+  pageSize?: number
+}
+
+export interface PatientListResult {
+  items: PatientListItem[]
+  total: number
+  allTotal: number
+  page: number
+  pageSize: number
+  totalPages: number
+}

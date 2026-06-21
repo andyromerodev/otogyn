@@ -7,6 +7,7 @@ export interface Patient {
   birthDate: string | null
   documentId: string | null
   administrativeNotes: string | null
+  isUrgent: boolean
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null

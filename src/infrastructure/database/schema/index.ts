@@ -136,6 +136,7 @@ export const patients = pgTable(
     birthDate: timestamp('birth_date', { mode: 'date' }),
     documentId: varchar('document_id', { length: 40 }),
     administrativeNotes: text('administrative_notes'),
+    isUrgent: boolean('is_urgent').default(false).notNull(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps,
   },

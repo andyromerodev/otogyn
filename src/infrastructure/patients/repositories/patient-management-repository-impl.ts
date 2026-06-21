@@ -1,5 +1,7 @@
 import type {
   PatientDetailInput,
+  ListPatientsInput,
+  PatientListResult,
   PatientMutationInput,
   UpdatePatientDetailInput,
 } from '../../../application/dto/patient-management'
@@ -10,8 +12,8 @@ import type { PatientRemoteDataSource } from '../remote/patient-remote-data-sour
 export class PatientManagementRepositoryImpl implements PatientManagementRepository {
   constructor(private readonly remoteDataSource: PatientRemoteDataSource) {}
 
-  listPatients(): Promise<Patient[]> {
-    return this.remoteDataSource.listPatients()
+  listPatients(input: ListPatientsInput): Promise<PatientListResult> {
+    return this.remoteDataSource.listPatients(input)
   }
 
   getPatientDetail(input: PatientDetailInput): Promise<Patient> {

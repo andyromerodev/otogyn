@@ -19,47 +19,82 @@ const screen = await usePatientDetailScreen(patientId)
     />
 
     <article v-if="screen.patient.value" class="surface-card detail-card">
-      <form class="detail-form" @submit.prevent="screen.submitPatient">
+      <form class="detail-form" @submit.prevent="screen.requestSave">
         <label class="field">
           <span>Nombre completo</span>
-          <input v-model="screen.form.fullName" type="text" required>
+          <input v-model="screen.form.fullName" type="text" required :disabled="!screen.isEditing.value">
         </label>
 
         <label class="field">
           <span>Telefono</span>
-          <input v-model="screen.form.phone" type="text" required>
+          <input v-model="screen.form.phone" type="text" required :disabled="!screen.isEditing.value">
         </label>
 
         <label class="field">
           <span>Email</span>
-          <input v-model="screen.form.email" type="email">
+          <input v-model="screen.form.email" type="email" :disabled="!screen.isEditing.value">
         </label>
 
         <label class="field">
           <span>Fecha de nacimiento</span>
-          <input v-model="screen.form.birthDate" type="date">
+          <input v-model="screen.form.birthDate" type="date" :disabled="!screen.isEditing.value">
         </label>
 
         <label class="field">
           <span>Documento</span>
-          <input v-model="screen.form.documentId" type="text">
+          <input v-model="screen.form.documentId" type="text" :disabled="!screen.isEditing.value">
         </label>
 
         <label class="field field-wide">
           <span>Notas administrativas</span>
-          <textarea v-model="screen.form.administrativeNotes" rows="5" />
+          <textarea v-model="screen.form.administrativeNotes" rows="5" :disabled="!screen.isEditing.value" />
         </label>
+
+        <div class="field field-wide urgent-field">
+          <span>Prioridad</span>
+          <label class="urgent-toggle">
+            <input v-model="screen.form.isUrgent" type="checkbox" :disabled="!screen.isEditing.value">
+            <div>
+              <strong>Paciente urgente</strong>
+              <p>Se mostrará con badge rojo en listados y dentro del filtro Urgentes.</p>
+            </div>
+          </label>
+        </div>
 
         <div class="detail-actions">
           <span class="pill">Paciente real en PostgreSQL</span>
-          <button class="submit-button" type="submit" :disabled="screen.pending.value">
-            {{ screen.pending.value ? 'Guardando...' : 'Guardar cambios' }}
-          </button>
+          <div class="detail-actions-buttons">
+            <button
+              v-if="!screen.isEditing.value"
+              type="button"
+              class="edit-button"
+              @click="screen.startEditing"
+            >
+              Editar
+            </button>
+            <template v-else>
+              <button type="button" class="cancel-button" @click="screen.cancelEditing">
+                Cancelar
+              </button>
+              <button class="submit-button" type="submit" :disabled="screen.pending.value">
+                {{ screen.pending.value ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+            </template>
+          </div>
         </div>
 
         <p v-if="screen.errorMessage.value" class="message message-error">{{ screen.errorMessage.value }}</p>
         <p v-if="screen.successMessage.value" class="message message-success">{{ screen.successMessage.value }}</p>
       </form>
+
+      <SharedConfirmDialog
+        v-model="screen.isConfirmOpen.value"
+        title="Confirmar cambios"
+        message="¿Confirmas guardar los cambios del paciente?"
+        :pending="screen.pending.value"
+        @confirm="screen.confirmSave"
+        @cancel="screen.cancelConfirm"
+      />
     </article>
   </div>
 </template>
@@ -95,20 +130,77 @@ const screen = await usePatientDetailScreen(patientId)
   color: var(--text-main);
 }
 
+.urgent-field {
+  gap: 0.6rem;
+}
+
+.urgent-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.urgent-toggle input {
+  margin-top: 0.15rem;
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0f766e;
+}
+
+.urgent-toggle strong {
+  display: block;
+  color: var(--text-main);
+}
+
+.urgent-toggle p {
+  margin: 0.28rem 0 0;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
 .detail-actions {
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.submit-button {
+.detail-actions-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.field input:disabled,
+.field textarea:disabled {
+  background: rgba(15, 118, 110, 0.05);
+  color: var(--text-main);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submit-button,
+.edit-button {
   border: 0;
   border-radius: 14px;
   padding: 0.95rem 1rem;
   background: #0f766e;
   color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-button {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 0.95rem 1rem;
+  background: transparent;
+  color: var(--text-main);
   font-weight: 700;
   cursor: pointer;
 }

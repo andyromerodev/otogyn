@@ -1,7 +1,7 @@
 import { reactive, ref } from 'vue'
 import type { Patient } from '../../../domain/entities/patient'
 import type { UpdatePatientDetailInput } from '../../../application/dto/patient-management'
-import type { PatientScreenPort } from './create-patients-screen'
+import { createInitialPatientForm, type PatientScreenPort } from './patient-screen.types'
 
 export interface PatientDetailScreenDependencies {
   patientId: string
@@ -9,22 +9,15 @@ export interface PatientDetailScreenDependencies {
   updatePatientUseCase: PatientScreenPort<UpdatePatientDetailInput, Patient>
 }
 
-const createInitialForm = () => ({
-  fullName: '',
-  phone: '',
-  email: '',
-  birthDate: '',
-  documentId: '',
-  administrativeNotes: '',
-})
-
 export const createPatientDetailScreen = (dependencies: PatientDetailScreenDependencies) => {
   const patient = ref<Patient | null>(null)
   const loading = ref(false)
   const pending = ref(false)
   const errorMessage = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
-  const form = reactive(createInitialForm())
+  const isEditing = ref(false)
+  const isConfirmOpen = ref(false)
+  const form = reactive(createInitialPatientForm())
 
   const syncForm = (value: Patient) => {
     form.fullName = value.fullName
@@ -33,6 +26,7 @@ export const createPatientDetailScreen = (dependencies: PatientDetailScreenDepen
     form.birthDate = value.birthDate ?? ''
     form.documentId = value.documentId ?? ''
     form.administrativeNotes = value.administrativeNotes ?? ''
+    form.isUrgent = value.isUrgent
   }
 
   const loadPatient = async () => {
@@ -68,6 +62,7 @@ export const createPatientDetailScreen = (dependencies: PatientDetailScreenDepen
         birthDate: form.birthDate || null,
         documentId: form.documentId.trim() || null,
         administrativeNotes: form.administrativeNotes.trim() || null,
+        isUrgent: form.isUrgent,
       })
 
       if (patient.value) {
@@ -75,6 +70,7 @@ export const createPatientDetailScreen = (dependencies: PatientDetailScreenDepen
       }
 
       successMessage.value = 'Paciente actualizado correctamente.'
+      isEditing.value = false
     } catch (error) {
       errorMessage.value =
         error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
@@ -85,6 +81,36 @@ export const createPatientDetailScreen = (dependencies: PatientDetailScreenDepen
     }
   }
 
+  const startEditing = () => {
+    isEditing.value = true
+    errorMessage.value = null
+    successMessage.value = null
+  }
+
+  const cancelEditing = () => {
+    if (patient.value) {
+      syncForm(patient.value)
+    }
+
+    isEditing.value = false
+    isConfirmOpen.value = false
+    errorMessage.value = null
+    successMessage.value = null
+  }
+
+  const requestSave = () => {
+    isConfirmOpen.value = true
+  }
+
+  const confirmSave = async () => {
+    isConfirmOpen.value = false
+    await submitPatient()
+  }
+
+  const cancelConfirm = () => {
+    isConfirmOpen.value = false
+  }
+
   return {
     patient,
     form,
@@ -92,7 +118,13 @@ export const createPatientDetailScreen = (dependencies: PatientDetailScreenDepen
     pending,
     errorMessage,
     successMessage,
+    isEditing,
+    isConfirmOpen,
     loadPatient,
-    submitPatient,
+    startEditing,
+    cancelEditing,
+    requestSave,
+    confirmSave,
+    cancelConfirm,
   }
 }

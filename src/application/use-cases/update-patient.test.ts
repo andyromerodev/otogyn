@@ -14,6 +14,7 @@ describe('UpdatePatientUseCase', () => {
         birthDate: null,
         documentId: null,
         administrativeNotes: null,
+        isUrgent: false,
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
@@ -29,11 +30,13 @@ describe('UpdatePatientUseCase', () => {
       phone: '111222333',
       email: 'ana.ruiz@example.test',
       administrativeNotes: 'Seguimiento administrativo',
+      isUrgent: true,
     })
 
     expect(patient.fullName).toBe('Ana Torres Ruiz')
     expect(patient.phone).toBe('111222333')
     expect(patient.email).toBe('ana.ruiz@example.test')
     expect(patient.administrativeNotes).toBe('Seguimiento administrativo')
+    expect(patient.isUrgent).toBe(true)
   })
 })

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CalendarDayAppointmentCard from '../components/calendar/calendar-day-appointment-card.vue'
+import CalendarMonthGrid from '../components/calendar/calendar-month-grid.vue'
 import { useCalendarScreen } from '../composables/calendar/use-calendar-screen'
 
 definePageMeta({
@@ -6,270 +8,220 @@ definePageMeta({
 })
 
 const screen = await useCalendarScreen()
-
-const statusColors: Record<string, string> = {
-  scheduled: 'bg-blue-100 text-blue-800 border-blue-200',
-  confirmed: 'bg-teal-100 text-teal-800 border-teal-200',
-  checked_in: 'bg-purple-100 text-purple-800 border-purple-200',
-  in_progress: 'bg-amber-100 text-amber-800 border-amber-200',
-  completed: 'bg-slate-100 text-slate-600 border-slate-200',
-  cancelled: 'bg-rose-100 text-rose-600 border-rose-200',
-  no_show: 'bg-orange-100 text-orange-700 border-orange-200',
-}
 </script>
 
 <template>
-  <div class="space-y-4">
-    <SharedSectionHeader
-      eyebrow="Agenda"
-      title="Calendario"
-      description="Vista diaria y semanal de citas, disponibilidad y bloqueos."
-    />
+  <div class="calendar-page">
+    <header class="calendar-header">
+      <div>
+        <h1 class="calendar-title">Agenda</h1>
+        <p class="calendar-subtitle">{{ screen.monthEyebrow.value }}</p>
+      </div>
+    </header>
 
-    <!-- toolbar -->
-    <div class="surface-card flex flex-wrap items-center justify-between gap-3 rounded-[28px] px-5 py-3">
-      <div class="flex items-center gap-2">
-        <button
-          class="rounded-2xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-          @click="screen.goToPrev()"
-        >
-          ←
+    <section class="calendar-shell">
+      <div class="calendar-month-header">
+        <button type="button" class="calendar-nav-button" @click="screen.goToPrevMonth">
+          <UIcon name="i-heroicons-chevron-left-20-solid" />
         </button>
-        <button
-          class="rounded-2xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-          :class="{ 'opacity-40 cursor-default': screen.isToday.value }"
-          @click="screen.goToToday()"
-        >
-          Hoy
+
+        <p class="calendar-month-title">{{ screen.currentMonthTitle.value }}</p>
+
+        <button type="button" class="calendar-nav-button" @click="screen.goToNextMonth">
+          <UIcon name="i-heroicons-chevron-right-20-solid" />
         </button>
-        <button
-          class="rounded-2xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-          @click="screen.goToNext()"
-        >
-          →
-        </button>
-        <span class="ml-2 text-base font-semibold text-slate-800">
-          {{ screen.currentDateLabel.value }}
-        </span>
       </div>
 
-      <div class="flex gap-1 rounded-2xl border border-slate-200 p-1">
-        <button
-          class="rounded-xl px-4 py-1.5 text-sm font-medium transition"
-          :class="screen.viewMode.value === 'day'
-            ? 'bg-teal-700 text-white'
-            : 'text-slate-600 hover:bg-slate-50'"
-          @click="screen.setViewMode('day')"
-        >
-          Día
-        </button>
-        <button
-          class="rounded-xl px-4 py-1.5 text-sm font-medium transition"
-          :class="screen.viewMode.value === 'week'
-            ? 'bg-teal-700 text-white'
-            : 'text-slate-600 hover:bg-slate-50'"
-          @click="screen.setViewMode('week')"
-        >
-          Semana
-        </button>
+      <p
+        v-if="screen.errorMessage.value"
+        class="calendar-message calendar-message-error"
+      >
+        {{ screen.errorMessage.value }}
+      </p>
+
+      <div v-if="screen.loading.value && !screen.calendarMonth.value" class="calendar-loading">
+        Cargando agenda...
       </div>
-    </div>
 
-    <!-- error -->
-    <p
-      v-if="screen.errorMessage.value"
-      class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
-    >
-      {{ screen.errorMessage.value }}
-    </p>
+      <template v-else>
+        <CalendarMonthGrid
+          v-if="screen.calendarMonth.value"
+          :days="screen.calendarMonth.value.days"
+          :selected-date="screen.calendarMonth.value.selectedDate"
+          :week-days="screen.shortWeekDays"
+          @select="screen.selectDate"
+        />
 
-    <!-- loading -->
-    <div
-      v-if="screen.loading.value"
-      class="surface-card flex items-center justify-center rounded-[28px] py-20 text-sm text-slate-400"
-    >
-      Cargando agenda...
-    </div>
+        <section class="calendar-day-section">
+          <p class="calendar-day-heading">{{ screen.selectedDateHeading.value }}</p>
 
-    <!-- DAY VIEW -->
-    <template v-else-if="screen.viewMode.value === 'day' && screen.calendarDay.value">
-      <div class="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
-        <!-- appointments + blocked -->
-        <section class="space-y-3">
-          <div class="surface-card rounded-[28px] p-5">
-            <p class="mb-4 text-base font-semibold text-slate-900">
-              Citas del día
-              <span class="ml-2 text-sm font-normal text-slate-400">
-                ({{ screen.calendarDay.value.appointments.length }})
-              </span>
-            </p>
-
-            <div
-              v-if="!screen.calendarDay.value.appointments.length"
-              class="rounded-2xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-400"
-            >
-              Sin citas para este día.
-            </div>
-
-            <div class="space-y-2">
-              <div
-                v-for="appt in screen.calendarDay.value.appointments"
-                :key="appt.id"
-                class="flex flex-wrap items-start gap-3 rounded-2xl border px-4 py-3"
-                :class="statusColors[appt.status] ?? 'bg-slate-50 border-slate-200 text-slate-800'"
-              >
-                <div class="min-w-0 flex-1 space-y-0.5">
-                  <p class="text-sm font-semibold">{{ appt.patientName }}</p>
-                  <p class="text-xs opacity-75">{{ appt.serviceName }}</p>
-                </div>
-                <div class="text-right text-xs">
-                  <p class="font-semibold">
-                    {{ screen.formatTime(appt.startAt) }} – {{ screen.formatTime(appt.endAt) }}
-                  </p>
-                  <p class="mt-0.5 opacity-75">{{ appt.durationMinutes }} min</p>
-                </div>
-                <span
-                  v-if="appt.isUrgent"
-                  class="self-center rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white"
-                >
-                  URGENTE
-                </span>
-                <span class="self-center text-xs font-medium opacity-75">{{ appt.statusLabel }}</span>
-              </div>
-            </div>
+          <div v-if="screen.dayLoading.value" class="calendar-loading">
+            Cargando agenda...
           </div>
 
-          <!-- blocked slots -->
           <div
-            v-if="screen.calendarDay.value.blockedSlots.length"
-            class="surface-card rounded-[28px] p-5"
+            v-else-if="screen.calendarDay.value?.appointments.length"
+            class="calendar-day-list"
           >
-            <p class="mb-3 text-base font-semibold text-slate-900">Bloqueos</p>
-            <div class="space-y-2">
-              <div
-                v-for="slot in screen.calendarDay.value.blockedSlots"
-                :key="slot.id"
-                class="flex items-start justify-between gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3"
-              >
-                <p class="text-sm font-medium text-orange-800">
-                  {{ screen.formatTime(slot.startsAt) }} – {{ screen.formatTime(slot.endsAt) }}
-                </p>
-                <p v-if="slot.reason" class="text-sm text-orange-600">{{ slot.reason }}</p>
-              </div>
-            </div>
+            <CalendarDayAppointmentCard
+              v-for="appointment in screen.calendarDay.value.appointments"
+              :key="appointment.id"
+              :appointment="appointment"
+              :formatted-time="screen.formatTime(appointment.startAt)"
+            />
+          </div>
+
+          <div v-else class="calendar-empty-state">
+            No hay citas registradas para este día.
           </div>
         </section>
+      </template>
+    </section>
 
-        <!-- sidebar: availability + free slots -->
-        <aside class="space-y-3">
-          <div class="surface-card rounded-[28px] p-5">
-            <p class="mb-3 text-sm font-semibold text-slate-700">Disponibilidad</p>
-            <div
-              v-if="!screen.calendarDay.value.isWorkday"
-              class="text-sm text-slate-400"
-            >
-              Día no laborable.
-            </div>
-            <div v-else class="space-y-1">
-              <div
-                v-for="(window, i) in screen.calendarDay.value.availabilityWindows"
-                :key="i"
-                class="rounded-xl bg-teal-50 px-3 py-2 text-sm font-medium text-teal-700"
-              >
-                {{ window.startTime }} – {{ window.endTime }}
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="screen.calendarDay.value.freeSlots.length"
-            class="surface-card rounded-[28px] p-5"
-          >
-            <p class="mb-3 text-sm font-semibold text-slate-700">
-              Huecos libres
-              <span class="ml-1 font-normal text-slate-400">({{ screen.calendarDay.value.freeSlots.length }})</span>
-            </p>
-            <div class="space-y-1">
-              <div
-                v-for="(slot, i) in screen.calendarDay.value.freeSlots"
-                :key="i"
-                class="flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2"
-              >
-                <span class="text-xs font-medium text-emerald-700">
-                  {{ screen.formatTime(slot.startsAt) }} – {{ screen.formatTime(slot.endsAt) }}
-                </span>
-                <span class="text-xs text-emerald-500">{{ slot.durationMinutes }} min</span>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </template>
-
-    <!-- WEEK VIEW -->
-    <template v-else-if="screen.viewMode.value === 'week' && screen.calendarWeek.value">
-      <div class="surface-card overflow-x-auto rounded-[28px] p-2">
-        <div class="grid min-w-[700px] grid-cols-7 gap-1.5">
-          <div
-            v-for="day in screen.calendarWeek.value.days"
-            :key="day.date"
-            class="space-y-1.5 rounded-2xl p-2"
-            :class="!day.isWorkday ? 'bg-slate-50/60' : 'bg-white/60'"
-          >
-            <!-- day header -->
-            <div class="rounded-xl px-2 py-1.5 text-center text-slate-700">
-              <p class="text-xs font-semibold">{{ screen.formatDateLabel(day.date) }}</p>
-              <p v-if="!day.isWorkday" class="text-xs opacity-60">No laborable</p>
-              <p v-else class="text-xs opacity-60">{{ day.appointments.length }} citas</p>
-            </div>
-
-            <!-- availability banner -->
-            <div
-              v-if="day.isWorkday && day.availabilityWindows.length"
-              class="rounded-xl bg-teal-50 px-2 py-1 text-center text-xs text-teal-600"
-            >
-              {{ day.availabilityWindows[0]!.startTime }}–{{ day.availabilityWindows[0]!.endTime }}
-            </div>
-
-            <!-- blocked -->
-            <div
-              v-for="block in day.blockedSlots"
-              :key="block.id"
-              class="rounded-xl border border-orange-200 bg-orange-50 px-2 py-1 text-xs text-orange-700"
-            >
-              🔒 {{ screen.formatTime(block.startsAt) }}–{{ screen.formatTime(block.endsAt) }}
-            </div>
-
-            <!-- appointments -->
-            <div
-              v-for="appt in day.appointments"
-              :key="appt.id"
-              class="rounded-xl border px-2 py-1.5 text-xs"
-              :class="statusColors[appt.status] ?? 'bg-slate-100 border-slate-200'"
-            >
-              <p class="font-semibold leading-tight">{{ screen.formatTime(appt.startAt) }}</p>
-              <p class="truncate leading-tight opacity-80">{{ appt.patientName }}</p>
-              <p class="truncate leading-tight opacity-60">{{ appt.serviceName }}</p>
-            </div>
-
-            <!-- free slots count -->
-            <div
-              v-if="day.isWorkday && day.freeSlots.length"
-              class="rounded-xl bg-emerald-50 px-2 py-1 text-center text-xs text-emerald-600"
-            >
-              {{ day.freeSlots.length }} hueco{{ day.freeSlots.length !== 1 ? 's' : '' }} libre{{ day.freeSlots.length !== 1 ? 's' : '' }}
-            </div>
-
-            <!-- no appointments -->
-            <div
-              v-if="day.isWorkday && !day.appointments.length && !day.blockedSlots.length"
-              class="rounded-xl border border-dashed border-slate-200 py-2 text-center text-xs text-slate-400"
-            >
-              Sin citas
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
+    <NuxtLink to="/appointments" class="calendar-fab" aria-label="Registrar cita">
+      <UIcon name="i-heroicons-plus-20-solid" />
+    </NuxtLink>
   </div>
 </template>
+
+<style scoped>
+.calendar-page {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 64rem;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calendar-title {
+  margin: 0;
+  color: #122c2f;
+  font-size: clamp(2.2rem, 4vw, 3.3rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.calendar-subtitle {
+  margin: 0.45rem 0 0;
+  color: #7d9ea2;
+  font-size: 1.2rem;
+}
+
+.calendar-shell {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.calendar-month-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.calendar-nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.7rem;
+  height: 3.7rem;
+  border: 1px solid #cfe4e1;
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #285e62;
+  font-size: 1.5rem;
+}
+
+.calendar-month-title {
+  margin: 0;
+  text-align: center;
+  color: #111827;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+}
+
+.calendar-message {
+  margin: 0;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  font-weight: 600;
+}
+
+.calendar-message-error {
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.calendar-loading,
+.calendar-empty-state {
+  border-radius: 1.6rem;
+  border: 1px solid #cfe4e1;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 1.2rem;
+  color: #7d9ea2;
+}
+
+.calendar-day-section {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.calendar-day-heading {
+  margin: 0;
+  color: #7b9ea1;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.calendar-day-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.calendar-fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: calc(5.75rem + env(safe-area-inset-bottom));
+  z-index: 35;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.45rem;
+  height: 4.45rem;
+  border-radius: 999px;
+  background: #1b7676;
+  color: white;
+  font-size: 2rem;
+  box-shadow: 0 12px 30px rgba(23, 95, 91, 0.18);
+}
+
+@media (min-width: 961px) {
+  .calendar-fab {
+    bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 960px) {
+  .calendar-header {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .calendar-subtitle {
+    font-size: 1rem;
+  }
+
+  .calendar-nav-button {
+    width: 3.45rem;
+    height: 3.45rem;
+  }
+}
+</style>

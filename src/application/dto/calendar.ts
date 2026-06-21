@@ -30,6 +30,22 @@ export interface CalendarFreeSlot {
   durationMinutes: number
 }
 
+export interface CalendarMonthDayDto {
+  date: string
+  dayOfMonth: number
+  isCurrentMonth: boolean
+  isToday: boolean
+  hasAppointments: boolean
+  appointmentsCount: number
+}
+
+export interface CalendarMonthDto {
+  monthStart: string
+  monthEnd: string
+  selectedDate: string
+  days: CalendarMonthDayDto[]
+}
+
 export interface CalendarDayDto {
   date: string
   weekday: number

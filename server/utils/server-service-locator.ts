@@ -1,5 +1,6 @@
 import { CancelAppointmentUseCase } from '../../src/application/use-cases/cancel-appointment'
 import { GetCalendarDayUseCase } from '../../src/application/use-cases/calendar/get-calendar-day'
+import { GetCalendarMonthUseCase } from '../../src/application/use-cases/calendar/get-calendar-month'
 import { GetCalendarWeekUseCase } from '../../src/application/use-cases/calendar/get-calendar-week'
 import { ChangeAppointmentStatusUseCase } from '../../src/application/use-cases/change-appointment-status'
 import { CreateAvailabilityUseCase } from '../../src/application/use-cases/availability/create-availability'
@@ -116,6 +117,7 @@ export const serverServiceLocator = {
     ),
   },
   calendar: {
+    getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),
     getCalendarDayUseCase: new GetCalendarDayUseCase(
       appointmentRepository,
       availabilityRepository,

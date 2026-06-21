@@ -52,6 +52,7 @@ export const demoPatients: Patient[] = [
   birthDate: null,
   documentId: null,
   administrativeNotes: index % 2 === 0 ? 'Prefiere atencion por la manana.' : null,
+  isUrgent: index === 1 || index === 3,
   createdAt: new Date(today),
   updatedAt: new Date(today),
   deletedAt: null,

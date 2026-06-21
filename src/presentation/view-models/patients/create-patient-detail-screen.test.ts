@@ -10,6 +10,7 @@ const patientFixture = {
   birthDate: null,
   documentId: null,
   administrativeNotes: 'Nota inicial',
+  isUrgent: false,
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -39,6 +40,7 @@ describe('createPatientDetailScreen', () => {
       execute: vi.fn().mockResolvedValue({
         ...patientFixture,
         fullName: 'Ana Torres Ruiz',
+        isUrgent: true,
       }),
     }
 
@@ -51,9 +53,14 @@ describe('createPatientDetailScreen', () => {
     })
 
     await screen.loadPatient()
+    screen.startEditing()
     screen.form.fullName = 'Ana Torres Ruiz'
+    screen.form.isUrgent = true
 
-    await screen.submitPatient()
+    screen.requestSave()
+    expect(screen.isConfirmOpen.value).toBe(true)
+
+    await screen.confirmSave()
 
     expect(updatePatientUseCase.execute).toHaveBeenCalledWith({
       patientId: 'patient_1',
@@ -63,8 +70,33 @@ describe('createPatientDetailScreen', () => {
       birthDate: null,
       documentId: null,
       administrativeNotes: 'Nota inicial',
+      isUrgent: true,
     })
     expect(screen.successMessage.value).toBe('Paciente actualizado correctamente.')
     expect(screen.patient.value?.fullName).toBe('Ana Torres Ruiz')
+    expect(screen.patient.value?.isUrgent).toBe(true)
+    expect(screen.isConfirmOpen.value).toBe(false)
+    expect(screen.isEditing.value).toBe(false)
+  })
+
+  it('reverts unsaved changes when editing is cancelled', async () => {
+    const screen = createPatientDetailScreen({
+      patientId: 'patient_1',
+      getPatientDetailUseCase: {
+        execute: vi.fn().mockResolvedValue(patientFixture),
+      },
+      updatePatientUseCase: {
+        execute: vi.fn(),
+      },
+    })
+
+    await screen.loadPatient()
+    screen.startEditing()
+    screen.form.fullName = 'Cambio sin guardar'
+
+    screen.cancelEditing()
+
+    expect(screen.form.fullName).toBe('Ana Torres')
+    expect(screen.isEditing.value).toBe(false)
   })
 })

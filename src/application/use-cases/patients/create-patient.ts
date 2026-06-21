@@ -13,6 +13,7 @@ export class CreatePatientUseCase {
       birthDate: input.birthDate ?? null,
       documentId: input.documentId ?? null,
       administrativeNotes: input.administrativeNotes ?? null,
+      isUrgent: input.isUrgent ?? false,
     })
   }
 }

@@ -4,6 +4,7 @@ import type { AvailabilityRepository } from '../../../domain/repositories/availa
 import type { PatientRepository } from '../../../domain/repositories/patient-repository'
 import type { ServiceRepository } from '../../../domain/repositories/service-repository'
 import { activeAppointmentStatuses } from '../../../domain/value-objects/appointment-status'
+import { formatLocalDate } from '../../utils/date/local-date'
 import { computeFreeSlots } from './free-slots'
 
 const statusLabels: Record<string, string> = {
@@ -14,10 +15,6 @@ const statusLabels: Record<string, string> = {
   completed: 'Completada',
   cancelled: 'Cancelada',
   no_show: 'No asistio',
-}
-
-function toDateString(date: Date): string {
-  return date.toISOString().slice(0, 10)
 }
 
 export class GetCalendarDayUseCase {
@@ -57,7 +54,7 @@ export class GetCalendarDayUseCase {
     ]
 
     return {
-      date: toDateString(date),
+      date: formatLocalDate(date),
       weekday,
       isWorkday: activeWindows.length > 0,
       availabilityWindows: activeWindows,

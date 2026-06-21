@@ -9,6 +9,7 @@ export interface CreatePatientInput {
   birthDate?: string | null
   documentId?: string | null
   administrativeNotes?: string | null
+  isUrgent?: boolean
 }
 
 export class CreatePatientUseCase {
@@ -26,6 +27,7 @@ export class CreatePatientUseCase {
       birthDate: input.birthDate ?? null,
       documentId: input.documentId ?? null,
       administrativeNotes: input.administrativeNotes ?? null,
+      isUrgent: input.isUrgent ?? false,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,

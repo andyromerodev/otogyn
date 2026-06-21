@@ -1,49 +1,19 @@
 import { reactive, ref } from 'vue'
 import type { Patient } from '~~/src/domain/entities/patient'
 import type { PatientMutationInput } from '~~/src/application/dto/patient-management'
+import { createInitialPatientForm, type PatientScreenPort } from './patient-screen.types'
 
-export interface PatientScreenPort<TInput, TResult> {
-  execute(input: TInput): Promise<TResult>
-}
-
-export interface PatientsScreenDependencies {
-  listPatientsUseCase: { execute(): Promise<Patient[]> }
+export interface PatientCreateScreenDependencies {
   createPatientUseCase: PatientScreenPort<PatientMutationInput, Patient>
 }
 
-const createInitialForm = () => ({
-  fullName: '',
-  phone: '',
-  email: '',
-  birthDate: '',
-  documentId: '',
-  administrativeNotes: '',
-})
-
-export const createPatientsScreen = (dependencies: PatientsScreenDependencies) => {
-  const patients = ref<Patient[]>([])
-  const loading = ref(false)
+export const createPatientCreateScreen = (dependencies: PatientCreateScreenDependencies) => {
   const pending = ref(false)
   const errorMessage = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
+  const createdPatient = ref<Patient | null>(null)
 
-  const form = reactive(createInitialForm())
-
-  const loadPatients = async () => {
-    loading.value = true
-    errorMessage.value = null
-
-    try {
-      patients.value = await dependencies.listPatientsUseCase.execute()
-    } catch (error) {
-      errorMessage.value =
-        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-          ? error.statusMessage
-          : 'No se pudo cargar la lista de pacientes.'
-    } finally {
-      loading.value = false
-    }
-  }
+  const form = reactive(createInitialPatientForm())
 
   const submitPatient = async () => {
     pending.value = true
@@ -51,18 +21,18 @@ export const createPatientsScreen = (dependencies: PatientsScreenDependencies) =
     successMessage.value = null
 
     try {
-      await dependencies.createPatientUseCase.execute({
+      createdPatient.value = await dependencies.createPatientUseCase.execute({
         fullName: form.fullName,
         phone: form.phone,
         email: form.email.trim() || null,
         birthDate: form.birthDate || null,
         documentId: form.documentId.trim() || null,
         administrativeNotes: form.administrativeNotes.trim() || null,
+        isUrgent: form.isUrgent,
       })
 
-      Object.assign(form, createInitialForm())
+      Object.assign(form, createInitialPatientForm())
       successMessage.value = 'Paciente registrado correctamente.'
-      await loadPatients()
     } catch (error) {
       errorMessage.value =
         error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
@@ -74,13 +44,11 @@ export const createPatientsScreen = (dependencies: PatientsScreenDependencies) =
   }
 
   return {
-    patients,
     form,
-    loading,
     pending,
     errorMessage,
     successMessage,
-    loadPatients,
+    createdPatient,
     submitPatient,
   }
 }
