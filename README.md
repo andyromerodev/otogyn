@@ -180,9 +180,10 @@ Variables de entorno que debes configurar en Netlify:
 - `DATABASE_URL`
 - `AUTH_SECRET`
 - `AUTH_URL`
+- `PNPM_FLAGS`
 
 Notas importantes:
 
 - `AUTH_URL` en Netlify debe apuntar al dominio real del sitio, por ejemplo `https://tu-sitio.netlify.app`.
-- Para `pnpm`, Netlify necesita `PNPM_FLAGS=--shamefully-hoist`; esto ya queda definido en `netlify.toml`.
+- Para `pnpm`, Netlify necesita definir `PNPM_FLAGS` en la configuracion del sitio. No guardes su valor literal en el repositorio.
 - El build configurado es `pnpm build` y el publish directory es `dist`, siguiendo la guia oficial de Nuxt/Nitro para Netlify.
