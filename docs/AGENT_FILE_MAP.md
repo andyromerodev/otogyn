@@ -1,6 +1,6 @@
 # Agent File Map
 
-Generated: 2026-06-21T18:49:25.198Z
+Generated: 2026-06-21T20:13:26.391Z
 
 Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual del codigo por capa y feature.
 
@@ -12,6 +12,12 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 - `app/pages/patients/index.vue`
 - `app/pages/patients/new.vue`
 
+### services
+
+- `app/pages/services/[id].vue`
+- `app/pages/services/index.vue`
+- `app/pages/services/new.vue`
+
 ### shared
 
 - `app/pages/appointments.vue`
@@ -22,7 +28,6 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 - `app/pages/dashboard.vue`
 - `app/pages/index.vue`
 - `app/pages/login.vue`
-- `app/pages/services.vue`
 - `app/pages/settings.vue`
 - `app/pages/signup.vue`
 
@@ -48,7 +53,9 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 
 ### services
 
-- `app/composables/services/use-services-screen.ts`
+- `app/composables/services/use-service-create-screen.ts`
+- `app/composables/services/use-service-detail-screen.ts`
+- `app/composables/services/use-services-list-screen.ts`
 
 ### settings
 
@@ -96,8 +103,13 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 
 ### services
 
-- `src/presentation/view-models/services/create-services-screen.test.ts`
-- `src/presentation/view-models/services/create-services-screen.ts`
+- `src/presentation/view-models/services/create-service-create-screen.test.ts`
+- `src/presentation/view-models/services/create-service-create-screen.ts`
+- `src/presentation/view-models/services/create-service-detail-screen.test.ts`
+- `src/presentation/view-models/services/create-service-detail-screen.ts`
+- `src/presentation/view-models/services/create-services-list-screen.test.ts`
+- `src/presentation/view-models/services/create-services-list-screen.ts`
+- `src/presentation/view-models/services/service-screen.types.ts`
 
 ### settings
 
@@ -177,6 +189,7 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 ### services
 
 - `src/application/use-cases/services/create-service.ts`
+- `src/application/use-cases/services/get-service-detail.ts`
 - `src/application/use-cases/services/get-service-screen-context.ts`
 - `src/application/use-cases/services/list-services.ts`
 - `src/application/use-cases/services/update-service.ts`
@@ -219,6 +232,8 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 - `src/application/use-cases/get-dashboard-summary.test.ts`
 - `src/application/use-cases/get-dashboard-summary.ts`
 - `src/application/use-cases/get-patient-detail.ts`
+- `src/application/use-cases/get-service-detail.test.ts`
+- `src/application/use-cases/get-service-detail.ts`
 - `src/application/use-cases/get-today-appointments.ts`
 - `src/application/use-cases/list-assistants.ts`
 - `src/application/use-cases/list-patients.test.ts`
@@ -444,6 +459,7 @@ Este archivo se genera con `pnpm docs:update` y muestra la distribucion actual d
 
 ### services
 
+- `server/api/services/[id].get.ts`
 - `server/api/services/[id].patch.ts`
 - `server/api/services/index.get.ts`
 - `server/api/services/index.post.ts`
