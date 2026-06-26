@@ -14,4 +14,5 @@ export interface ServiceRepository {
   findById(id: string): Promise<MedicalService | null>
   create(service: MedicalService): Promise<MedicalService>
   update(input: UpdateServiceInput): Promise<MedicalService>
+  delete(id: string): Promise<void>
 }

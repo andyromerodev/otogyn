@@ -39,4 +39,14 @@ export class MockServiceRepository implements ServiceRepository {
 
     return this.services[index]!
   }
+
+  async delete(id: string): Promise<void> {
+    const index = this.services.findIndex((service) => service.id === id)
+
+    if (index === -1) {
+      throw new Error('Service not found')
+    }
+
+    this.services.splice(index, 1)
+  }
 }

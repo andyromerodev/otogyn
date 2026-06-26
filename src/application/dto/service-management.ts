@@ -17,6 +17,14 @@ export interface ServiceUpdateInput {
   isActive?: boolean
 }
 
+export interface ServiceDetailInput {
+  serviceId: string
+}
+
+export interface ServiceDeleteInput {
+  serviceId: string
+}
+
 export interface ServiceScreenContextDto {
   userId: string
   organizationId: string

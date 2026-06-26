@@ -1,4 +1,5 @@
 import { asc, eq } from 'drizzle-orm'
+import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { MedicalService } from '../../domain/entities/medical-service'
 import type { ServiceRepository, UpdateServiceInput } from '../../domain/repositories/service-repository'
 import { getDrizzleClient } from '../database/drizzle/client'
@@ -15,6 +16,31 @@ const mapService = (row: typeof services.$inferSelect): MedicalService => ({
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 })
+
+const isForeignKeyDeleteRestriction = (error: unknown): boolean => {
+  const candidates = [
+    error,
+    error && typeof error === 'object' && 'cause' in error ? error.cause : null,
+  ]
+
+  return candidates.some((candidate) => {
+    if (!candidate || typeof candidate !== 'object') {
+      return false
+    }
+
+    const code = 'code' in candidate && typeof candidate.code === 'string' ? candidate.code : null
+    const message =
+      'message' in candidate && typeof candidate.message === 'string'
+        ? candidate.message
+        : null
+
+    return (
+      code === '23503' ||
+      message?.includes('violates foreign key constraint') === true ||
+      message?.includes('appointments_service_id_services_id_fk') === true
+    )
+  })
+}
 
 export class DrizzleServiceRepository implements ServiceRepository {
   private readonly db = getDrizzleClient()
@@ -85,5 +111,19 @@ export class DrizzleServiceRepository implements ServiceRepository {
       .limit(1)
 
     return mapService(rows[0]!)
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      await this.db
+        .delete(services)
+        .where(eq(services.id, id))
+    } catch (error) {
+      if (isForeignKeyDeleteRestriction(error)) {
+        throw new BusinessRuleError('No se puede eliminar un servicio con citas asociadas.')
+      }
+
+      throw error
+    }
   }
 }

@@ -9,10 +9,12 @@ import { CreateAssistantUseCase } from '../../src/application/use-cases/create-a
 import { CreatePatientUseCase } from '../../src/application/use-cases/create-patient'
 import { CreateServiceUseCase } from '../../src/application/use-cases/create-service'
 import { DeactivateAssistantUseCase } from '../../src/application/use-cases/deactivate-assistant'
+import { DeleteServiceUseCase } from '../../src/application/use-cases/delete-service'
 import { DeleteAssistantUseCase } from '../../src/application/use-cases/delete-assistant'
 import { DeleteBlockedSlotUseCase } from '../../src/application/use-cases/availability/delete-blocked-slot'
 import { GetDashboardSummaryUseCase } from '../../src/application/use-cases/get-dashboard-summary'
 import { GetPatientDetailUseCase } from '../../src/application/use-cases/get-patient-detail'
+import { GetServiceDetailUseCase } from '../../src/application/use-cases/get-service-detail'
 import { GetTodayAppointmentsUseCase } from '../../src/application/use-cases/get-today-appointments'
 import { ListAssistantsUseCase } from '../../src/application/use-cases/list-assistants'
 import { ListAvailabilityUseCase } from '../../src/application/use-cases/availability/list-availability'
@@ -65,8 +67,10 @@ export const serverServiceLocator = {
   },
   services: {
     listServicesUseCase: new ListServicesUseCase(serviceRepository),
+    getServiceDetailUseCase: new GetServiceDetailUseCase(serviceRepository),
     createServiceUseCase: new CreateServiceUseCase(serviceRepository),
     updateServiceUseCase: new UpdateServiceUseCase(serviceRepository),
+    deleteServiceUseCase: new DeleteServiceUseCase(serviceRepository),
   },
   availability: {
     listAvailabilityUseCase: new ListAvailabilityUseCase(availabilityRepository),

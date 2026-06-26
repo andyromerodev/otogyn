@@ -1,4 +1,6 @@
 import type {
+  ServiceDeleteInput,
+  ServiceDetailInput,
   ServiceListResult,
   ServiceMutationInput,
   ServiceScreenContextDto,
@@ -15,12 +17,20 @@ export class ServiceManagementRepositoryImpl implements ServiceManagementReposit
     return this.remoteDataSource.listServices()
   }
 
+  getServiceDetail(input: ServiceDetailInput): Promise<MedicalService> {
+    return this.remoteDataSource.getServiceDetail(input.serviceId)
+  }
+
   createService(input: ServiceMutationInput): Promise<MedicalService> {
     return this.remoteDataSource.createService(input)
   }
 
   updateService(input: ServiceUpdateInput): Promise<MedicalService> {
     return this.remoteDataSource.updateService(input)
+  }
+
+  deleteService(input: ServiceDeleteInput): Promise<void> {
+    return this.remoteDataSource.deleteService(input)
   }
 
   getScreenContext(): Promise<ServiceScreenContextDto> {
