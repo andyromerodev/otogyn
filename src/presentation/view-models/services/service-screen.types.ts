@@ -10,6 +10,33 @@ export interface ServiceFormState {
   isActive: boolean
 }
 
+export const normalizeServiceApiError = (error: unknown, fallback: string): string => {
+  if (!error || typeof error !== 'object') {
+    return fallback
+  }
+
+  if ('statusMessage' in error && typeof error.statusMessage === 'string' && error.statusMessage.length > 0) {
+    return error.statusMessage
+  }
+
+  if (
+    'data' in error &&
+    error.data &&
+    typeof error.data === 'object' &&
+    'message' in error.data &&
+    typeof error.data.message === 'string' &&
+    error.data.message.length > 0
+  ) {
+    return error.data.message
+  }
+
+  if ('message' in error && typeof error.message === 'string' && error.message.length > 0) {
+    return error.message
+  }
+
+  return fallback
+}
+
 export const createInitialServiceForm = (): ServiceFormState => ({
   name: '',
   description: '',

@@ -6,7 +6,12 @@ import type {
   ServiceScreenContextDto,
   ServiceUpdateInput,
 } from '../../../application/dto/service-management'
-import { createInitialServiceForm, normalizeOptionalPrice, type ServiceScreenPort } from './service-screen.types'
+import {
+  createInitialServiceForm,
+  normalizeOptionalPrice,
+  normalizeServiceApiError,
+  type ServiceScreenPort,
+} from './service-screen.types'
 
 export interface ServiceDetailScreenDependencies {
   serviceId: string
@@ -49,10 +54,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
       })
       syncForm(service.value)
     } catch (error) {
-      errorMessage.value =
-        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-          ? error.statusMessage
-          : 'No se pudo cargar el servicio.'
+      errorMessage.value = normalizeServiceApiError(error, 'No se pudo cargar el servicio.')
     } finally {
       loading.value = false
     }
@@ -80,10 +82,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
       successMessage.value = 'Servicio actualizado correctamente.'
       isEditing.value = false
     } catch (error) {
-      errorMessage.value =
-        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-          ? error.statusMessage
-          : 'No se pudo actualizar el servicio.'
+      errorMessage.value = normalizeServiceApiError(error, 'No se pudo actualizar el servicio.')
     } finally {
       pending.value = false
     }
@@ -118,10 +117,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
       deleted.value = true
       isDeleteConfirmOpen.value = false
     } catch (error) {
-      const message =
-        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-          ? error.statusMessage
-          : 'No se pudo eliminar el servicio.'
+      const message = normalizeServiceApiError(error, 'No se pudo eliminar el servicio.')
 
       if (message === 'No se puede eliminar un servicio con citas asociadas.') {
         isDeleteConfirmOpen.value = false
@@ -139,10 +135,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
     try {
       screenContext.value = await dependencies.getServiceScreenContextUseCase.execute()
     } catch (error) {
-      errorMessage.value =
-        error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-          ? error.statusMessage
-          : 'No se pudo cargar el contexto del usuario.'
+      errorMessage.value = normalizeServiceApiError(error, 'No se pudo cargar el contexto del usuario.')
     }
   }
 
