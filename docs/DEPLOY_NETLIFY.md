@@ -17,7 +17,7 @@ La app usa:
 El deploy ya fue validado con exito en:
 
 - sitio: `otogyn`
-- dominio principal: `https://otogyn.netlify.app`
+- dominio principal: `https://<tu-sitio>.netlify.app`
 - rama de trabajo validada: `feature/mvp-appointments-platform`
 
 ## Reglas obligatorias
@@ -63,10 +63,10 @@ Configurar en `Site settings -> Environment variables`:
 
 - `AUTH_URL` debe ser el dominio real del sitio en Netlify.
 - Ejemplo correcto:
-  - `https://otogyn.netlify.app`
+  - `https://<tu-sitio>.netlify.app`
 - `AUTH_URL` no debe incluir `/api/auth`.
 - Ejemplo incorrecto:
-  - `https://otogyn.netlify.app/api/auth`
+  - `https://<tu-sitio>.netlify.app/api/auth`
 - `PNPM_FLAGS` no debe copiarse en documentacion versionada.
 
 ## Flujo correcto de primer deploy desde la web
@@ -214,7 +214,7 @@ Causa observada:
 Solucion validada:
 
 - `AUTH_URL` en Netlify debe ser solo el origen:
-  - `https://otogyn.netlify.app`
+  - `https://<tu-sitio>.netlify.app`
 - El cliente frontend de Better Auth debe usar `basePath: '/api/auth'` y no depender de una `baseURL` absoluta para render SSR.
 
 Archivos del fix aplicado:
