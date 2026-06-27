@@ -4,13 +4,13 @@ let authClient: ReturnType<typeof createAuthClient> | null = null
 
 export type BetterAuthClient = ReturnType<typeof createAuthClient>
 
-export const getBetterAuthClient = (baseURL: string): BetterAuthClient => {
+export const getBetterAuthClient = (): BetterAuthClient => {
   if (authClient) {
     return authClient
   }
 
   authClient = createAuthClient({
-    baseURL,
+    basePath: '/api/auth',
   })
 
   return authClient
