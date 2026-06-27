@@ -1,4 +1,3 @@
-import type { Patient } from '../../domain/entities/patient'
 import type { PatientListFilter, PatientListItem } from '../../domain/repositories/patient-repository'
 
 export interface PatientMutationInput {
