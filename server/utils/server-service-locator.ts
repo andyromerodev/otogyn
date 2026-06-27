@@ -12,6 +12,7 @@ import { DeactivateAssistantUseCase } from '../../src/application/use-cases/deac
 import { DeleteServiceUseCase } from '../../src/application/use-cases/delete-service'
 import { DeleteAssistantUseCase } from '../../src/application/use-cases/delete-assistant'
 import { DeleteBlockedSlotUseCase } from '../../src/application/use-cases/availability/delete-blocked-slot'
+import { GetAppointmentDetailUseCase } from '../../src/application/use-cases/get-appointment-detail'
 import { GetDashboardSummaryUseCase } from '../../src/application/use-cases/get-dashboard-summary'
 import { GetPatientDetailUseCase } from '../../src/application/use-cases/get-patient-detail'
 import { GetServiceDetailUseCase } from '../../src/application/use-cases/get-service-detail'
@@ -91,6 +92,11 @@ export const serverServiceLocator = {
   },
   appointments: {
     scheduleAppointmentUseCase,
+    getAppointmentDetailUseCase: new GetAppointmentDetailUseCase(
+      appointmentRepository,
+      patientRepository,
+      serviceRepository,
+    ),
     getTodayAppointmentsUseCase: new GetTodayAppointmentsUseCase(
       appointmentRepository,
       patientRepository,

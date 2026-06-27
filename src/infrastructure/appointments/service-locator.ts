@@ -1,6 +1,7 @@
 import { CancelAppointmentUseCase } from '../../application/use-cases/appointments/cancel-appointment'
 import { ChangeAppointmentStatusUseCase } from '../../application/use-cases/appointments/change-appointment-status'
 import { CreateAppointmentUseCase } from '../../application/use-cases/appointments/create-appointment'
+import { GetAppointmentDetailUseCase } from '../../application/use-cases/appointments/get-appointment-detail'
 import { GetAppointmentSessionContextUseCase } from '../../application/use-cases/appointments/get-appointment-session-context'
 import { ListAppointmentPatientsUseCase } from '../../application/use-cases/appointments/list-appointment-patients'
 import { ListAppointmentServicesUseCase } from '../../application/use-cases/appointments/list-appointment-services'
@@ -13,6 +14,7 @@ const appointmentRemoteDataSource = new HttpAppointmentRemoteDataSource()
 const appointmentRepository = new AppointmentManagementRepositoryImpl(appointmentRemoteDataSource)
 
 export const appointmentServiceLocator = {
+  getAppointmentDetailUseCase: new GetAppointmentDetailUseCase(appointmentRepository),
   getAppointmentSessionContextUseCase: new GetAppointmentSessionContextUseCase(appointmentRepository),
   listAppointmentPatientsUseCase: new ListAppointmentPatientsUseCase(appointmentRepository),
   listAppointmentServicesUseCase: new ListAppointmentServicesUseCase(appointmentRepository),

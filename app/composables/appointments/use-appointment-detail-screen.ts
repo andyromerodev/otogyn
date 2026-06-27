@@ -1,19 +1,19 @@
 import { appointmentServiceLocator } from '~~/src/infrastructure/appointments/service-locator'
-import { createAppointmentsScreen } from '~~/src/presentation/view-models/appointments/create-appointments-screen'
+import { createAppointmentDetailScreen } from '~~/src/presentation/view-models/appointments/create-appointment-detail-screen'
 
-export const useAppointmentsScreen = async () => {
-  const screen = createAppointmentsScreen({
-    getAppointmentSessionContextUseCase: appointmentServiceLocator.getAppointmentSessionContextUseCase,
+export const useAppointmentDetailScreen = async (appointmentId: string) => {
+  const screen = createAppointmentDetailScreen({
+    appointmentId,
+    getAppointmentDetailUseCase: appointmentServiceLocator.getAppointmentDetailUseCase,
     listAppointmentPatientsUseCase: appointmentServiceLocator.listAppointmentPatientsUseCase,
     listAppointmentServicesUseCase: appointmentServiceLocator.listAppointmentServicesUseCase,
-    listTodayAppointmentsUseCase: appointmentServiceLocator.listTodayAppointmentsUseCase,
+    getAppointmentSessionContextUseCase: appointmentServiceLocator.getAppointmentSessionContextUseCase,
     updateAppointmentUseCase: appointmentServiceLocator.updateAppointmentUseCase,
     cancelAppointmentUseCase: appointmentServiceLocator.cancelAppointmentUseCase,
     changeAppointmentStatusUseCase: appointmentServiceLocator.changeAppointmentStatusUseCase,
-    createAppointmentUseCase: appointmentServiceLocator.createAppointmentUseCase,
   })
 
-  await screen.loadScreenData()
+  await Promise.all([screen.loadAppointment(), screen.loadFormOptions(), screen.loadSessionContext()])
 
   return screen
 }

@@ -29,3 +29,4 @@ export interface AppointmentSessionContextDto {
 export type AppointmentPatientListResult = Patient[]
 export type AppointmentServiceListResult = MedicalService[]
 export type TodayAppointmentListResult = TodayAppointmentViewModel[]
+export type AppointmentDetailResult = TodayAppointmentViewModel

@@ -1,4 +1,5 @@
 import type {
+  AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
   AppointmentPatientListResult,
@@ -11,6 +12,10 @@ import type { Appointment } from '../../../domain/entities/appointment'
 import type { AppointmentRemoteDataSource } from './appointment-remote-data-source'
 
 export class HttpAppointmentRemoteDataSource implements AppointmentRemoteDataSource {
+  async getAppointmentDetail(appointmentId: string): Promise<AppointmentDetailResult> {
+    return $fetch<AppointmentDetailResult>(`/api/appointments/${appointmentId}` as string)
+  }
+
   async listPatients(): Promise<AppointmentPatientListResult> {
     return $fetch<AppointmentPatientListResult>('/api/appointments/patients' as string)
   }

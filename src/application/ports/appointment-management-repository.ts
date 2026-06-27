@@ -1,4 +1,5 @@
 import type {
+  AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
   AppointmentPatientListResult,
@@ -10,6 +11,7 @@ import type {
 import type { Appointment } from '../../domain/entities/appointment'
 
 export interface AppointmentManagementRepository {
+  getAppointmentDetail(appointmentId: string): Promise<AppointmentDetailResult>
   listPatients(): Promise<AppointmentPatientListResult>
   listServices(): Promise<AppointmentServiceListResult>
   listTodayAppointments(): Promise<TodayAppointmentListResult>

@@ -1,4 +1,5 @@
 import type {
+  AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
   AppointmentPatientListResult,
@@ -13,6 +14,10 @@ import type { AppointmentRemoteDataSource } from '../remote/appointment-remote-d
 
 export class AppointmentManagementRepositoryImpl implements AppointmentManagementRepository {
   constructor(private readonly remoteDataSource: AppointmentRemoteDataSource) {}
+
+  getAppointmentDetail(appointmentId: string): Promise<AppointmentDetailResult> {
+    return this.remoteDataSource.getAppointmentDetail(appointmentId)
+  }
 
   listPatients(): Promise<AppointmentPatientListResult> {
     return this.remoteDataSource.listPatients()
