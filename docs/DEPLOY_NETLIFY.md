@@ -64,6 +64,9 @@ Configurar en `Site settings -> Environment variables`:
 - `AUTH_URL` debe ser el dominio real del sitio en Netlify.
 - Ejemplo correcto:
   - `https://otogyn.netlify.app`
+- `AUTH_URL` no debe incluir `/api/auth`.
+- Ejemplo incorrecto:
+  - `https://otogyn.netlify.app/api/auth`
 - `PNPM_FLAGS` no debe copiarse en documentacion versionada.
 
 ## Flujo correcto de primer deploy desde la web
@@ -200,6 +203,30 @@ Revisar:
 - `DATABASE_URL`
 - tablas de Better Auth y Drizzle aplicadas
 - migraciones ejecutadas en la base correcta
+
+### 5. `500 Server Error` en `/login` con `Invalid base URL`
+
+Causa observada:
+
+- Better Auth en SSR puede fallar si el cliente frontend se inicializa con una `baseURL` absoluta incorrecta o si `AUTH_URL` incluye `/api/auth`.
+- En este proyecto, el caso real validado en Netlify fue un `500` al abrir `/login` aunque `/api/auth/get-session` respondia bien.
+
+Solucion validada:
+
+- `AUTH_URL` en Netlify debe ser solo el origen:
+  - `https://otogyn.netlify.app`
+- El cliente frontend de Better Auth debe usar `basePath: '/api/auth'` y no depender de una `baseURL` absoluta para render SSR.
+
+Archivos del fix aplicado:
+
+- `src/infrastructure/auth/client/better-auth-client.ts`
+- `app/utils/auth-client.ts`
+
+Validacion posterior al fix:
+
+- `GET /login` responde `200`
+- `GET /` responde `302 -> /login` sin error
+- `GET /api/auth/get-session` responde `200`
 
 ## Regla de ramas
 
