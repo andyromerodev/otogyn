@@ -25,7 +25,7 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
       <NuxtLink to="/calendar" class="schedule-see-all">Ver todo</NuxtLink>
     </div>
 
-    <div class="schedule-list">
+    <div v-if="appointments.length" class="schedule-list">
       <article v-for="appointment in appointments" :key="appointment.id" class="schedule-item">
         <SharedAvatarInitials :name="appointment.patientName" size="sm" />
 
@@ -46,6 +46,10 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
           </UBadge>
         </div>
       </article>
+    </div>
+
+    <div v-else class="schedule-empty-state">
+      No hay citas registradas para hoy.
     </div>
   </div>
 </template>
@@ -72,6 +76,14 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
 .schedule-list {
   display: grid;
   gap: 0.85rem;
+}
+
+.schedule-empty-state {
+  border-radius: 1.1rem;
+  background: rgba(248, 252, 251, 0.96);
+  border: 1px solid rgba(15, 118, 110, 0.08);
+  padding: 1rem;
+  color: var(--text-soft);
 }
 
 .schedule-item {
