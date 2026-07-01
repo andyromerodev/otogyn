@@ -29,6 +29,13 @@
       "when": 1781983972390,
       "tag": "0003_bumpy_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783310592000,
+      "tag": "0004_appointments_no_overlap",
+      "breakpoints": true
     }
   ]
 }

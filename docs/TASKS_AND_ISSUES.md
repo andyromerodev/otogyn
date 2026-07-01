@@ -215,7 +215,7 @@ Convencion sugerida de nombre visible:
 1. `E11.1 Hardening final de produccion`
    - ✅ headers de seguridad HTTP agregados via `routeRules['/**'].headers` en `nuxt.config.ts` (Nitro, agnostico de Netlify): `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`. CSP solo se activa en produccion (`NODE_ENV === 'production'`) para no romper HMR/devtools en dev; `script-src`/`style-src` requieren `'unsafe-inline'` porque Nuxt SSR inyecta el payload `__NUXT__` y el bootstrap de color-mode sin nonce.
    - pendiente: definir CORS explicito para `/api/public/*` si el formulario publico se consume fuera del mismo dominio (no hay requisito confirmado todavia, se deja pendiente a proposito)
-   - evaluar constraint/refuerzo en DB para doble reserva como defensa extra ademas de la transaccion SERIALIZABLE
+   - ✅ constraint en DB contra doble reserva: migracion `0004_appointments_no_overlap.sql` agrega `EXCLUDE USING gist (organization_id WITH =, tstzrange(start_at, end_at) WITH &&) WHERE status IN (activos)` sobre `appointments` (requiere extension `btree_gist`). Defensa extra a nivel de PostgreSQL ademas de la transaccion SERIALIZABLE existente en `saveWithLock`. Validado manualmente: inserta cita, intenta solapar, PostgreSQL rechaza con `conflicting key value violates exclusion constraint`.
 2. `E12.1 Testing de integracion critica`
    - pruebas de login, reserva publica y borrado bloqueado de servicios
    - smoke tests de rutas admin principales
