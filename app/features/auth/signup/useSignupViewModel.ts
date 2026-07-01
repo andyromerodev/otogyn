@@ -1,11 +1,11 @@
-import { createSignupScreen } from '~~/src/presentation/view-models/auth/create-signup-screen'
+import { createSignupViewModel } from '~~/src/presentation/view-models/auth/signup-view-model'
 import { useAuthServices } from '../authServiceLocator'
 import { navigateAfterAuth } from '../navigateAfterAuth'
 
 export const useSignupViewModel = () => {
   const { signUpUseCase } = useAuthServices()
 
-  return createSignupScreen({
+  return createSignupViewModel({
     signUpUseCase,
     navigate: navigateAfterAuth,
   })

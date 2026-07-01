@@ -1,13 +1,12 @@
 import { reactive, ref } from 'vue'
-import type { SignUpInput } from '../../../application/dto/auth'
-import type { LoginScreenPort } from './create-login-screen'
+import type { SignupViewModelDependencies } from './signup-view-model.module'
 
-export interface SignupScreenDependencies {
-  signUpUseCase: LoginScreenPort<SignUpInput>
-  navigate: (to: string) => unknown | Promise<unknown>
-}
+export type { SignupViewModelDependencies } from './signup-view-model.module'
 
-export const createSignupScreen = (dependencies: SignupScreenDependencies) => {
+// Factory del ViewModel — equivale al constructor de SignupViewModel : ViewModel()
+export const createSignupViewModel = (dependencies: SignupViewModelDependencies) => {
+  // Como MutableStateFlow<SignUpForm> — estado mutable del formulario,
+  // ligado 2-way a los campos del template via v-model (equivale a onNameChanged / onEmailChanged / etc.)
   const signUpForm = reactive({
     name: '',
     professionalLicense: '',
@@ -19,10 +18,18 @@ export const createSignupScreen = (dependencies: SignupScreenDependencies) => {
     acceptedTerms: false,
   })
 
+  // Como StateFlow<String?> — expuesto read-only a la UI;
+  // solo el ViewModel lo muta internamente via .value (nunca desde el template)
   const errorMessage = ref<string | null>(null)
+
+  // Como StateFlow<String?> — mensaje de éxito tras el registro, observado por la UI
   const successMessage = ref<string | null>(null)
+
+  // Como StateFlow<Boolean> — la UI lo observa para deshabilitar el botón de submit
   const pending = ref(false)
 
+  // Equivale a fun onSignUpClicked() en el ViewModel de Android — lanza la lógica de negocio
+  // y actualiza los StateFlows según el resultado
   const submitSignUp = async () => {
     errorMessage.value = null
     successMessage.value = null

@@ -1,4 +1,4 @@
-import { createLoginScreen } from '~~/src/presentation/view-models/auth/create-login-screen'
+import { createLoginViewModel } from '~~/src/presentation/view-models/auth/login-view-model'
 import { useAuthServices } from '../authServiceLocator'
 import { navigateAfterAuth } from '../navigateAfterAuth'
 
@@ -6,7 +6,7 @@ export const useLoginViewModel = () => {
   const route = useRoute()
   const { getAccessStatusUseCase, signInUseCase, signOutUseCase } = useAuthServices()
 
-  const screen = createLoginScreen({
+  const viewModel = createLoginViewModel({
     getAccessStatusUseCase,
     signInUseCase,
     signOutUseCase,
@@ -22,8 +22,8 @@ export const useLoginViewModel = () => {
   })
 
   onMounted(() => {
-    void screen.applyRouteReason()
+    void viewModel.applyRouteReason()
   })
 
-  return screen
+  return viewModel
 }

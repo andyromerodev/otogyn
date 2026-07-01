@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createLoginScreen } from './create-login-screen'
+import { createLoginViewModel } from './login-view-model'
 
-describe('createLoginScreen', () => {
+describe('createLoginViewModel', () => {
   it('sets pending and navigates to redirect after a successful sign in', async () => {
     const navigate = vi.fn().mockResolvedValue(undefined)
     const getAccessStatusUseCase = {
@@ -14,7 +14,7 @@ describe('createLoginScreen', () => {
       }),
     }
 
-    const screen = createLoginScreen({
+    const screen = createLoginViewModel({
       getAccessStatusUseCase,
       signInUseCase,
       signOutUseCase: {
@@ -43,7 +43,7 @@ describe('createLoginScreen', () => {
   })
 
   it('shows the error message and clears previous success after a failed sign in', async () => {
-    const screen = createLoginScreen({
+    const screen = createLoginViewModel({
       getAccessStatusUseCase: {
         execute: vi.fn().mockResolvedValue({ allowed: true }),
       },
@@ -72,7 +72,7 @@ describe('createLoginScreen', () => {
       execute: vi.fn().mockResolvedValue(undefined),
     }
 
-    const screen = createLoginScreen({
+    const screen = createLoginViewModel({
       getAccessStatusUseCase: {
         execute: vi.fn().mockResolvedValue({ allowed: false, reason: 'deactivated' }),
       },
@@ -100,7 +100,7 @@ describe('createLoginScreen', () => {
       execute: vi.fn().mockResolvedValue(undefined),
     }
 
-    const screen = createLoginScreen({
+    const screen = createLoginViewModel({
       getAccessStatusUseCase: {
         execute: vi.fn().mockResolvedValue({ allowed: true }),
       },

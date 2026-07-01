@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createSignupScreen } from './create-signup-screen'
+import { createSignupViewModel } from './signup-view-model'
 
-describe('createSignupScreen', () => {
+describe('createSignupViewModel', () => {
   it('shows success and navigates to dashboard after a successful sign up', async () => {
     const navigate = vi.fn().mockResolvedValue(undefined)
     const signUpUseCase = {
       execute: vi.fn().mockResolvedValue({ success: true, data: null }),
     }
 
-    const screen = createSignupScreen({
+    const screen = createSignupViewModel({
       signUpUseCase,
       navigate,
     })
@@ -37,7 +37,7 @@ describe('createSignupScreen', () => {
       execute: vi.fn(),
     }
 
-    const screen = createSignupScreen({
+    const screen = createSignupViewModel({
       signUpUseCase,
       navigate: vi.fn(),
     })
@@ -57,7 +57,7 @@ describe('createSignupScreen', () => {
       execute: vi.fn(),
     }
 
-    const screen = createSignupScreen({
+    const screen = createSignupViewModel({
       signUpUseCase,
       navigate: vi.fn(),
     })

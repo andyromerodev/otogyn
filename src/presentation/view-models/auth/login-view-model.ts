@@ -1,5 +1,7 @@
 import { computed, reactive, ref } from 'vue'
-import type { AuthAccessReason, SignInInput } from '../../../application/dto/auth'
+import type { LoginViewModelDependencies } from './login-view-model.module'
+
+export type { LoginViewModelPort, LoginViewModelDependencies } from './login-view-model.module'
 
 const normalizeRedirectTo = (redirectTo: string) => {
   if (!redirectTo.startsWith('/') || redirectTo.startsWith('//') || redirectTo.startsWith('/login')) {
@@ -9,37 +11,32 @@ const normalizeRedirectTo = (redirectTo: string) => {
   return redirectTo
 }
 
-export interface LoginScreenPort<TInput> {
-  execute(input: TInput): Promise<{ success: true } | { success: false; error: string }>
-}
-
-export interface LoginScreenDependencies {
-  signInUseCase: LoginScreenPort<SignInInput>
-  getAccessStatusUseCase: {
-    execute(): Promise<{ allowed: boolean; reason?: AuthAccessReason }>
-  }
-  signOutUseCase: {
-    execute(): Promise<void>
-  }
-  navigate: (to: string) => unknown | Promise<unknown>
-  resolveRedirectTo: () => string
-  resolveLoginReason: () => string | null
-}
-
-export const createLoginScreen = (dependencies: LoginScreenDependencies) => {
+// Factory del ViewModel — equivale al constructor de LoginViewModel : ViewModel()
+export const createLoginViewModel = (dependencies: LoginViewModelDependencies) => {
+  // val loginReason: String? — snapshot de query param leído una sola vez en el init,
+  // equivale a savedStateHandle.get<String>("reason") en Android
   const loginReason = dependencies.resolveLoginReason()
+
+  // Como MutableStateFlow<SignInForm> — estado mutable del formulario,
+  // ligado 2-way a los campos del template via v-model (equivale a onEmailChanged / onPasswordChanged)
   const signInForm = reactive({
     email: '',
     password: '',
   })
 
+  // Como StateFlow<String?> — expuesto read-only a la UI;
+  // solo el ViewModel lo muta internamente via .value (nunca desde el template)
   const errorMessage = ref<string | null>(
     loginReason === 'deactivated'
       ? 'Tu usuario fue desactivado. Contacta a la doctora administradora.'
       : null,
   )
+
+  // Como StateFlow<Boolean> — la UI lo observa para deshabilitar el botón de submit
   const pending = ref(false)
 
+  // Como derivedStateOf { } o combine(routeStateFlow) — valor calculado y cacheado,
+  // se recalcula automáticamente si cambia su fuente reactiva
   const redirectTo = computed(() => normalizeRedirectTo(dependencies.resolveRedirectTo()))
 
   const applyRouteReason = async () => {
@@ -54,6 +51,8 @@ export const createLoginScreen = (dependencies: LoginScreenDependencies) => {
     }
   }
 
+  // Equivale a fun onSignInClicked() en el ViewModel de Android — lanza la lógica de negocio
+  // y actualiza los StateFlows según el resultado
   const submitSignIn = async () => {
     errorMessage.value = null
     pending.value = true
