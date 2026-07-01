@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createServiceDetailScreen } from './create-service-detail-screen'
+import { createServiceDetailViewModel } from './service-detail-view-model'
 
 const serviceFixture = {
   id: 'svc_1',
@@ -13,10 +13,10 @@ const serviceFixture = {
   updatedAt: new Date(),
 }
 
-describe('createServiceDetailScreen delete flow', () => {
+describe('createServiceDetailViewModel delete flow', () => {
   it('opens and confirms delete successfully', async () => {
     const deleteServiceUseCase = { execute: vi.fn().mockResolvedValue(undefined) }
-    const screen = createServiceDetailScreen({
+    const screen = createServiceDetailViewModel({
       serviceId: 'svc_1',
       getServiceDetailUseCase: { execute: vi.fn().mockResolvedValue(serviceFixture) },
       updateServiceUseCase: { execute: vi.fn() },
@@ -35,7 +35,7 @@ describe('createServiceDetailScreen delete flow', () => {
   })
 
   it('keeps the detail screen open and surfaces delete errors', async () => {
-    const screen = createServiceDetailScreen({
+    const screen = createServiceDetailViewModel({
       serviceId: 'svc_1',
       getServiceDetailUseCase: { execute: vi.fn().mockResolvedValue(serviceFixture) },
       updateServiceUseCase: { execute: vi.fn() },
@@ -59,7 +59,7 @@ describe('createServiceDetailScreen delete flow', () => {
   })
 
   it('opens the blocked dialog when the API returns the message in error.data.message', async () => {
-    const screen = createServiceDetailScreen({
+    const screen = createServiceDetailViewModel({
       serviceId: 'svc_1',
       getServiceDetailUseCase: { execute: vi.fn().mockResolvedValue(serviceFixture) },
       updateServiceUseCase: { execute: vi.fn() },

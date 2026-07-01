@@ -1,4 +1,5 @@
-export interface ServiceScreenPort<TInput, TResult> {
+// Equivale a la interfaz genérica de UseCase en Android (ej. ServiceUseCase<TInput, TResult>)
+export interface ServiceViewModelPort<TInput, TResult> {
   execute(input: TInput): Promise<TResult>
 }
 

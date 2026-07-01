@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import ServiceListItem from '../../components/services/service-list-item.vue'
-import { useServicesListScreen } from '../../composables/services/use-services-list-screen'
+import { useServicesListViewModel } from '../../composables/services/use-services-list-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = useServicesListScreen()
+const viewModel = useServicesListViewModel()
 </script>
 
 <template>
@@ -14,11 +14,11 @@ const screen = useServicesListScreen()
     <div class="services-header">
       <div>
         <h1 class="services-title">Servicios</h1>
-        <p class="services-subtitle">{{ screen.totalLabel.value }}</p>
+        <p class="services-subtitle">{{ viewModel.totalLabel.value }}</p>
       </div>
 
       <NuxtLink
-        v-if="screen.canManageServices.value"
+        v-if="viewModel.canManageServices.value"
         to="/services/new"
         class="services-add-desktop"
         aria-label="Registrar servicio"
@@ -28,31 +28,31 @@ const screen = useServicesListScreen()
     </div>
 
     <ClientOnly>
-      <p v-if="screen.errorMessage.value" class="services-message services-message-error">
-        {{ screen.errorMessage.value }}
+      <p v-if="viewModel.errorMessage.value" class="services-message services-message-error">
+        {{ viewModel.errorMessage.value }}
       </p>
 
       <section class="services-list-card">
-        <div v-if="screen.loading.value" class="services-list-state">
+        <div v-if="viewModel.loading.value" class="services-list-state">
           Cargando servicios...
         </div>
 
-        <div v-else-if="screen.services.value.length" class="services-list">
+        <div v-else-if="viewModel.services.value.length" class="services-list">
           <ServiceListItem
-            v-for="service in screen.services.value"
+            v-for="service in viewModel.services.value"
             :key="service.id"
             :service="service"
           />
         </div>
 
         <div v-else class="services-list-state">
-          {{ screen.emptyStateMessage.value }}
+          {{ viewModel.emptyStateMessage.value }}
         </div>
       </section>
     </ClientOnly>
 
     <NuxtLink
-      v-if="screen.canManageServices.value"
+      v-if="viewModel.canManageServices.value"
       to="/services/new"
       class="services-fab"
       aria-label="Registrar servicio"

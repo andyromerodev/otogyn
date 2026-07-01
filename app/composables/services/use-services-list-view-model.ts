@@ -1,16 +1,16 @@
 import { onMounted } from 'vue'
 import { serviceServiceLocator } from '~~/src/infrastructure/services/service-locator'
-import { createServicesListScreen } from '~~/src/presentation/view-models/services/create-services-list-screen'
+import { createServicesListViewModel } from '~~/src/presentation/view-models/services/services-list-view-model'
 
-export const useServicesListScreen = () => {
-  const screen = createServicesListScreen({
+export const useServicesListViewModel = () => {
+  const viewModel = createServicesListViewModel({
     listServicesUseCase: serviceServiceLocator.listServicesUseCase,
     getServiceScreenContextUseCase: serviceServiceLocator.getServiceScreenContextUseCase,
   })
 
   onMounted(() => {
-    void Promise.all([screen.loadServices(), screen.loadScreenContext()])
+    void Promise.all([viewModel.loadServices(), viewModel.loadScreenContext()])
   })
 
-  return screen
+  return viewModel
 }

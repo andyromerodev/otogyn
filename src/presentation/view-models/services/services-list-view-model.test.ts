@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createServicesListScreen } from './create-services-list-screen'
+import { createServicesListViewModel } from './services-list-view-model'
 
 const makeService = (overrides: Partial<{ id: string; name: string; isActive: boolean }> = {}) => ({
   id: overrides.id ?? 'svc_1',
@@ -13,10 +13,10 @@ const makeService = (overrides: Partial<{ id: string; name: string; isActive: bo
   updatedAt: new Date(),
 })
 
-describe('createServicesListScreen', () => {
+describe('createServicesListViewModel', () => {
   it('loads services through use case', async () => {
     const execute = vi.fn().mockResolvedValue([makeService(), makeService({ id: 'svc_2', name: 'Ecografia' })])
-    const screen = createServicesListScreen({
+    const screen = createServicesListViewModel({
       listServicesUseCase: { execute },
       getServiceScreenContextUseCase: { execute: vi.fn() },
     })
@@ -29,7 +29,7 @@ describe('createServicesListScreen', () => {
   })
 
   it('exposes canManageServices based on screen context role', async () => {
-    const screen = createServicesListScreen({
+    const screen = createServicesListViewModel({
       listServicesUseCase: { execute: vi.fn().mockResolvedValue([]) },
       getServiceScreenContextUseCase: {
         execute: vi.fn().mockResolvedValue({
@@ -51,7 +51,7 @@ describe('createServicesListScreen', () => {
       statusMessage: 'Unauthorized',
     })
 
-    const screen = createServicesListScreen({
+    const screen = createServicesListViewModel({
       listServicesUseCase: { execute },
       getServiceScreenContextUseCase: { execute: vi.fn() },
     })

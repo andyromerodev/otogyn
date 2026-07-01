@@ -1,39 +1,54 @@
 import { computed, reactive, ref } from 'vue'
 import type { MedicalService } from '../../../domain/entities/medical-service'
-import type {
-  ServiceDeleteInput,
-  ServiceDetailInput,
-  ServiceScreenContextDto,
-  ServiceUpdateInput,
-} from '../../../application/dto/service-management'
+import type { ServiceScreenContextDto } from '../../../application/dto/service-management'
 import {
   createInitialServiceForm,
   normalizeOptionalPrice,
   normalizeServiceApiError,
-  type ServiceScreenPort,
-} from './service-screen.types'
+} from './service-view-model.types'
+import type { ServiceDetailViewModelDependencies } from './service-detail-view-model.module'
 
-export interface ServiceDetailScreenDependencies {
-  serviceId: string
-  getServiceDetailUseCase: { execute(input: ServiceDetailInput): Promise<MedicalService> }
-  updateServiceUseCase: ServiceScreenPort<ServiceUpdateInput, MedicalService>
-  deleteServiceUseCase: ServiceScreenPort<ServiceDeleteInput, void>
-  getServiceScreenContextUseCase: { execute(): Promise<ServiceScreenContextDto> }
-}
+export type { ServiceDetailViewModelDependencies } from './service-detail-view-model.module'
 
-export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDependencies) => {
+// Factory del ViewModel — equivale al constructor de ServiceDetailViewModel : ViewModel()
+export const createServiceDetailViewModel = (dependencies: ServiceDetailViewModelDependencies) => {
+  // Como StateFlow<MedicalService?> — null hasta que loadService() resuelve
   const service = ref<MedicalService | null>(null)
+
+  // Como StateFlow<ServiceScreenContextDto?> — contexto del usuario (rol, permisos)
   const screenContext = ref<ServiceScreenContextDto | null>(null)
+
+  // Como StateFlow<Boolean> — carga inicial del servicio
   const loading = ref(false)
+
+  // Como StateFlow<Boolean> — operación de guardado de edición en curso
   const pending = ref(false)
+
+  // Como StateFlow<Boolean> — operación de eliminación en curso
   const deletePending = ref(false)
+
+  // Como StateFlow<String?> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref<string | null>(null)
+
+  // Como StateFlow<String?> — mensaje de éxito tras una operación
   const successMessage = ref<string | null>(null)
+
+  // Como StateFlow<Boolean> — controla si el formulario está en modo edición
   const isEditing = ref(false)
+
+  // Como StateFlow<Boolean> — controla la visibilidad del dialog de confirmación de eliminación
   const isDeleteConfirmOpen = ref(false)
+
+  // Como StateFlow<Boolean> — controla el dialog de eliminación bloqueada (citas asociadas)
   const isDeleteBlockedDialogOpen = ref(false)
+
+  // Como StateFlow<String?> — mensaje del bloqueo de eliminación
   const deleteBlockedMessage = ref<string | null>(null)
+
+  // Como StateFlow<Boolean> — true cuando el servicio fue eliminado exitosamente; la UI navega atrás
   const deleted = ref(false)
+
+  // Como MutableStateFlow<ServiceFormState> — estado mutable del formulario
   const form = reactive(createInitialServiceForm())
 
   const syncForm = (value: MedicalService) => {
@@ -75,9 +90,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
         isActive: form.isActive,
       })
 
-      if (service.value) {
-        syncForm(service.value)
-      }
+      if (service.value) syncForm(service.value)
 
       successMessage.value = 'Servicio actualizado correctamente.'
       isEditing.value = false
@@ -96,9 +109,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
     successMessage.value = null
   }
 
-  const cancelDelete = () => {
-    isDeleteConfirmOpen.value = false
-  }
+  const cancelDelete = () => { isDeleteConfirmOpen.value = false }
 
   const closeDeleteBlockedDialog = () => {
     isDeleteBlockedDialogOpen.value = false
@@ -111,9 +122,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
     successMessage.value = null
 
     try {
-      await dependencies.deleteServiceUseCase.execute({
-        serviceId: dependencies.serviceId,
-      })
+      await dependencies.deleteServiceUseCase.execute({ serviceId: dependencies.serviceId })
       deleted.value = true
       isDeleteConfirmOpen.value = false
     } catch (error) {
@@ -139,6 +148,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
     }
   }
 
+  // Como derivedStateOf { } — permiso calculado desde el contexto del usuario
   const canManageServices = computed(() => screenContext.value?.role === 'admin_doctor')
 
   const startEditing = () => {
@@ -148,10 +158,7 @@ export const createServiceDetailScreen = (dependencies: ServiceDetailScreenDepen
   }
 
   const cancelEditing = () => {
-    if (service.value) {
-      syncForm(service.value)
-    }
-
+    if (service.value) syncForm(service.value)
     isEditing.value = false
     errorMessage.value = null
     successMessage.value = null

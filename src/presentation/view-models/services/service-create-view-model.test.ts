@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createServiceCreateScreen } from './create-service-create-screen'
+import { createServiceCreateViewModel } from './service-create-view-model'
 
-describe('createServiceCreateScreen', () => {
+describe('createServiceCreateViewModel', () => {
   it('submits a service and exposes a success message', async () => {
     const createServiceUseCase = {
       execute: vi.fn().mockResolvedValue({
@@ -17,7 +17,7 @@ describe('createServiceCreateScreen', () => {
       }),
     }
 
-    const screen = createServiceCreateScreen({ createServiceUseCase })
+    const screen = createServiceCreateViewModel({ createServiceUseCase })
 
     screen.form.name = 'Consulta ORL'
     screen.form.defaultDurationMinutes = 30
@@ -44,7 +44,7 @@ describe('createServiceCreateScreen', () => {
       }),
     }
 
-    const screen = createServiceCreateScreen({ createServiceUseCase })
+    const screen = createServiceCreateViewModel({ createServiceUseCase })
 
     screen.form.name = 'Consulta ORL'
 

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useServiceCreateScreen } from '../../composables/services/use-service-create-screen'
+import { useServiceCreateViewModel } from '../../composables/services/use-service-create-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = useServiceCreateScreen()
+const viewModel = useServiceCreateViewModel()
 
 const handleSubmit = async () => {
-  await screen.submitService()
+  await viewModel.submitService()
 
-  if (screen.createdService.value) {
+  if (viewModel.createdService.value) {
     await navigateTo('/services')
   }
 }
@@ -35,13 +35,13 @@ const handleSubmit = async () => {
       <form class="service-create-form" @submit.prevent="handleSubmit">
         <label class="service-field">
           <span>Nombre</span>
-          <input v-model="screen.form.name" type="text" placeholder="Consulta ORL" required>
+          <input v-model="viewModel.form.name" type="text" placeholder="Consulta ORL" required>
         </label>
 
         <label class="service-field">
           <span>Descripcion</span>
           <textarea
-            v-model="screen.form.description"
+            v-model="viewModel.form.description"
             rows="4"
             placeholder="Detalle administrativo del servicio."
           />
@@ -51,7 +51,7 @@ const handleSubmit = async () => {
           <label class="service-field">
             <span>Duracion (min)</span>
             <input
-              v-model.number="screen.form.defaultDurationMinutes"
+              v-model.number="viewModel.form.defaultDurationMinutes"
               type="number"
               min="1"
               max="480"
@@ -62,7 +62,7 @@ const handleSubmit = async () => {
           <label class="service-field">
             <span>Precio (opcional)</span>
             <input
-              v-model="screen.form.price"
+              v-model="viewModel.form.price"
               type="number"
               min="0"
               step="0.01"
@@ -72,7 +72,7 @@ const handleSubmit = async () => {
         </div>
 
         <label class="service-flag">
-          <input v-model="screen.form.isActive" type="checkbox">
+          <input v-model="viewModel.form.isActive" type="checkbox">
           <div>
             <strong>Servicio activo para agendar</strong>
           </div>
@@ -83,16 +83,16 @@ const handleSubmit = async () => {
             Cancelar
           </NuxtLink>
 
-          <button class="service-primary-button" type="submit" :disabled="screen.pending.value">
-            {{ screen.pending.value ? 'Guardando...' : 'Registrar servicio' }}
+          <button class="service-primary-button" type="submit" :disabled="viewModel.pending.value">
+            {{ viewModel.pending.value ? 'Guardando...' : 'Registrar servicio' }}
           </button>
         </div>
 
-        <p v-if="screen.errorMessage.value" class="service-message service-message-error">
-          {{ screen.errorMessage.value }}
+        <p v-if="viewModel.errorMessage.value" class="service-message service-message-error">
+          {{ viewModel.errorMessage.value }}
         </p>
-        <p v-if="screen.successMessage.value" class="service-message service-message-success">
-          {{ screen.successMessage.value }}
+        <p v-if="viewModel.successMessage.value" class="service-message service-message-success">
+          {{ viewModel.successMessage.value }}
         </p>
       </form>
     </article>

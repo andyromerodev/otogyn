@@ -1,8 +1,8 @@
 import { serviceServiceLocator } from '~~/src/infrastructure/services/service-locator'
-import { createServiceDetailScreen } from '~~/src/presentation/view-models/services/create-service-detail-screen'
+import { createServiceDetailViewModel } from '~~/src/presentation/view-models/services/service-detail-view-model'
 
-export const useServiceDetailScreen = async (serviceId: string) => {
-  const screen = createServiceDetailScreen({
+export const useServiceDetailViewModel = async (serviceId: string) => {
+  const viewModel = createServiceDetailViewModel({
     serviceId,
     getServiceDetailUseCase: serviceServiceLocator.getServiceDetailUseCase,
     updateServiceUseCase: serviceServiceLocator.updateServiceUseCase,
@@ -10,7 +10,7 @@ export const useServiceDetailScreen = async (serviceId: string) => {
     getServiceScreenContextUseCase: serviceServiceLocator.getServiceScreenContextUseCase,
   })
 
-  await Promise.all([screen.loadService(), screen.loadScreenContext()])
+  await Promise.all([viewModel.loadService(), viewModel.loadScreenContext()])
 
-  return screen
+  return viewModel
 }

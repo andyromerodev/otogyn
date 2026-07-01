@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createServiceDetailScreen } from './create-service-detail-screen'
+import { createServiceDetailViewModel } from './service-detail-view-model'
 
 const serviceFixture = {
   id: 'svc_1',
@@ -13,9 +13,9 @@ const serviceFixture = {
   updatedAt: new Date(),
 }
 
-describe('createServiceDetailScreen', () => {
+describe('createServiceDetailViewModel', () => {
   it('loads the service detail into the form', async () => {
-    const screen = createServiceDetailScreen({
+    const screen = createServiceDetailViewModel({
       serviceId: 'svc_1',
       getServiceDetailUseCase: { execute: vi.fn().mockResolvedValue(serviceFixture) },
       updateServiceUseCase: { execute: vi.fn() },
@@ -38,7 +38,7 @@ describe('createServiceDetailScreen', () => {
       }),
     }
 
-    const screen = createServiceDetailScreen({
+    const screen = createServiceDetailViewModel({
       serviceId: 'svc_1',
       getServiceDetailUseCase: { execute: vi.fn().mockResolvedValue(serviceFixture) },
       updateServiceUseCase,
@@ -65,7 +65,7 @@ describe('createServiceDetailScreen', () => {
   })
 
   it('normalizes load error to a stable message', async () => {
-    const screen = createServiceDetailScreen({
+    const screen = createServiceDetailViewModel({
       serviceId: 'svc_missing',
       getServiceDetailUseCase: {
         execute: vi.fn().mockRejectedValue({

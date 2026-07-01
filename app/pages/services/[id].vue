@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useServiceDetailScreen } from '../../composables/services/use-service-detail-screen'
+import { useServiceDetailViewModel } from '../../composables/services/use-service-detail-view-model'
 
 definePageMeta({
   middleware: 'auth',
@@ -7,12 +7,12 @@ definePageMeta({
 
 const route = useRoute()
 const serviceId = String(route.params.id)
-const screen = await useServiceDetailScreen(serviceId)
+const viewModel = await useServiceDetailViewModel(serviceId)
 
 const handleDelete = async () => {
-  await screen.confirmDelete()
+  await viewModel.confirmDelete()
 
-  if (screen.deleted.value) {
+  if (viewModel.deleted.value) {
     await navigateTo('/services')
   }
 }
@@ -22,49 +22,49 @@ const handleDelete = async () => {
   <div class="page-grid">
     <SharedSectionHeader
       eyebrow="Servicio"
-      :title="screen.service.value?.name ?? 'Detalle de servicio'"
+      :title="viewModel.service.value?.name ?? 'Detalle de servicio'"
       description="Edicion administrativa del servicio: duracion, precio y estado."
     />
 
-    <article v-if="screen.service.value" class="surface-card detail-card">
-      <form class="detail-form" @submit.prevent="screen.submitService">
+    <article v-if="viewModel.service.value" class="surface-card detail-card">
+      <form class="detail-form" @submit.prevent="viewModel.submitService">
         <label class="field field-wide">
           <span>Nombre</span>
-          <input v-model="screen.form.name" type="text" required :disabled="!screen.isEditing.value">
+          <input v-model="viewModel.form.name" type="text" required :disabled="!viewModel.isEditing.value">
         </label>
 
         <label class="field field-wide">
           <span>Descripcion</span>
-          <textarea v-model="screen.form.description" rows="4" :disabled="!screen.isEditing.value" />
+          <textarea v-model="viewModel.form.description" rows="4" :disabled="!viewModel.isEditing.value" />
         </label>
 
         <label class="field">
           <span>Duracion (min)</span>
           <input
-            v-model.number="screen.form.defaultDurationMinutes"
+            v-model.number="viewModel.form.defaultDurationMinutes"
             type="number"
             min="1"
             max="480"
             required
-            :disabled="!screen.isEditing.value"
+            :disabled="!viewModel.isEditing.value"
           >
         </label>
 
         <label class="field">
           <span>Precio (opcional)</span>
           <input
-            v-model="screen.form.price"
+            v-model="viewModel.form.price"
             type="number"
             min="0"
             step="0.01"
-            :disabled="!screen.isEditing.value"
+            :disabled="!viewModel.isEditing.value"
           >
         </label>
 
         <div class="field field-wide active-field">
           <span>Estado</span>
           <label class="active-toggle">
-            <input v-model="screen.form.isActive" type="checkbox" :disabled="!screen.isEditing.value">
+            <input v-model="viewModel.form.isActive" type="checkbox" :disabled="!viewModel.isEditing.value">
             <div>
               <strong>Servicio activo para agendar</strong>
               <p>Si se desactiva, dejara de estar disponible para nuevas citas.</p>
@@ -74,58 +74,58 @@ const handleDelete = async () => {
 
         <div class="detail-actions">
           <span class="pill">Servicio real en PostgreSQL</span>
-          <div v-if="screen.canManageServices.value" class="detail-actions-buttons">
-            <template v-if="!screen.isEditing.value">
+          <div v-if="viewModel.canManageServices.value" class="detail-actions-buttons">
+            <template v-if="!viewModel.isEditing.value">
               <button
                 type="button"
                 class="delete-button"
-                :disabled="screen.deletePending.value"
-                @click="screen.requestDelete"
+                :disabled="viewModel.deletePending.value"
+                @click="viewModel.requestDelete"
               >
-                {{ screen.deletePending.value ? 'Eliminando...' : 'Eliminar' }}
+                {{ viewModel.deletePending.value ? 'Eliminando...' : 'Eliminar' }}
               </button>
               <button
                 type="button"
                 class="edit-button"
-                @click="screen.startEditing"
+                @click="viewModel.startEditing"
               >
                 Editar
               </button>
             </template>
             <template v-else>
-              <button type="button" class="cancel-button" @click="screen.cancelEditing">
+              <button type="button" class="cancel-button" @click="viewModel.cancelEditing">
                 Cancelar
               </button>
-              <button class="submit-button" type="submit" :disabled="screen.pending.value">
-                {{ screen.pending.value ? 'Guardando...' : 'Guardar cambios' }}
+              <button class="submit-button" type="submit" :disabled="viewModel.pending.value">
+                {{ viewModel.pending.value ? 'Guardando...' : 'Guardar cambios' }}
               </button>
             </template>
           </div>
         </div>
 
-        <p v-if="screen.errorMessage.value" class="message message-error">{{ screen.errorMessage.value }}</p>
-        <p v-if="screen.successMessage.value" class="message message-success">{{ screen.successMessage.value }}</p>
+        <p v-if="viewModel.errorMessage.value" class="message message-error">{{ viewModel.errorMessage.value }}</p>
+        <p v-if="viewModel.successMessage.value" class="message message-success">{{ viewModel.successMessage.value }}</p>
       </form>
 
       <SharedConfirmDialog
-        v-model="screen.isDeleteConfirmOpen.value"
+        v-model="viewModel.isDeleteConfirmOpen.value"
         title="Eliminar servicio"
         message="¿Confirmas eliminar este servicio de forma permanente? Esta acción no se puede deshacer."
         confirm-label="Eliminar"
         cancel-label="Cancelar"
-        :pending="screen.deletePending.value"
+        :pending="viewModel.deletePending.value"
         @confirm="handleDelete"
-        @cancel="screen.cancelDelete"
+        @cancel="viewModel.cancelDelete"
       />
 
       <SharedConfirmDialog
-        v-model="screen.isDeleteBlockedDialogOpen.value"
+        v-model="viewModel.isDeleteBlockedDialogOpen.value"
         title="No se puede eliminar"
-        :message="screen.deleteBlockedMessage.value ?? 'Este servicio no se puede eliminar en este momento.'"
+        :message="viewModel.deleteBlockedMessage.value ?? 'Este servicio no se puede eliminar en este momento.'"
         confirm-label="Entendido"
         cancel-label="Cerrar"
-        @confirm="screen.closeDeleteBlockedDialog"
-        @cancel="screen.closeDeleteBlockedDialog"
+        @confirm="viewModel.closeDeleteBlockedDialog"
+        @cancel="viewModel.closeDeleteBlockedDialog"
       />
     </article>
   </div>
