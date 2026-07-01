@@ -26,6 +26,18 @@ export interface AppointmentSessionContextDto {
   role: 'admin_doctor' | 'assistant'
 }
 
+export interface AppointmentAvailableSlotsQuery {
+  date: string
+  serviceId: string
+  excludeAppointmentId?: string
+}
+
+export interface AppointmentSlotDto {
+  startsAt: string
+  endsAt: string
+  durationMinutes: number
+}
+
 export type AppointmentPatientListResult = Patient[]
 export type AppointmentServiceListResult = MedicalService[]
 export type TodayAppointmentListResult = TodayAppointmentViewModel[]

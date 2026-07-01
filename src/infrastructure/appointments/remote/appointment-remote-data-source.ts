@@ -1,10 +1,12 @@
 import type {
+  AppointmentAvailableSlotsQuery,
   AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
   AppointmentPatientListResult,
   AppointmentSessionContextDto,
   AppointmentServiceListResult,
+  AppointmentSlotDto,
   AppointmentStatusMutationInput,
   TodayAppointmentListResult,
 } from '../../../application/dto/appointment-management'
@@ -16,6 +18,7 @@ export interface AppointmentRemoteDataSource {
   listServices(): Promise<AppointmentServiceListResult>
   listTodayAppointments(): Promise<TodayAppointmentListResult>
   getSessionContext(): Promise<AppointmentSessionContextDto>
+  getAvailableSlots(query: AppointmentAvailableSlotsQuery): Promise<AppointmentSlotDto[]>
   createAppointment(input: AppointmentMutationInput): Promise<Appointment>
   updateAppointment(appointmentId: string, input: AppointmentMutationInput): Promise<Appointment>
   cancelAppointment(input: AppointmentCancellationInput): Promise<Appointment>

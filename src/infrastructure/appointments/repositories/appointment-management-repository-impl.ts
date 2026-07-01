@@ -1,10 +1,12 @@
 import type {
+  AppointmentAvailableSlotsQuery,
   AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
   AppointmentPatientListResult,
   AppointmentSessionContextDto,
   AppointmentServiceListResult,
+  AppointmentSlotDto,
   AppointmentStatusMutationInput,
   TodayAppointmentListResult,
 } from '../../../application/dto/appointment-management'
@@ -33,6 +35,10 @@ export class AppointmentManagementRepositoryImpl implements AppointmentManagemen
 
   getSessionContext(): Promise<AppointmentSessionContextDto> {
     return this.remoteDataSource.getSessionContext()
+  }
+
+  getAvailableSlots(query: AppointmentAvailableSlotsQuery): Promise<AppointmentSlotDto[]> {
+    return this.remoteDataSource.getAvailableSlots(query)
   }
 
   createAppointment(input: AppointmentMutationInput): Promise<Appointment> {

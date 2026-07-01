@@ -1,10 +1,12 @@
 import type {
+  AppointmentAvailableSlotsQuery,
   AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
   AppointmentPatientListResult,
   AppointmentSessionContextDto,
   AppointmentServiceListResult,
+  AppointmentSlotDto,
   AppointmentStatusMutationInput,
   TodayAppointmentListResult,
 } from '../../../application/dto/appointment-management'
@@ -30,6 +32,16 @@ export class HttpAppointmentRemoteDataSource implements AppointmentRemoteDataSou
 
   async getSessionContext(): Promise<AppointmentSessionContextDto> {
     return $fetch<AppointmentSessionContextDto>('/api/auth/session-context' as string)
+  }
+
+  async getAvailableSlots(query: AppointmentAvailableSlotsQuery): Promise<AppointmentSlotDto[]> {
+    return $fetch<AppointmentSlotDto[]>('/api/appointments/available-slots' as string, {
+      query: {
+        date: query.date,
+        serviceId: query.serviceId,
+        excludeAppointmentId: query.excludeAppointmentId,
+      },
+    })
   }
 
   async createAppointment(input: AppointmentMutationInput): Promise<Appointment> {
