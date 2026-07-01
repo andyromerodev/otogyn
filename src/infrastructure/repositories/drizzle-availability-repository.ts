@@ -8,6 +8,7 @@ import type {
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { BlockedTimeSlot } from '../../domain/entities/blocked-time-slot'
 import type { DoctorAvailability } from '../../domain/entities/doctor-availability'
+import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { blockedTimeSlots, doctorAvailability } from '../database/schema'
 
@@ -37,7 +38,7 @@ const defaultWeeklyAvailability = [1, 2, 3, 4, 5].map((weekday) => ({
 }))
 
 export class DrizzleAvailabilityRepository implements AvailabilityRepository {
-  private readonly db = getDrizzleClient()
+  constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
   async listWeeklyAvailability(organizationId: string): Promise<DoctorAvailability[]> {
     const rows = await this.db

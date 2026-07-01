@@ -3,6 +3,7 @@ import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { Patient } from '../../domain/entities/patient'
 import type { PatientListItem, PatientListPageQuery, PatientListPageResult, PatientRepository } from '../../domain/repositories/patient-repository'
 import { activeAppointmentStatuses } from '../../domain/value-objects/appointment-status'
+import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { appointments, patients } from '../database/schema'
 
@@ -30,7 +31,7 @@ const toBirthDate = (birthDate: string | null) => {
 }
 
 export class DrizzlePatientRepository implements PatientRepository {
-  private readonly db = getDrizzleClient()
+  constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
   async listByOrganization(organizationId: string): Promise<Patient[]> {
     const rows = await this.db

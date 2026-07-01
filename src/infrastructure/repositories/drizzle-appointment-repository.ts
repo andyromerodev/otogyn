@@ -3,6 +3,7 @@ import type { Appointment } from '../../domain/entities/appointment'
 import type { AppointmentRepository } from '../../domain/repositories/appointment-repository'
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import { activeAppointmentStatuses } from '../../domain/value-objects/appointment-status'
+import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { appointments } from '../database/schema'
 
@@ -26,7 +27,7 @@ const mapAppointment = (row: typeof appointments.$inferSelect): Appointment => (
 })
 
 export class DrizzleAppointmentRepository implements AppointmentRepository {
-  private readonly db = getDrizzleClient()
+  constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
   async findById(appointmentId: string): Promise<Appointment | null> {
     const rows = await this.db

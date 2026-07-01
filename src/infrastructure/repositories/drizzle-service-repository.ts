@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm'
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { MedicalService } from '../../domain/entities/medical-service'
 import type { ServiceRepository, UpdateServiceInput } from '../../domain/repositories/service-repository'
+import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { services } from '../database/schema'
 
@@ -43,7 +44,7 @@ const isForeignKeyDeleteRestriction = (error: unknown): boolean => {
 }
 
 export class DrizzleServiceRepository implements ServiceRepository {
-  private readonly db = getDrizzleClient()
+  constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
   async listByOrganization(organizationId: string): Promise<MedicalService[]> {
     const rows = await this.db

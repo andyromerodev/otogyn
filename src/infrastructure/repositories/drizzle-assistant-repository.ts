@@ -6,6 +6,7 @@ import type {
   SaveAssistantInput,
   UpdateAssistantInput,
 } from '../../domain/repositories/assistant-repository'
+import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { appointmentStatusHistory, appointments, organizationMembers, profiles, users } from '../database/schema'
 
@@ -37,7 +38,7 @@ const mapAssistant = (row: {
 })
 
 export class DrizzleAssistantRepository implements AssistantRepository {
-  private readonly db = getDrizzleClient()
+  constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
   private async resolveAssistant(organizationId: string, userId: string): Promise<Assistant> {
     const row = await this.db
