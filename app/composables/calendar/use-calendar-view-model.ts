@@ -1,11 +1,9 @@
 import { calendarServiceLocator } from '~~/src/infrastructure/calendar/service-locator'
-import { createCalendarScreen } from '~~/src/presentation/view-models/calendar/calendar-screen'
+import { createCalendarViewModel } from '~~/src/presentation/view-models/calendar/calendar-view-model'
 
-export const useCalendarScreen = async () => {
-  const screen = await createCalendarScreen({
+export const useCalendarViewModel = async () => {
+  return await createCalendarViewModel({
     getCalendarMonthUseCase: calendarServiceLocator.getCalendarMonthUseCase,
     getCalendarDayUseCase: calendarServiceLocator.getCalendarDayUseCase,
   })
-
-  return screen
 }

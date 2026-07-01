@@ -1,13 +1,9 @@
 import { computed, ref } from 'vue'
 import type { CalendarDayDto, CalendarMonthDto } from '../../../application/dto/calendar'
 import { formatLocalDate, parseLocalDate } from '../../../application/utils/date/local-date'
-import type { GetCalendarDayFrontendUseCase } from '../../../application/use-cases/calendar/frontend/get-calendar-day'
-import type { GetCalendarMonthFrontendUseCase } from '../../../application/use-cases/calendar/frontend/get-calendar-month'
+import type { CalendarViewModelDependencies } from './calendar-view-model.module'
 
-export interface CalendarScreenDependencies {
-  getCalendarMonthUseCase: GetCalendarMonthFrontendUseCase
-  getCalendarDayUseCase: GetCalendarDayFrontendUseCase
-}
+export type { CalendarViewModelDependencies } from './calendar-view-model.module'
 
 const shortDayNames = ['D', 'L', 'M', 'X', 'J', 'V', 'S']
 const uppercaseDayNames = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
@@ -27,20 +23,37 @@ function clampDay(year: number, month: number, day: number): Date {
   return new Date(year, month, Math.min(day, lastDay))
 }
 
-export async function createCalendarScreen(deps: CalendarScreenDependencies) {
+// Factory async del ViewModel — equivale al constructor de CalendarViewModel : ViewModel()
+// Es async porque auto-dispara la carga inicial (loadMonthAndDay) antes de retornar,
+// similar a un init { viewModelScope.launch { load() } } en Android
+export async function createCalendarViewModel(deps: CalendarViewModelDependencies) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  // Como StateFlow<Date> — mes actualmente visible en el grid del calendario
   const currentMonthDate = ref(new Date(today))
+
+  // Como StateFlow<Date> — día seleccionado por el usuario en el grid
   const selectedDate = ref(new Date(today))
+
+  // Como StateFlow<CalendarMonthDto?> — datos del mes cargado (grid de días + citas)
   const calendarMonth = ref<CalendarMonthDto | null>(null)
+
+  // Como StateFlow<CalendarDayDto?> — datos del día seleccionado (lista de citas del día)
   const calendarDay = ref<CalendarDayDto | null>(null)
+
+  // Como StateFlow<Boolean> — carga del mes completo (grid + día)
   const loading = ref(false)
+
+  // Como StateFlow<Boolean> — carga parcial solo del día seleccionado
   const dayLoading = ref(false)
+
+  // Como StateFlow<String> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref('')
 
   const shortWeekDays = shortDayNames.slice(1).concat(shortDayNames[0]!)
 
+  // Como derivedStateOf { } — etiquetas calculadas y cacheadas desde los StateFlows base
   const currentMonthLabel = computed(() => {
     const date = currentMonthDate.value
     return `${monthNames[date.getMonth()]} ${date.getFullYear()}`
@@ -58,14 +71,13 @@ export async function createCalendarScreen(deps: CalendarScreenDependencies) {
 
   const selectedDateHeading = computed(() => {
     const date = selectedDate.value
-
     if (isSameDay(date, today)) {
       return `HOY — ${date.getDate()} DE ${uppercaseMonthNames[date.getMonth()]}`
     }
-
     return `${uppercaseDayNames[date.getDay()]} — ${date.getDate()} DE ${uppercaseMonthNames[date.getMonth()]}`
   })
 
+  // Equivale a fun loadMonthAndDay() — carga paralela del grid mensual y el día seleccionado
   async function loadMonthAndDay() {
     loading.value = true
     errorMessage.value = ''
@@ -86,6 +98,7 @@ export async function createCalendarScreen(deps: CalendarScreenDependencies) {
     }
   }
 
+  // Equivale a fun loadDay() — recarga solo el panel de citas del día sin recargar el grid
   async function loadDay() {
     dayLoading.value = true
     errorMessage.value = ''
@@ -99,6 +112,7 @@ export async function createCalendarScreen(deps: CalendarScreenDependencies) {
     }
   }
 
+  // Equivale a fun onSelectDate() — evento del grid al tocar un día
   async function selectDate(dateString: string) {
     const nextSelected = parseLocalDate(dateString)
     selectedDate.value = nextSelected
@@ -120,6 +134,7 @@ export async function createCalendarScreen(deps: CalendarScreenDependencies) {
     await loadDay()
   }
 
+  // Equivale a fun onPrevMonth() / onNextMonth() — navegación entre meses
   async function goToPrevMonth() {
     const current = currentMonthDate.value
     const target = clampDay(current.getFullYear(), current.getMonth() - 1, selectedDate.value.getDate())
@@ -162,4 +177,5 @@ export async function createCalendarScreen(deps: CalendarScreenDependencies) {
   }
 }
 
-export type CalendarScreen = Awaited<ReturnType<typeof createCalendarScreen>>
+// Como typealias CalendarViewModel = ... — alias del tipo de retorno para usarlo en otros archivos
+export type CalendarViewModel = Awaited<ReturnType<typeof createCalendarViewModel>>

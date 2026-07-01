@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createCalendarScreen } from './calendar-screen'
-import type { CalendarScreenDependencies } from './calendar-screen'
+import { createCalendarViewModel } from './calendar-view-model'
+import type { CalendarViewModelDependencies } from './calendar-view-model'
 import type { GetCalendarDayFrontendUseCase } from '../../../application/use-cases/calendar/frontend/get-calendar-day'
 import type { GetCalendarMonthFrontendUseCase } from '../../../application/use-cases/calendar/frontend/get-calendar-month'
 
@@ -42,7 +42,7 @@ function createDayFixture(date: string): CalendarDayDto {
   }
 }
 
-describe('createCalendarScreen', () => {
+describe('createCalendarViewModel', () => {
   it('loads month and selected day on startup', async () => {
     const getCalendarMonthUseCase = {
       execute: vi.fn().mockResolvedValue(createMonthFixture('2026-06-12')),
@@ -51,12 +51,12 @@ describe('createCalendarScreen', () => {
       execute: vi.fn().mockResolvedValue(createDayFixture('2026-06-12')),
     }
 
-    const dependencies: CalendarScreenDependencies = {
+    const dependencies: CalendarViewModelDependencies = {
       getCalendarMonthUseCase: { execute: getCalendarMonthUseCase.execute } as GetCalendarMonthFrontendUseCase,
       getCalendarDayUseCase: { execute: getCalendarDayUseCase.execute } as GetCalendarDayFrontendUseCase,
     }
 
-    const screen = await createCalendarScreen(dependencies)
+    const screen = await createCalendarViewModel(dependencies)
 
     expect(getCalendarMonthUseCase.execute).toHaveBeenCalledTimes(1)
     expect(getCalendarDayUseCase.execute).toHaveBeenCalledTimes(1)
@@ -77,12 +77,12 @@ describe('createCalendarScreen', () => {
         .mockResolvedValueOnce(createDayFixture('2026-06-18')),
     }
 
-    const dependencies: CalendarScreenDependencies = {
+    const dependencies: CalendarViewModelDependencies = {
       getCalendarMonthUseCase: { execute: getCalendarMonthUseCase.execute } as GetCalendarMonthFrontendUseCase,
       getCalendarDayUseCase: { execute: getCalendarDayUseCase.execute } as GetCalendarDayFrontendUseCase,
     }
 
-    const screen = await createCalendarScreen(dependencies)
+    const screen = await createCalendarViewModel(dependencies)
 
     await screen.selectDate('2026-06-18')
 
@@ -104,12 +104,12 @@ describe('createCalendarScreen', () => {
         .mockResolvedValueOnce(createDayFixture('2026-07-12')),
     }
 
-    const dependencies: CalendarScreenDependencies = {
+    const dependencies: CalendarViewModelDependencies = {
       getCalendarMonthUseCase: { execute: getCalendarMonthUseCase.execute } as GetCalendarMonthFrontendUseCase,
       getCalendarDayUseCase: { execute: getCalendarDayUseCase.execute } as GetCalendarDayFrontendUseCase,
     }
 
-    const screen = await createCalendarScreen(dependencies)
+    const screen = await createCalendarViewModel(dependencies)
 
     await screen.selectDate('2026-06-12')
     await screen.goToNextMonth()
@@ -132,12 +132,12 @@ describe('createCalendarScreen', () => {
         .mockResolvedValueOnce(createDayFixture('2026-02-28')),
     }
 
-    const dependencies: CalendarScreenDependencies = {
+    const dependencies: CalendarViewModelDependencies = {
       getCalendarMonthUseCase: { execute: getCalendarMonthUseCase.execute } as GetCalendarMonthFrontendUseCase,
       getCalendarDayUseCase: { execute: getCalendarDayUseCase.execute } as GetCalendarDayFrontendUseCase,
     }
 
-    const screen = await createCalendarScreen(dependencies)
+    const screen = await createCalendarViewModel(dependencies)
 
     await screen.selectDate('2026-01-31')
     await screen.goToNextMonth()

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import CalendarDayAppointmentCard from '../components/calendar/calendar-day-appointment-card.vue'
 import CalendarMonthGrid from '../components/calendar/calendar-month-grid.vue'
-import { useCalendarScreen } from '../composables/calendar/use-calendar-screen'
+import { useCalendarViewModel } from '../composables/calendar/use-calendar-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = await useCalendarScreen()
+const viewModel = await useCalendarViewModel()
 </script>
 
 <template>
@@ -15,59 +15,59 @@ const screen = await useCalendarScreen()
     <header class="calendar-header">
       <div>
         <h1 class="calendar-title">Agenda</h1>
-        <p class="calendar-subtitle">{{ screen.monthEyebrow.value }}</p>
+        <p class="calendar-subtitle">{{ viewModel.monthEyebrow.value }}</p>
       </div>
     </header>
 
     <section class="calendar-shell">
       <div class="calendar-month-header">
-        <button type="button" class="calendar-nav-button" @click="screen.goToPrevMonth">
+        <button type="button" class="calendar-nav-button" @click="viewModel.goToPrevMonth">
           <UIcon name="i-heroicons-chevron-left-20-solid" />
         </button>
 
-        <p class="calendar-month-title">{{ screen.currentMonthTitle.value }}</p>
+        <p class="calendar-month-title">{{ viewModel.currentMonthTitle.value }}</p>
 
-        <button type="button" class="calendar-nav-button" @click="screen.goToNextMonth">
+        <button type="button" class="calendar-nav-button" @click="viewModel.goToNextMonth">
           <UIcon name="i-heroicons-chevron-right-20-solid" />
         </button>
       </div>
 
       <p
-        v-if="screen.errorMessage.value"
+        v-if="viewModel.errorMessage.value"
         class="calendar-message calendar-message-error"
       >
-        {{ screen.errorMessage.value }}
+        {{ viewModel.errorMessage.value }}
       </p>
 
-      <div v-if="screen.loading.value && !screen.calendarMonth.value" class="calendar-loading">
+      <div v-if="viewModel.loading.value && !viewModel.calendarMonth.value" class="calendar-loading">
         Cargando agenda...
       </div>
 
       <template v-else>
         <CalendarMonthGrid
-          v-if="screen.calendarMonth.value"
-          :days="screen.calendarMonth.value.days"
-          :selected-date="screen.calendarMonth.value.selectedDate"
-          :week-days="screen.shortWeekDays"
-          @select="screen.selectDate"
+          v-if="viewModel.calendarMonth.value"
+          :days="viewModel.calendarMonth.value.days"
+          :selected-date="viewModel.calendarMonth.value.selectedDate"
+          :week-days="viewModel.shortWeekDays"
+          @select="viewModel.selectDate"
         />
 
         <section class="calendar-day-section">
-          <p class="calendar-day-heading">{{ screen.selectedDateHeading.value }}</p>
+          <p class="calendar-day-heading">{{ viewModel.selectedDateHeading.value }}</p>
 
-          <div v-if="screen.dayLoading.value" class="calendar-loading">
+          <div v-if="viewModel.dayLoading.value" class="calendar-loading">
             Cargando agenda...
           </div>
 
           <div
-            v-else-if="screen.calendarDay.value?.appointments.length"
+            v-else-if="viewModel.calendarDay.value?.appointments.length"
             class="calendar-day-list"
           >
             <CalendarDayAppointmentCard
-              v-for="appointment in screen.calendarDay.value.appointments"
+              v-for="appointment in viewModel.calendarDay.value.appointments"
               :key="appointment.id"
               :appointment="appointment"
-              :formatted-time="screen.formatTime(appointment.startAt)"
+              :formatted-time="viewModel.formatTime(appointment.startAt)"
             />
           </div>
 
