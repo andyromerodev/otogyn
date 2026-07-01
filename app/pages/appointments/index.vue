@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AppointmentListItem from '../../components/appointments/appointment-list-item.vue'
-import { useAppointmentsListScreen } from '../../composables/appointments/use-appointments-list-screen'
+import { useAppointmentsListViewModel } from '../../composables/appointments/use-appointments-list-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = useAppointmentsListScreen()
+const viewModel = useAppointmentsListViewModel()
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const screen = useAppointmentsListScreen()
     <div class="appointments-header">
       <div>
         <h1 class="appointments-title">Citas</h1>
-        <p class="appointments-subtitle">{{ screen.totalLabel.value }}</p>
+        <p class="appointments-subtitle">{{ viewModel.totalLabel.value }}</p>
       </div>
 
       <NuxtLink to="/appointments/new" class="appointments-add-desktop" aria-label="Registrar cita">
@@ -23,25 +23,25 @@ const screen = useAppointmentsListScreen()
     </div>
 
     <ClientOnly>
-      <p v-if="screen.errorMessage.value" class="appointments-message appointments-message-error">
-        {{ screen.errorMessage.value }}
+      <p v-if="viewModel.errorMessage.value" class="appointments-message appointments-message-error">
+        {{ viewModel.errorMessage.value }}
       </p>
 
       <section class="appointments-list-card">
-        <div v-if="screen.loading.value" class="appointments-list-state">
+        <div v-if="viewModel.loading.value" class="appointments-list-state">
           Cargando citas...
         </div>
 
-        <div v-else-if="screen.appointments.value.length" class="appointments-list">
+        <div v-else-if="viewModel.appointments.value.length" class="appointments-list">
           <AppointmentListItem
-            v-for="appointment in screen.appointments.value"
+            v-for="appointment in viewModel.appointments.value"
             :key="appointment.id"
             :appointment="appointment"
           />
         </div>
 
         <div v-else class="appointments-list-state">
-          {{ screen.emptyStateMessage.value }}
+          {{ viewModel.emptyStateMessage.value }}
         </div>
       </section>
     </ClientOnly>

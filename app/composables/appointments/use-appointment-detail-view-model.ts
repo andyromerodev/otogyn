@@ -1,8 +1,8 @@
 import { appointmentServiceLocator } from '~~/src/infrastructure/appointments/service-locator'
-import { createAppointmentDetailScreen } from '~~/src/presentation/view-models/appointments/create-appointment-detail-screen'
+import { createAppointmentDetailViewModel } from '~~/src/presentation/view-models/appointments/appointment-detail-view-model'
 
-export const useAppointmentDetailScreen = async (appointmentId: string) => {
-  const screen = createAppointmentDetailScreen({
+export const useAppointmentDetailViewModel = async (appointmentId: string) => {
+  const viewModel = createAppointmentDetailViewModel({
     appointmentId,
     getAppointmentDetailUseCase: appointmentServiceLocator.getAppointmentDetailUseCase,
     listAppointmentPatientsUseCase: appointmentServiceLocator.listAppointmentPatientsUseCase,
@@ -13,7 +13,7 @@ export const useAppointmentDetailScreen = async (appointmentId: string) => {
     changeAppointmentStatusUseCase: appointmentServiceLocator.changeAppointmentStatusUseCase,
   })
 
-  await Promise.all([screen.loadAppointment(), screen.loadFormOptions(), screen.loadSessionContext()])
+  await Promise.all([viewModel.loadAppointment(), viewModel.loadFormOptions(), viewModel.loadSessionContext()])
 
-  return screen
+  return viewModel
 }

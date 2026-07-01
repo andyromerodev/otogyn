@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAppointmentDetailScreen } from '../../composables/appointments/use-appointment-detail-screen'
+import { useAppointmentDetailViewModel } from '../../composables/appointments/use-appointment-detail-view-model'
 
 definePageMeta({
   middleware: 'auth',
@@ -7,10 +7,10 @@ definePageMeta({
 
 const route = useRoute()
 const appointmentId = String(route.params.id)
-const screen = await useAppointmentDetailScreen(appointmentId)
+const viewModel = await useAppointmentDetailViewModel(appointmentId)
 
 const handleStatusChange = (event: Event) => {
-  void screen.submitStatusSelection((event.target as HTMLSelectElement).value)
+  void viewModel.submitStatusSelection((event.target as HTMLSelectElement).value)
 }
 </script>
 
@@ -18,20 +18,20 @@ const handleStatusChange = (event: Event) => {
   <div class="page-grid">
     <SharedSectionHeader
       eyebrow="Cita"
-      :title="screen.appointment.value?.patientName ?? 'Detalle de cita'"
+      :title="viewModel.appointment.value?.patientName ?? 'Detalle de cita'"
       description="Edicion, cambio de estado y cancelacion de la cita."
     />
 
-    <p v-if="!screen.loading.value && screen.errorMessage.value && !screen.appointment.value" class="page-error">
-      {{ screen.errorMessage.value }}
+    <p v-if="!viewModel.loading.value && viewModel.errorMessage.value && !viewModel.appointment.value" class="page-error">
+      {{ viewModel.errorMessage.value }}
     </p>
 
-    <article v-if="screen.appointment.value" class="surface-card detail-card">
-      <form class="detail-form" @submit.prevent="screen.submitAppointment">
+    <article v-if="viewModel.appointment.value" class="surface-card detail-card">
+      <form class="detail-form" @submit.prevent="viewModel.submitAppointment">
         <label class="field">
           <span>Paciente</span>
-          <select v-model="screen.form.patientId" required :disabled="!screen.isEditing.value">
-            <option v-for="patient in screen.patients.value" :key="patient.id" :value="patient.id">
+          <select v-model="viewModel.form.patientId" required :disabled="!viewModel.isEditing.value">
+            <option v-for="patient in viewModel.patients.value" :key="patient.id" :value="patient.id">
               {{ patient.fullName }}
             </option>
           </select>
@@ -39,8 +39,8 @@ const handleStatusChange = (event: Event) => {
 
         <label class="field">
           <span>Servicio</span>
-          <select v-model="screen.form.serviceId" required :disabled="!screen.isEditing.value">
-            <option v-for="service in screen.services.value" :key="service.id" :value="service.id">
+          <select v-model="viewModel.form.serviceId" required :disabled="!viewModel.isEditing.value">
+            <option v-for="service in viewModel.services.value" :key="service.id" :value="service.id">
               {{ service.name }} · {{ service.defaultDurationMinutes }} min
             </option>
           </select>
@@ -48,13 +48,13 @@ const handleStatusChange = (event: Event) => {
 
         <label class="field">
           <span>Inicio</span>
-          <input v-model="screen.form.startAt" type="datetime-local" required :disabled="!screen.isEditing.value">
+          <input v-model="viewModel.form.startAt" type="datetime-local" required :disabled="!viewModel.isEditing.value">
         </label>
 
         <div class="field field-wide active-field">
           <span>Urgente</span>
           <label class="active-toggle">
-            <input v-model="screen.form.isUrgent" type="checkbox" :disabled="!screen.isEditing.value">
+            <input v-model="viewModel.form.isUrgent" type="checkbox" :disabled="!viewModel.isEditing.value">
             <div>
               <strong>Marcar como urgente</strong>
             </div>
@@ -63,23 +63,23 @@ const handleStatusChange = (event: Event) => {
 
         <label class="field field-wide">
           <span>Motivo breve</span>
-          <input v-model="screen.form.reason" type="text" :disabled="!screen.isEditing.value">
+          <input v-model="viewModel.form.reason" type="text" :disabled="!viewModel.isEditing.value">
         </label>
 
         <label class="field field-wide">
           <span>Notas administrativas</span>
-          <textarea v-model="screen.form.notes" rows="4" :disabled="!screen.isEditing.value" />
+          <textarea v-model="viewModel.form.notes" rows="4" :disabled="!viewModel.isEditing.value" />
         </label>
 
         <label class="field field-wide">
           <span>Estado</span>
           <select
-            :value="screen.appointment.value.status"
-            :disabled="!screen.canChangeAppointmentStatus.value || screen.actionPending.value"
+            :value="viewModel.appointment.value.status"
+            :disabled="!viewModel.canChangeAppointmentStatus.value || viewModel.actionPending.value"
             @change="handleStatusChange"
           >
             <option
-              v-for="statusOption in screen.appointmentStatusesForUi"
+              v-for="statusOption in viewModel.appointmentStatusesForUi"
               :key="statusOption.value"
               :value="statusOption.value"
             >
@@ -91,37 +91,37 @@ const handleStatusChange = (event: Event) => {
         <div class="detail-actions">
           <span class="pill">Cita real en PostgreSQL</span>
           <div class="detail-actions-buttons">
-            <template v-if="!screen.isEditing.value">
+            <template v-if="!viewModel.isEditing.value">
               <button
                 type="button"
                 class="delete-button"
-                :disabled="!screen.canCancelAppointment.value || screen.actionPending.value"
-                @click="screen.submitCancellation"
+                :disabled="!viewModel.canCancelAppointment.value || viewModel.actionPending.value"
+                @click="viewModel.submitCancellation"
               >
-                {{ screen.actionPending.value ? 'Procesando...' : 'Cancelar cita' }}
+                {{ viewModel.actionPending.value ? 'Procesando...' : 'Cancelar cita' }}
               </button>
               <button
                 type="button"
                 class="edit-button"
-                :disabled="!screen.canEditAppointment.value"
-                @click="screen.startEditing"
+                :disabled="!viewModel.canEditAppointment.value"
+                @click="viewModel.startEditing"
               >
                 Editar
               </button>
             </template>
             <template v-else>
-              <button type="button" class="cancel-button" @click="screen.cancelEditing">
+              <button type="button" class="cancel-button" @click="viewModel.cancelEditing">
                 Cancelar
               </button>
-              <button class="submit-button" type="submit" :disabled="screen.pending.value">
-                {{ screen.pending.value ? 'Guardando...' : 'Guardar cambios' }}
+              <button class="submit-button" type="submit" :disabled="viewModel.pending.value">
+                {{ viewModel.pending.value ? 'Guardando...' : 'Guardar cambios' }}
               </button>
             </template>
           </div>
         </div>
 
-        <p v-if="screen.errorMessage.value" class="message message-error">{{ screen.errorMessage.value }}</p>
-        <p v-if="screen.successMessage.value" class="message message-success">{{ screen.successMessage.value }}</p>
+        <p v-if="viewModel.errorMessage.value" class="message message-error">{{ viewModel.errorMessage.value }}</p>
+        <p v-if="viewModel.successMessage.value" class="message message-success">{{ viewModel.successMessage.value }}</p>
       </form>
     </article>
   </div>

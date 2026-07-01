@@ -1,14 +1,14 @@
 import { appointmentServiceLocator } from '~~/src/infrastructure/appointments/service-locator'
-import { createAppointmentCreateScreen } from '~~/src/presentation/view-models/appointments/create-appointment-create-screen'
+import { createAppointmentCreateViewModel } from '~~/src/presentation/view-models/appointments/appointment-create-view-model'
 
-export const useAppointmentCreateScreen = async () => {
-  const screen = createAppointmentCreateScreen({
+export const useAppointmentCreateViewModel = async () => {
+  const viewModel = createAppointmentCreateViewModel({
     listAppointmentPatientsUseCase: appointmentServiceLocator.listAppointmentPatientsUseCase,
     listAppointmentServicesUseCase: appointmentServiceLocator.listAppointmentServicesUseCase,
     createAppointmentUseCase: appointmentServiceLocator.createAppointmentUseCase,
   })
 
-  await screen.loadFormOptions()
+  await viewModel.loadFormOptions()
 
-  return screen
+  return viewModel
 }

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useAppointmentCreateScreen } from '../../composables/appointments/use-appointment-create-screen'
+import { useAppointmentCreateViewModel } from '../../composables/appointments/use-appointment-create-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = await useAppointmentCreateScreen()
+const viewModel = await useAppointmentCreateViewModel()
 
 const handleSubmit = async () => {
-  await screen.submitAppointment()
+  await viewModel.submitAppointment()
 
-  if (screen.createdAppointment.value) {
+  if (viewModel.createdAppointment.value) {
     await navigateTo('/appointments')
   }
 }
@@ -35,7 +35,7 @@ const handleSubmit = async () => {
 
     <article class="surface-card appointment-create-card">
       <div
-        v-if="!screen.loading.value && (!screen.patients.value.length || !screen.services.value.length)"
+        v-if="!viewModel.loading.value && (!viewModel.patients.value.length || !viewModel.services.value.length)"
         class="appointment-create-warning"
       >
         Necesitas al menos un paciente y un servicio para registrar citas.
@@ -44,8 +44,8 @@ const handleSubmit = async () => {
       <form v-else class="appointment-create-form" @submit.prevent="handleSubmit">
         <label class="appointment-field">
           <span>Paciente</span>
-          <select v-model="screen.form.patientId" required>
-            <option v-for="patient in screen.patients.value" :key="patient.id" :value="patient.id">
+          <select v-model="viewModel.form.patientId" required>
+            <option v-for="patient in viewModel.patients.value" :key="patient.id" :value="patient.id">
               {{ patient.fullName }}
             </option>
           </select>
@@ -53,8 +53,8 @@ const handleSubmit = async () => {
 
         <label class="appointment-field">
           <span>Servicio</span>
-          <select v-model="screen.form.serviceId" required>
-            <option v-for="service in screen.services.value" :key="service.id" :value="service.id">
+          <select v-model="viewModel.form.serviceId" required>
+            <option v-for="service in viewModel.services.value" :key="service.id" :value="service.id">
               {{ service.name }} · {{ service.defaultDurationMinutes }} min
             </option>
           </select>
@@ -62,11 +62,11 @@ const handleSubmit = async () => {
 
         <label class="appointment-field">
           <span>Inicio</span>
-          <input v-model="screen.form.startAt" type="datetime-local" required>
+          <input v-model="viewModel.form.startAt" type="datetime-local" required>
         </label>
 
         <label class="appointment-flag">
-          <input v-model="screen.form.isUrgent" type="checkbox">
+          <input v-model="viewModel.form.isUrgent" type="checkbox">
           <div>
             <strong>Marcar como urgente</strong>
           </div>
@@ -74,13 +74,13 @@ const handleSubmit = async () => {
 
         <label class="appointment-field">
           <span>Motivo breve</span>
-          <input v-model="screen.form.reason" type="text" placeholder="Control postoperatorio">
+          <input v-model="viewModel.form.reason" type="text" placeholder="Control postoperatorio">
         </label>
 
         <label class="appointment-field">
           <span>Notas administrativas</span>
           <textarea
-            v-model="screen.form.notes"
+            v-model="viewModel.form.notes"
             rows="4"
             placeholder="Observaciones de agenda o coordinacion."
           />
@@ -91,16 +91,16 @@ const handleSubmit = async () => {
             Cancelar
           </NuxtLink>
 
-          <button class="appointment-primary-button" type="submit" :disabled="screen.pending.value">
-            {{ screen.pending.value ? 'Guardando...' : 'Registrar cita' }}
+          <button class="appointment-primary-button" type="submit" :disabled="viewModel.pending.value">
+            {{ viewModel.pending.value ? 'Guardando...' : 'Registrar cita' }}
           </button>
         </div>
 
-        <p v-if="screen.errorMessage.value" class="appointment-message appointment-message-error">
-          {{ screen.errorMessage.value }}
+        <p v-if="viewModel.errorMessage.value" class="appointment-message appointment-message-error">
+          {{ viewModel.errorMessage.value }}
         </p>
-        <p v-if="screen.successMessage.value" class="appointment-message appointment-message-success">
-          {{ screen.successMessage.value }}
+        <p v-if="viewModel.successMessage.value" class="appointment-message appointment-message-success">
+          {{ viewModel.successMessage.value }}
         </p>
       </form>
     </article>

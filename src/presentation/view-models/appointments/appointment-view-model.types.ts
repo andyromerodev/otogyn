@@ -1,6 +1,7 @@
 import type { AppointmentStatus } from '../../../domain/value-objects/appointment-status'
 
-export interface AppointmentScreenPort<TInput, TResult> {
+// Equivale a la interfaz genérica de UseCase en Android (ej. AppointmentUseCase<TInput, TResult>)
+export interface AppointmentViewModelPort<TInput, TResult> {
   execute(input: TInput): Promise<TResult>
 }
 

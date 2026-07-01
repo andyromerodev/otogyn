@@ -2,41 +2,52 @@ import { computed, reactive, ref } from 'vue'
 import type { MedicalService } from '../../../domain/entities/medical-service'
 import type { Patient } from '../../../domain/entities/patient'
 import type { AppointmentStatus } from '../../../domain/value-objects/appointment-status'
-import type {
-  AppointmentMutationInput,
-  AppointmentSessionContextDto,
-  AppointmentStatusMutationInput,
-} from '../../../application/dto/appointment-management'
+import type { AppointmentSessionContextDto } from '../../../application/dto/appointment-management'
 import type { TodayAppointmentViewModel } from '../dashboard'
 import {
   appointmentStatusesForUi,
   createInitialAppointmentForm,
   fromIsoToDatetimeLocalValue,
   normalizeApiError,
-} from './appointment-screen.types'
+} from './appointment-view-model.types'
+import type { AppointmentDetailViewModelDependencies } from './appointment-detail-view-model.module'
 
-export interface AppointmentDetailScreenDependencies {
-  appointmentId: string
-  getAppointmentDetailUseCase: { execute(appointmentId: string): Promise<TodayAppointmentViewModel> }
-  listAppointmentPatientsUseCase: { execute(): Promise<Patient[]> }
-  listAppointmentServicesUseCase: { execute(): Promise<MedicalService[]> }
-  getAppointmentSessionContextUseCase: { execute(): Promise<AppointmentSessionContextDto> }
-  updateAppointmentUseCase: { execute(appointmentId: string, input: AppointmentMutationInput): Promise<unknown> }
-  cancelAppointmentUseCase: { execute(appointmentId: string): Promise<unknown> }
-  changeAppointmentStatusUseCase: { execute(input: AppointmentStatusMutationInput): Promise<unknown> }
-}
+export type { AppointmentDetailViewModelDependencies } from './appointment-detail-view-model.module'
 
-export const createAppointmentDetailScreen = (dependencies: AppointmentDetailScreenDependencies) => {
+// Factory del ViewModel — equivale al constructor de AppointmentDetailViewModel : ViewModel()
+export const createAppointmentDetailViewModel = (dependencies: AppointmentDetailViewModelDependencies) => {
+  // Como StateFlow<TodayAppointmentViewModel?> — null hasta que loadAppointment() resuelve
   const appointment = ref<TodayAppointmentViewModel | null>(null)
+
+  // Como StateFlow<List<Patient>> — opciones del select de pacientes para el formulario de edición
   const patients = ref<Patient[]>([])
+
+  // Como StateFlow<List<MedicalService>> — opciones del select de servicios
   const services = ref<MedicalService[]>([])
+
+  // Como StateFlow<AppointmentSessionContextDto?> — contexto del usuario (rol, permisos)
   const sessionContext = ref<AppointmentSessionContextDto | null>(null)
+
+  // Como StateFlow<Boolean> — carga inicial de la cita
   const loading = ref(false)
+
+  // Como StateFlow<Boolean> — operación de guardado de edición en curso
   const pending = ref(false)
+
+  // Como StateFlow<Boolean> — operación de acción rápida (cambio de estado, cancelación) en curso
   const actionPending = ref(false)
+
+  // Como StateFlow<String?> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref<string | null>(null)
+
+  // Como StateFlow<String?> — mensaje de éxito tras una operación
   const successMessage = ref<string | null>(null)
+
+  // Como StateFlow<Boolean> — controla si el formulario está en modo edición
   const isEditing = ref(false)
+
+  // Como MutableStateFlow<AppointmentFormState> — estado mutable del formulario,
+  // sincronizado con `appointment` al cargar y al cancelar edición
   const form = reactive(createInitialAppointmentForm())
 
   const syncForm = (source: TodayAppointmentViewModel) => {
@@ -86,6 +97,7 @@ export const createAppointmentDetailScreen = (dependencies: AppointmentDetailScr
     }
   }
 
+  // Como derivedStateOf { } — permisos calculados desde el estado de la cita y el rol del usuario
   const canEditAppointment = computed(() => {
     if (!appointment.value) return false
     return appointment.value.status !== 'completed' || sessionContext.value?.role === 'admin_doctor'
@@ -116,9 +128,7 @@ export const createAppointmentDetailScreen = (dependencies: AppointmentDetailScr
   }
 
   const cancelEditing = () => {
-    if (appointment.value) {
-      syncForm(appointment.value)
-    }
+    if (appointment.value) syncForm(appointment.value)
     isEditing.value = false
   }
 
@@ -173,12 +183,7 @@ export const createAppointmentDetailScreen = (dependencies: AppointmentDetailScr
 
   const submitStatusSelection = async (statusValue: string) => {
     const status = appointmentStatusesForUi.find((item) => item.value === statusValue)?.value
-
-    if (!status) {
-      errorMessage.value = 'Estado de cita invalido.'
-      return
-    }
-
+    if (!status) { errorMessage.value = 'Estado de cita invalido.'; return }
     await submitStatus(status)
   }
 

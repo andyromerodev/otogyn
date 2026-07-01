@@ -1,16 +1,16 @@
 import { onMounted } from 'vue'
 import { appointmentServiceLocator } from '~~/src/infrastructure/appointments/service-locator'
-import { createAppointmentsListScreen } from '~~/src/presentation/view-models/appointments/create-appointments-list-screen'
+import { createAppointmentsListViewModel } from '~~/src/presentation/view-models/appointments/appointments-list-view-model'
 
-export const useAppointmentsListScreen = () => {
-  const screen = createAppointmentsListScreen({
+export const useAppointmentsListViewModel = () => {
+  const viewModel = createAppointmentsListViewModel({
     listTodayAppointmentsUseCase: appointmentServiceLocator.listTodayAppointmentsUseCase,
     getAppointmentSessionContextUseCase: appointmentServiceLocator.getAppointmentSessionContextUseCase,
   })
 
   onMounted(() => {
-    void Promise.all([screen.loadAppointments(), screen.loadSessionContext()])
+    void Promise.all([viewModel.loadAppointments(), viewModel.loadSessionContext()])
   })
 
-  return screen
+  return viewModel
 }
