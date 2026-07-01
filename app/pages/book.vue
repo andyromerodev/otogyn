@@ -134,6 +134,16 @@ const screen = await useBookingScreen()
       </div>
 
       <form class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5" @submit.prevent="screen.submitBooking()">
+        <input
+          v-model="screen.form.website"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+          class="hidden"
+        >
+
         <label class="block space-y-1.5">
           <span class="text-sm font-semibold text-slate-700">Nombre completo <span class="text-rose-500">*</span></span>
           <input

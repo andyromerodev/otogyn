@@ -1,42 +1,22 @@
-interface RateLimitEntry {
-  count: number
-  resetAt: number
+import { enforcePublicRateLimit } from '../utils/public-security'
+
+const PUBLIC_RATE_LIMIT_BUCKETS: Record<string, Parameters<typeof enforcePublicRateLimit>[1]> = {
+  'GET /api/public/security-token': 'public-token',
+  'GET /api/public/services': 'public-services',
+  'GET /api/public/slots': 'public-slots',
+  'POST /api/public/booking': 'public-booking',
+  'POST /api/public/pre-evaluacion': 'public-pre-evaluation',
+  'POST /api/public/pre-evaluacion/upload': 'public-pre-evaluation-upload',
 }
 
-const store = new Map<string, RateLimitEntry>()
-
-const LIMITS: Record<string, { max: number; windowMs: number }> = {
-  POST: { max: 10, windowMs: 60_000 },
-  GET: { max: 60, windowMs: 60_000 },
-}
-
-function getIp(event: Parameters<typeof getRequestIP>[0]): string {
-  return getHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim() ?? getRequestIP(event) ?? 'unknown'
-}
-
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const url = getRequestURL(event)
   if (!url.pathname.startsWith('/api/public/')) return
 
   const method = getMethod(event)
-  const limit = LIMITS[method] ?? LIMITS.GET!
-  const ip = getIp(event)
-  const key = `${method}:${ip}`
-  const now = Date.now()
+  const bucket = PUBLIC_RATE_LIMIT_BUCKETS[`${method} ${url.pathname}`]
 
-  const entry = store.get(key)
-
-  if (!entry || now >= entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + limit.windowMs })
-    return
-  }
-
-  entry.count++
-
-  if (entry.count > limit.max) {
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Too many requests. Please try again later.',
-    })
+  if (bucket) {
+    await enforcePublicRateLimit(event, bucket)
   }
 })

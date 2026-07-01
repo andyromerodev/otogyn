@@ -38,6 +38,16 @@ const screen = usePreEvaluacionScreen()
       <StepProgress :current-step="screen.step.value" :total-steps="TOTAL_STEPS" :step-labels="STEP_LABELS" />
 
       <form class="preeval-form" @submit.prevent>
+        <input
+          v-model="screen.form.website"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+          class="preeval-honeypot"
+        >
+
         <!-- Paso 1: Datos generales -->
         <section v-if="screen.step.value === 1" class="preeval-step">
           <h2 class="preeval-step-title">Datos generales</h2>
@@ -349,6 +359,10 @@ const screen = usePreEvaluacionScreen()
   color: #30565a;
   font-size: 0.95rem;
   font-weight: 700;
+}
+
+.preeval-honeypot {
+  display: none;
 }
 
 .preeval-field input[type='text'],

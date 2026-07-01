@@ -20,6 +20,8 @@ export interface PublicBookingInput {
   patientPhone: string
   patientEmail?: string | null
   reason?: string | null
+  publicSecurityToken?: string
+  website?: string | null
 }
 
 export interface PublicBookingResult {

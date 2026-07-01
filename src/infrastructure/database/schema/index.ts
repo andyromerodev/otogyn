@@ -329,3 +329,16 @@ export const preEvaluationForms = pgTable(
     index('pre_evaluation_forms_org_created_idx').on(table.organizationId, table.createdAt),
   ],
 )
+
+export const publicRateLimits = pgTable(
+  'public_rate_limits',
+  {
+    key: varchar('key', { length: 180 }).primaryKey(),
+    count: integer('count').default(0).notNull(),
+    resetAt: timestamp('reset_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('public_rate_limits_reset_idx').on(table.resetAt),
+  ],
+)

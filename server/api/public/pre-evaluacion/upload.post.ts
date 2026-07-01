@@ -1,5 +1,6 @@
 import { BusinessRuleError } from '../../../../src/domain/errors/business-rule-error'
 import { handleApiError } from '../../../utils/handle-api-error'
+import { validatePublicSecurityToken } from '../../../utils/public-security'
 import { serverServiceLocator } from '../../../utils/server-service-locator'
 
 const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024
@@ -24,6 +25,11 @@ const detectImageContentType = (data: Buffer): string | null => {
 
 export default defineEventHandler(async (event) => {
   try {
+    validatePublicSecurityToken(
+      getHeader(event, 'x-public-security-token'),
+      'pre_evaluation_upload',
+    )
+
     const parts = await readMultipartFormData(event)
     const filePart = parts?.find((part) => part.name === 'file' && part.data)
 

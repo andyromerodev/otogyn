@@ -48,6 +48,8 @@ export const preEvaluationFormSchema = z.object({
   consentUnderstandsNotConsultation: z.literal(true, {
     message: 'Debes confirmar que entiendes que esto no es una consulta medica.',
   }),
+  publicSecurityToken: z.string().min(1, 'Solicitud invalida.'),
+  website: z.string().max(200).nullable().optional(),
 })
 
 export const preEvaluationFormListQuerySchema = z.object({

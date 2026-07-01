@@ -67,6 +67,7 @@ function createInitialForm() {
 
     consentInfoTruthful: false,
     consentUnderstandsNotConsultation: false,
+    website: '',
   })
 }
 
@@ -183,6 +184,7 @@ export function createPreEvaluacionScreen(deps: PreEvaluacionScreenDependencies)
 
         consentInfoTruthful: true,
         consentUnderstandsNotConsultation: true,
+        website: form.website,
       })
 
       submissionId.value = result.id

@@ -35,6 +35,8 @@ export interface CreatePreEvaluationFormInput {
 
   consentInfoTruthful: true
   consentUnderstandsNotConsultation: true
+  publicSecurityToken?: string
+  website?: string | null
 }
 
 export interface CreatePreEvaluationFormResult {

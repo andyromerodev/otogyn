@@ -33,6 +33,7 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
     phone: '',
     email: '',
     reason: '',
+    website: '',
   })
 
   async function loadServices() {
@@ -92,6 +93,7 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
         patientPhone: form.phone.trim(),
         patientEmail: form.email.trim() || null,
         reason: form.reason.trim() || null,
+        website: form.website,
       })
       step.value = 4
     } catch (err: unknown) {
@@ -116,6 +118,7 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
     form.phone = ''
     form.email = ''
     form.reason = ''
+    form.website = ''
   }
 
   function formatTime(isoString: string): string {
