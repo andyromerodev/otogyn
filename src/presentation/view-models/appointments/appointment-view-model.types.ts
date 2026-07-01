@@ -51,7 +51,43 @@ export const appointmentStatusesForUi: Array<{
   { value: 'no_show', label: 'No asistio' },
 ]
 
-export const normalizeApiError = (error: unknown, fallback: string): string =>
-  error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
-    ? error.statusMessage
-    : fallback
+export interface NormalizedApiError {
+  message: string
+  // 'validation': error de negocio o de datos (4xx), accionable por el usuario.
+  // 'server': error tecnico/inesperado (5xx o sin respuesta), sugiere reintentar.
+  kind: 'validation' | 'server'
+}
+
+const extractStatusCode = (error: unknown): number | undefined => {
+  if (error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number') {
+    return error.statusCode
+  }
+  return undefined
+}
+
+// ofetch expone `error.statusMessage` como getter sobre el "reason phrase" HTTP
+// (`response.statusText`), no sobre el JSON de la respuesta. h3 sanea ese
+// reason phrase eliminando cualquier caracter fuera de ASCII imprimible antes
+// de enviarlo (ver sanitizeStatusMessage en h3), asi que un mensaje con tildes
+// como "no esta disponible" llegaria mutilado. El mensaje real, intacto, esta
+// en el cuerpo JSON de la respuesta (`error.data`).
+const extractServerMessage = (error: unknown): string | undefined => {
+  if (!error || typeof error !== 'object' || !('data' in error)) return undefined
+
+  const data = error.data
+  if (!data || typeof data !== 'object') return undefined
+
+  if ('statusMessage' in data && typeof data.statusMessage === 'string') return data.statusMessage
+  if ('message' in data && typeof data.message === 'string') return data.message
+
+  return undefined
+}
+
+export const normalizeApiError = (error: unknown, fallback: string): NormalizedApiError => {
+  const statusCode = extractStatusCode(error)
+
+  return {
+    message: extractServerMessage(error) ?? fallback,
+    kind: statusCode !== undefined && statusCode < 500 ? 'validation' : 'server',
+  }
+}

@@ -8,6 +8,7 @@ export const useAppointmentDetailViewModel = async (appointmentId: string) => {
     listAppointmentPatientsUseCase: appointmentServiceLocator.listAppointmentPatientsUseCase,
     listAppointmentServicesUseCase: appointmentServiceLocator.listAppointmentServicesUseCase,
     getAppointmentSessionContextUseCase: appointmentServiceLocator.getAppointmentSessionContextUseCase,
+    getAppointmentAvailableSlotsUseCase: appointmentServiceLocator.getAppointmentAvailableSlotsUseCase,
     updateAppointmentUseCase: appointmentServiceLocator.updateAppointmentUseCase,
     cancelAppointmentUseCase: appointmentServiceLocator.cancelAppointmentUseCase,
     changeAppointmentStatusUseCase: appointmentServiceLocator.changeAppointmentStatusUseCase,

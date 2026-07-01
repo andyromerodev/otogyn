@@ -96,8 +96,13 @@ const handleSubmit = async () => {
           </button>
         </div>
 
-        <p v-if="viewModel.errorMessage.value" class="appointment-message appointment-message-error">
+        <p
+          v-if="viewModel.errorMessage.value"
+          class="appointment-message"
+          :class="viewModel.errorKind.value === 'server' ? 'appointment-message-error' : 'appointment-message-warning'"
+        >
           {{ viewModel.errorMessage.value }}
+          <span v-if="viewModel.errorKind.value === 'server'" class="appointment-message-hint">Intenta de nuevo en unos segundos.</span>
         </p>
         <p v-if="viewModel.successMessage.value" class="appointment-message appointment-message-success">
           {{ viewModel.successMessage.value }}
@@ -271,9 +276,22 @@ const handleSubmit = async () => {
   color: #b91c1c;
 }
 
+.appointment-message-warning {
+  background: #fffbeb;
+  color: #92400e;
+}
+
 .appointment-message-success {
   background: #ecfdf5;
   color: #047857;
+}
+
+.appointment-message-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  font-size: 0.85rem;
+  opacity: 0.85;
 }
 
 @media (max-width: 720px) {

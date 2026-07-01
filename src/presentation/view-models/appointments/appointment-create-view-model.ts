@@ -24,6 +24,10 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
   // Como StateFlow<String?> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref<string | null>(null)
 
+  // Como StateFlow<ErrorKind?> — 'validation' (accionable) vs 'server' (tecnico),
+  // permite a la UI distinguir "revisa esto" de "algo fallo, intenta de nuevo"
+  const errorKind = ref<'validation' | 'server' | null>(null)
+
   // Como StateFlow<String?> — mensaje de éxito tras crear la cita
   const successMessage = ref<string | null>(null)
 
@@ -43,6 +47,7 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
   const loadFormOptions = async () => {
     loading.value = true
     errorMessage.value = null
+    errorKind.value = null
 
     try {
       const [loadedPatients, loadedServices] = await Promise.all([
@@ -54,7 +59,9 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
       services.value = loadedServices
       syncDefaultSelections()
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudieron cargar los datos para registrar la cita.')
+      const normalized = normalizeApiError(error, 'No se pudieron cargar los datos para registrar la cita.')
+      errorMessage.value = normalized.message
+      errorKind.value = normalized.kind
     } finally {
       loading.value = false
     }
@@ -64,6 +71,7 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
   const submitAppointment = async () => {
     pending.value = true
     errorMessage.value = null
+    errorKind.value = null
     successMessage.value = null
 
     try {
@@ -78,7 +86,9 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
 
       successMessage.value = 'Cita registrada correctamente.'
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo registrar la cita.')
+      const normalized = normalizeApiError(error, 'No se pudo registrar la cita.')
+      errorMessage.value = normalized.message
+      errorKind.value = normalized.kind
     } finally {
       pending.value = false
     }
@@ -91,6 +101,7 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
     loading,
     pending,
     errorMessage,
+    errorKind,
     successMessage,
     createdAppointment,
     loadFormOptions,

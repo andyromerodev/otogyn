@@ -12,6 +12,15 @@ const viewModel = await useAppointmentDetailViewModel(appointmentId)
 const handleStatusChange = (event: Event) => {
   void viewModel.submitStatusSelection((event.target as HTMLSelectElement).value)
 }
+
+const formatSlotTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+
+const isSlotSelected = (startsAt: string) => {
+  const current = new Date(viewModel.form.startAt)
+  const slot = new Date(startsAt)
+  return current.getTime() === slot.getTime()
+}
 </script>
 
 <template>
@@ -51,6 +60,28 @@ const handleStatusChange = (event: Event) => {
           <input v-model="viewModel.form.startAt" type="datetime-local" required :disabled="!viewModel.isEditing.value">
         </label>
 
+        <div v-if="viewModel.isEditing.value" class="field field-wide slots-field">
+          <span>Horarios disponibles</span>
+          <input v-model="viewModel.slotsDate.value" type="date" class="slots-date-input">
+
+          <p v-if="viewModel.loadingSlots.value" class="slots-hint">Buscando horarios...</p>
+          <p v-else-if="!viewModel.availableSlots.value.length" class="slots-hint">
+            No hay horarios libres ese dia para el servicio seleccionado.
+          </p>
+          <div v-else class="slots-grid">
+            <button
+              v-for="slot in viewModel.availableSlots.value"
+              :key="slot.startsAt"
+              type="button"
+              class="slot-button"
+              :class="{ 'slot-button-selected': isSlotSelected(slot.startsAt) }"
+              @click="viewModel.selectSlot(slot)"
+            >
+              {{ formatSlotTime(slot.startsAt) }}
+            </button>
+          </div>
+        </div>
+
         <div class="field field-wide active-field">
           <span>Urgente</span>
           <label class="active-toggle">
@@ -75,7 +106,7 @@ const handleStatusChange = (event: Event) => {
           <span>Estado</span>
           <select
             :value="viewModel.appointment.value.status"
-            :disabled="!viewModel.canChangeAppointmentStatus.value || viewModel.actionPending.value"
+            :disabled="!viewModel.canChangeAppointmentStatus.value || viewModel.changingStatusPending.value"
             @change="handleStatusChange"
           >
             <option
@@ -86,6 +117,7 @@ const handleStatusChange = (event: Event) => {
               {{ statusOption.label }}
             </option>
           </select>
+          <span v-if="viewModel.changingStatusPending.value" class="field-inline-hint">Actualizando estado...</span>
         </label>
 
         <div class="detail-actions">
@@ -95,10 +127,10 @@ const handleStatusChange = (event: Event) => {
               <button
                 type="button"
                 class="delete-button"
-                :disabled="!viewModel.canCancelAppointment.value || viewModel.actionPending.value"
+                :disabled="!viewModel.canCancelAppointment.value || viewModel.cancelingPending.value"
                 @click="viewModel.submitCancellation"
               >
-                {{ viewModel.actionPending.value ? 'Procesando...' : 'Cancelar cita' }}
+                {{ viewModel.cancelingPending.value ? 'Cancelando...' : 'Cancelar cita' }}
               </button>
               <button
                 type="button"
@@ -120,7 +152,14 @@ const handleStatusChange = (event: Event) => {
           </div>
         </div>
 
-        <p v-if="viewModel.errorMessage.value" class="message message-error">{{ viewModel.errorMessage.value }}</p>
+        <p
+          v-if="viewModel.errorMessage.value"
+          class="message"
+          :class="viewModel.errorKind.value === 'server' ? 'message-error' : 'message-warning'"
+        >
+          {{ viewModel.errorMessage.value }}
+          <span v-if="viewModel.errorKind.value === 'server'" class="message-hint">Intenta de nuevo en unos segundos.</span>
+        </p>
         <p v-if="viewModel.successMessage.value" class="message message-success">{{ viewModel.successMessage.value }}</p>
       </form>
     </article>
@@ -271,9 +310,80 @@ const handleStatusChange = (event: Event) => {
   color: #b91c1c;
 }
 
+.message-warning {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.message-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
 .message-success {
   background: #ecfdf5;
   color: #047857;
+}
+
+.field-inline-hint {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+  opacity: 0.65;
+}
+
+.slots-field {
+  gap: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.slots-date-input {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 0.6rem 0.75rem;
+  background: white;
+  color: var(--text-main);
+  width: fit-content;
+}
+
+.slots-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.slot-button {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+  background: white;
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.slot-button:hover {
+  border-color: #0f766e;
+}
+
+.slot-button-selected {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: white;
 }
 
 @media (max-width: 960px) {

@@ -1,8 +1,8 @@
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import type { MedicalService } from '../../../domain/entities/medical-service'
 import type { Patient } from '../../../domain/entities/patient'
 import type { AppointmentStatus } from '../../../domain/value-objects/appointment-status'
-import type { AppointmentSessionContextDto } from '../../../application/dto/appointment-management'
+import type { AppointmentSessionContextDto, AppointmentSlotDto } from '../../../application/dto/appointment-management'
 import type { TodayAppointmentViewModel } from '../dashboard'
 import {
   appointmentStatusesForUi,
@@ -34,11 +34,18 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   // Como StateFlow<Boolean> — operación de guardado de edición en curso
   const pending = ref(false)
 
-  // Como StateFlow<Boolean> — operación de acción rápida (cambio de estado, cancelación) en curso
-  const actionPending = ref(false)
+  // Como StateFlow<Boolean> — cancelación de la cita en curso (accion especifica,
+  // no comparte flag con cambio de estado para que la UI sepa cual boton mostrar como ocupado)
+  const cancelingPending = ref(false)
+
+  // Como StateFlow<Boolean> — cambio de estado de la cita en curso
+  const changingStatusPending = ref(false)
 
   // Como StateFlow<String?> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref<string | null>(null)
+
+  // Como StateFlow<ErrorKind?> — 'validation' (accionable) vs 'server' (tecnico)
+  const errorKind = ref<'validation' | 'server' | null>(null)
 
   // Como StateFlow<String?> — mensaje de éxito tras una operación
   const successMessage = ref<string | null>(null)
@@ -50,6 +57,18 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   // sincronizado con `appointment` al cargar y al cancelar edición
   const form = reactive(createInitialAppointmentForm())
 
+  // Como StateFlow<List<AppointmentSlotDto>> — huecos disponibles para el dia
+  // seleccionado, calculados excluyendo la propia cita (para poder reprogramar
+  // dentro del mismo dia sin que su horario actual se muestre como ocupado)
+  const availableSlots = ref<AppointmentSlotDto[]>([])
+
+  // Como StateFlow<Boolean> — carga de horarios disponibles en curso
+  const loadingSlots = ref(false)
+
+  // Como MutableStateFlow<String> — fecha (YYYY-MM-DD) que se esta explorando
+  // en el buscador de horarios; se sincroniza con el inicio de la cita al editar
+  const slotsDate = ref('')
+
   const syncForm = (source: TodayAppointmentViewModel) => {
     form.patientId = source.patientId
     form.serviceId = source.serviceId
@@ -59,16 +78,23 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     form.notes = source.notes ?? ''
   }
 
+  const setError = (error: unknown, fallback: string) => {
+    const normalized = normalizeApiError(error, fallback)
+    errorMessage.value = normalized.message
+    errorKind.value = normalized.kind
+  }
+
   const loadAppointment = async () => {
     loading.value = true
     errorMessage.value = null
+    errorKind.value = null
 
     try {
       const found = await dependencies.getAppointmentDetailUseCase.execute(dependencies.appointmentId)
       appointment.value = found
       syncForm(found)
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo cargar la cita.')
+      setError(error, 'No se pudo cargar la cita.')
       appointment.value = null
     } finally {
       loading.value = false
@@ -85,7 +111,7 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       patients.value = loadedPatients
       services.value = loadedServices
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudieron cargar los datos para editar la cita.')
+      setError(error, 'No se pudieron cargar los datos para editar la cita.')
     }
   }
 
@@ -93,9 +119,43 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     try {
       sessionContext.value = await dependencies.getAppointmentSessionContextUseCase.execute()
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo cargar el contexto del usuario.')
+      setError(error, 'No se pudo cargar el contexto del usuario.')
     }
   }
+
+  // Equivale a fun loadAvailableSlots() — huecos libres para slotsDate + form.serviceId,
+  // excluyendo la propia cita de los intervalos ocupados
+  const loadAvailableSlots = async () => {
+    if (!form.serviceId || !slotsDate.value) {
+      availableSlots.value = []
+      return
+    }
+
+    loadingSlots.value = true
+
+    try {
+      availableSlots.value = await dependencies.getAppointmentAvailableSlotsUseCase.execute({
+        date: slotsDate.value,
+        serviceId: form.serviceId,
+        excludeAppointmentId: appointment.value?.id,
+      })
+    } catch (error) {
+      setError(error, 'No se pudieron cargar los horarios disponibles.')
+      availableSlots.value = []
+    } finally {
+      loadingSlots.value = false
+    }
+  }
+
+  const selectSlot = (slot: AppointmentSlotDto) => {
+    form.startAt = fromIsoToDatetimeLocalValue(slot.startsAt)
+  }
+
+  // Recarga los huecos disponibles cuando cambia el dia explorado o el
+  // servicio (la duracion del servicio cambia el tamaño de los huecos)
+  watch([slotsDate, () => form.serviceId], () => {
+    if (isEditing.value) void loadAvailableSlots()
+  })
 
   // Como derivedStateOf { } — permisos calculados desde el estado de la cita y el rol del usuario
   const canEditAppointment = computed(() => {
@@ -124,7 +184,10 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     syncForm(appointment.value)
     successMessage.value = null
     errorMessage.value = null
+    errorKind.value = null
     isEditing.value = true
+    slotsDate.value = form.startAt.slice(0, 10)
+    void loadAvailableSlots()
   }
 
   const cancelEditing = () => {
@@ -137,6 +200,7 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
 
     pending.value = true
     errorMessage.value = null
+    errorKind.value = null
     successMessage.value = null
 
     try {
@@ -153,7 +217,7 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       successMessage.value = 'Cita actualizada correctamente.'
       isEditing.value = false
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo actualizar la cita.')
+      setError(error, 'No se pudo actualizar la cita.')
     } finally {
       pending.value = false
     }
@@ -162,8 +226,9 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   const submitStatus = async (status: Exclude<AppointmentStatus, 'cancelled'>) => {
     if (!appointment.value) return
 
-    actionPending.value = true
+    changingStatusPending.value = true
     errorMessage.value = null
+    errorKind.value = null
     successMessage.value = null
 
     try {
@@ -175,23 +240,28 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       await loadAppointment()
       successMessage.value = 'Estado de la cita actualizado correctamente.'
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo actualizar el estado de la cita.')
+      setError(error, 'No se pudo actualizar el estado de la cita.')
     } finally {
-      actionPending.value = false
+      changingStatusPending.value = false
     }
   }
 
   const submitStatusSelection = async (statusValue: string) => {
     const status = appointmentStatusesForUi.find((item) => item.value === statusValue)?.value
-    if (!status) { errorMessage.value = 'Estado de cita invalido.'; return }
+    if (!status) {
+      errorMessage.value = 'Estado de cita invalido.'
+      errorKind.value = 'validation'
+      return
+    }
     await submitStatus(status)
   }
 
   const submitCancellation = async () => {
     if (!appointment.value) return
 
-    actionPending.value = true
+    cancelingPending.value = true
     errorMessage.value = null
+    errorKind.value = null
     successMessage.value = null
 
     try {
@@ -200,9 +270,9 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       successMessage.value = 'Cita cancelada correctamente.'
       isEditing.value = false
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo cancelar la cita.')
+      setError(error, 'No se pudo cancelar la cita.')
     } finally {
-      actionPending.value = false
+      cancelingPending.value = false
     }
   }
 
@@ -214,10 +284,15 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     form,
     loading,
     pending,
-    actionPending,
+    cancelingPending,
+    changingStatusPending,
     errorMessage,
+    errorKind,
     successMessage,
     isEditing,
+    availableSlots,
+    loadingSlots,
+    slotsDate,
     appointmentStatusesForUi,
     canEditAppointment,
     canCancelAppointment,
@@ -225,6 +300,8 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     loadAppointment,
     loadFormOptions,
     loadSessionContext,
+    loadAvailableSlots,
+    selectSlot,
     startEditing,
     cancelEditing,
     submitAppointment,
