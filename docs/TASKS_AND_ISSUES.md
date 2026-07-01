@@ -213,8 +213,8 @@ Convencion sugerida de nombre visible:
 ## Proximo foco recomendado
 
 1. `E11.1 Hardening final de produccion`
-   - agregar headers de seguridad HTTP revisados para Netlify/Nitro
-   - definir CORS explicito para `/api/public/*` si el formulario publico se consume fuera del mismo dominio
+   - ✅ headers de seguridad HTTP agregados via `routeRules['/**'].headers` en `nuxt.config.ts` (Nitro, agnostico de Netlify): `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`. CSP solo se activa en produccion (`NODE_ENV === 'production'`) para no romper HMR/devtools en dev; `script-src`/`style-src` requieren `'unsafe-inline'` porque Nuxt SSR inyecta el payload `__NUXT__` y el bootstrap de color-mode sin nonce.
+   - pendiente: definir CORS explicito para `/api/public/*` si el formulario publico se consume fuera del mismo dominio (no hay requisito confirmado todavia, se deja pendiente a proposito)
    - evaluar constraint/refuerzo en DB para doble reserva como defensa extra ademas de la transaccion SERIALIZABLE
 2. `E12.1 Testing de integracion critica`
    - pruebas de login, reserva publica y borrado bloqueado de servicios
