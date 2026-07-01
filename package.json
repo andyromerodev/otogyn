@@ -11,6 +11,7 @@
     "netlify:link": "netlify link",
     "lint": "eslint .",
     "test": "vitest run --coverage",
+    "test:integration": "vitest run -c vitest.integration.config.ts",
     "typecheck": "nuxt typecheck",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@nuxt/test-utils": "^4.0.3",
     "@vitest/coverage-v8": "^4.1.8",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
