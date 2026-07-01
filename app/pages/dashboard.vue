@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AppSessionContext } from '~/utils/auth/session-context'
-import { useDashboardScreen } from '../composables/dashboard/use-dashboard-screen'
+import { useDashboardViewModel } from '../composables/dashboard/use-dashboard-view-model'
 
 definePageMeta({
   middleware: 'auth',
@@ -15,7 +15,7 @@ const { data: sessionContext } = isAuthEnabled.value
     })
   : { data: ref<AppSessionContext | null>(null) }
 
-const screen = await useDashboardScreen()
+const viewModel = await useDashboardViewModel()
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -49,20 +49,20 @@ const todayLabel = computed(() =>
       <div class="dashboard-header-actions">
         <button type="button" class="dashboard-bell" aria-label="Notificaciones">
           <UIcon name="i-heroicons-bell" />
-          <span v-if="screen.summary.value && screen.summary.value.urgentToday > 0" class="dashboard-bell-dot" />
+          <span v-if="viewModel.summary.value && viewModel.summary.value.urgentToday > 0" class="dashboard-bell-dot" />
         </button>
         <SharedAvatarInitials :name="sessionContext?.name ?? 'OtoGyn'" />
       </div>
     </header>
 
-    <div v-if="screen.loading.value" class="surface-card placeholder-panel">
+    <div v-if="viewModel.loading.value" class="surface-card placeholder-panel">
       Cargando resumen operativo...
     </div>
 
     <template v-else>
       <section class="dashboard-metrics">
         <DashboardMetricCard
-          v-for="metric in screen.metrics.value"
+          v-for="metric in viewModel.metrics.value"
           :key="metric.label"
           :label="metric.label"
           :value="metric.value"
@@ -73,18 +73,18 @@ const todayLabel = computed(() =>
       </section>
 
       <DashboardActiveConsultationCard
-        v-if="screen.activeConsultation.value"
-        :consultation="screen.activeConsultation.value"
+        v-if="viewModel.activeConsultation.value"
+        :consultation="viewModel.activeConsultation.value"
       />
 
       <div class="dashboard-panels">
         <DashboardTodayAppointmentsList
-          :appointments="screen.appointments.value"
+          :appointments="viewModel.appointments.value"
         />
 
-        <aside v-if="screen.errorMessage.value" class="surface-card insight-card">
+        <aside v-if="viewModel.errorMessage.value" class="surface-card insight-card">
           <p class="muted-text">
-            {{ screen.errorMessage.value }}
+            {{ viewModel.errorMessage.value }}
           </p>
         </aside>
       </div>

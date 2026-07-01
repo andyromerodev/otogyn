@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createDashboardScreen } from './create-dashboard-screen'
+import { createDashboardViewModel } from './dashboard-view-model'
 
-describe('createDashboardScreen', () => {
+describe('createDashboardViewModel', () => {
   it('loads summary and appointments and exposes computed metrics', async () => {
-    const screen = createDashboardScreen({
+    const viewModel = createDashboardViewModel({
       getDashboardSummaryUseCase: {
         execute: vi.fn().mockResolvedValue({
           totalToday: 6,
@@ -28,17 +28,17 @@ describe('createDashboardScreen', () => {
       },
     })
 
-    await screen.loadDashboard()
+    await viewModel.loadDashboard()
 
-    expect(screen.summary.value?.totalToday).toBe(6)
-    expect(screen.appointments.value).toHaveLength(1)
-    expect(screen.metrics.value).toHaveLength(4)
-    expect(screen.metrics.value[0]?.label).toBe('Hoy')
-    expect(screen.activeConsultation.value).toBeNull()
+    expect(viewModel.summary.value?.totalToday).toBe(6)
+    expect(viewModel.appointments.value).toHaveLength(1)
+    expect(viewModel.metrics.value).toHaveLength(4)
+    expect(viewModel.metrics.value[0]?.label).toBe('Hoy')
+    expect(viewModel.activeConsultation.value).toBeNull()
   })
 
   it('derives the active consultation from the in-progress appointment', async () => {
-    const screen = createDashboardScreen({
+    const viewModel = createDashboardViewModel({
       getDashboardSummaryUseCase: {
         execute: vi.fn().mockResolvedValue({
           totalToday: 4,
@@ -65,9 +65,9 @@ describe('createDashboardScreen', () => {
       },
     })
 
-    await screen.loadDashboard()
+    await viewModel.loadDashboard()
 
-    expect(screen.activeConsultation.value).toEqual({
+    expect(viewModel.activeConsultation.value).toEqual({
       patientName: 'Maria Torres',
       serviceName: 'Consulta ginecologica',
       timeLabel: '10:30 - 11:00',

@@ -1,13 +1,13 @@
 import { dashboardServiceLocator } from '~~/src/infrastructure/dashboard/service-locator'
-import { createDashboardScreen } from '~~/src/presentation/view-models/dashboard/create-dashboard-screen'
+import { createDashboardViewModel } from '~~/src/presentation/view-models/dashboard/dashboard-view-model'
 
-export const useDashboardScreen = async () => {
-  const screen = createDashboardScreen({
+export const useDashboardViewModel = async () => {
+  const viewModel = createDashboardViewModel({
     getDashboardSummaryUseCase: dashboardServiceLocator.getDashboardSummaryUseCase,
     getDashboardTodayAppointmentsUseCase: dashboardServiceLocator.getDashboardTodayAppointmentsUseCase,
   })
 
-  await screen.loadDashboard()
+  await viewModel.loadDashboard()
 
-  return screen
+  return viewModel
 }

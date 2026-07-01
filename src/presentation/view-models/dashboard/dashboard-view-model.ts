@@ -2,23 +2,27 @@ import { computed, ref } from 'vue'
 import type {
   ActiveConsultationViewModel,
   DashboardMetricViewModel,
-} from '../../../application/dto/dashboard-management'
-import type {
-  DashboardSummaryViewModel,
-  TodayAppointmentViewModel,
-} from './index'
+} from '~~/src/application/dto/dashboard-management'
+import type { DashboardViewModelDependencies } from './dashboard-view-model.module'
 
-export interface DashboardScreenDependencies {
-  getDashboardSummaryUseCase: { execute(): Promise<DashboardSummaryViewModel> }
-  getDashboardTodayAppointmentsUseCase: { execute(): Promise<TodayAppointmentViewModel[]> }
-}
+export type { DashboardViewModelDependencies } from './dashboard-view-model.module'
 
-export const createDashboardScreen = (dependencies: DashboardScreenDependencies) => {
-  const summary = ref<DashboardSummaryViewModel | null>(null)
-  const appointments = ref<TodayAppointmentViewModel[]>([])
+// Factory del ViewModel — equivale al constructor de DashboardViewModel : ViewModel()
+export const createDashboardViewModel = (dependencies: DashboardViewModelDependencies) => {
+  // Como StateFlow<DashboardSummaryViewModel?> — null hasta que loadDashboard() resuelve
+  const summary = ref<import('./index').DashboardSummaryViewModel | null>(null)
+
+  // Como StateFlow<List<TodayAppointmentViewModel>> — lista vacía como estado inicial
+  const appointments = ref<import('./index').TodayAppointmentViewModel[]>([])
+
+  // Como StateFlow<Boolean> — la UI lo observa para mostrar el skeleton/placeholder
   const loading = ref(false)
+
+  // Como StateFlow<String?> — expuesto read-only a la UI; solo el ViewModel lo muta via .value
   const errorMessage = ref<string | null>(null)
 
+  // Como derivedStateOf { } — lista de métricas calculada desde summary;
+  // se recalcula automáticamente cuando summary.value cambia
   const metrics = computed<DashboardMetricViewModel[]>(() => {
     if (!summary.value) {
       return []
@@ -56,6 +60,8 @@ export const createDashboardScreen = (dependencies: DashboardScreenDependencies)
     ]
   })
 
+  // Como derivedStateOf { } — consulta activa derivada de la lista de citas;
+  // null si ninguna está en estado in_progress
   const activeConsultation = computed<ActiveConsultationViewModel | null>(() => {
     const appointment = appointments.value.find((item) => item.status === 'in_progress')
 
@@ -75,6 +81,8 @@ export const createDashboardScreen = (dependencies: DashboardScreenDependencies)
     }
   })
 
+  // Equivale a fun loadDashboard() en el ViewModel de Android — dispara las llamadas
+  // a los UseCases y actualiza los StateFlows según el resultado
   const loadDashboard = async () => {
     loading.value = true
     errorMessage.value = null
