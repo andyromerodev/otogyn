@@ -28,7 +28,7 @@ export const createAppointmentsListViewModel = (dependencies: AppointmentsListVi
     try {
       appointments.value = await dependencies.listTodayAppointmentsUseCase.execute()
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudieron cargar las citas de hoy.')
+      errorMessage.value = normalizeApiError(error, 'No se pudieron cargar las citas de hoy.').message
     } finally {
       loading.value = false
     }
@@ -38,7 +38,7 @@ export const createAppointmentsListViewModel = (dependencies: AppointmentsListVi
     try {
       sessionContext.value = await dependencies.getAppointmentSessionContextUseCase.execute()
     } catch (error) {
-      errorMessage.value = normalizeApiError(error, 'No se pudo cargar el contexto del usuario.')
+      errorMessage.value = normalizeApiError(error, 'No se pudo cargar el contexto del usuario.').message
     }
   }
 
