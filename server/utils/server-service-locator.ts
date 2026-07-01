@@ -34,17 +34,29 @@ import { UpdateServiceUseCase } from '../../src/application/use-cases/update-ser
 import { CreatePublicBookingUseCase } from '../../src/application/use-cases/booking/create-public-booking'
 import { GetPublicServicesUseCase } from '../../src/application/use-cases/booking/get-public-services'
 import { GetPublicSlotsUseCase } from '../../src/application/use-cases/booking/get-public-slots'
+import { CreatePreEvaluationFormUseCase } from '../../src/application/use-cases/pre-evaluation-forms/create-pre-evaluation-form'
+import { UploadPreEvaluationAttachmentUseCase } from '../../src/application/use-cases/pre-evaluation-forms/upload-pre-evaluation-attachment'
+import { ListPreEvaluationFormsUseCase } from '../../src/application/use-cases/pre-evaluation-forms/list-pre-evaluation-forms'
+import { GetPreEvaluationFormDetailUseCase } from '../../src/application/use-cases/pre-evaluation-forms/get-pre-evaluation-form-detail'
+import { LinkPreEvaluationFormToPatientUseCase } from '../../src/application/use-cases/pre-evaluation-forms/link-pre-evaluation-form-to-patient'
+import { CreatePatientFromPreEvaluationFormUseCase } from '../../src/application/use-cases/pre-evaluation-forms/create-patient-from-pre-evaluation-form'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
 import { DrizzleAvailabilityRepository } from '../../src/infrastructure/repositories/drizzle-availability-repository'
 import { DrizzlePatientRepository } from '../../src/infrastructure/repositories/drizzle-patient-repository'
+import { DrizzlePreEvaluationFormRepository } from '../../src/infrastructure/repositories/drizzle-pre-evaluation-form-repository'
 import { DrizzleServiceRepository } from '../../src/infrastructure/repositories/drizzle-service-repository'
+import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
+import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
 
 const patientRepository = new DrizzlePatientRepository()
 const serviceRepository = new DrizzleServiceRepository()
 const assistantRepository = new DrizzleAssistantRepository()
 const appointmentRepository = new DrizzleAppointmentRepository()
 const availabilityRepository = new DrizzleAvailabilityRepository()
+const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
+const attachmentStorage = new NetlifyBlobsAttachmentStorage()
+const notificationService = new ResendNotificationService()
 
 const scheduleAppointmentUseCase = new ScheduleAppointmentUseCase(
   appointmentRepository,
@@ -131,6 +143,29 @@ export const serverServiceLocator = {
       serviceRepository,
       scheduleAppointmentUseCase,
     ),
+  },
+  preEvaluationForms: {
+    createPreEvaluationFormUseCase: new CreatePreEvaluationFormUseCase(
+      patientRepository,
+      preEvaluationFormRepository,
+      notificationService,
+    ),
+    uploadPreEvaluationAttachmentUseCase: new UploadPreEvaluationAttachmentUseCase(
+      attachmentStorage,
+    ),
+    listPreEvaluationFormsUseCase: new ListPreEvaluationFormsUseCase(preEvaluationFormRepository),
+    getPreEvaluationFormDetailUseCase: new GetPreEvaluationFormDetailUseCase(
+      preEvaluationFormRepository,
+    ),
+    linkPreEvaluationFormToPatientUseCase: new LinkPreEvaluationFormToPatientUseCase(
+      preEvaluationFormRepository,
+      patientRepository,
+    ),
+    createPatientFromPreEvaluationFormUseCase: new CreatePatientFromPreEvaluationFormUseCase(
+      preEvaluationFormRepository,
+      patientRepository,
+    ),
+    attachmentStorage,
   },
   calendar: {
     getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),

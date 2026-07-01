@@ -15,6 +15,8 @@ export type ServerAuthorizationAction =
   | 'dashboard:read'
   | 'patients:read'
   | 'patients:write'
+  | 'pre_evaluation_forms:read'
+  | 'pre_evaluation_forms:write'
   | 'appointments:read'
   | 'appointments:create'
   | 'appointments:update'
