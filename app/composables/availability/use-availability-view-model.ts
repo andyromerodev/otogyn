@@ -1,8 +1,8 @@
 import { availabilityServiceLocator } from '~~/src/infrastructure/availability/service-locator'
-import { createAvailabilityScreen } from '~~/src/presentation/view-models/availability/create-availability-screen'
+import { createAvailabilityViewModel } from '~~/src/presentation/view-models/availability/availability-view-model'
 
-export const useAvailabilityScreen = async () => {
-  const screen = createAvailabilityScreen({
+export const useAvailabilityViewModel = async () => {
+  const viewModel = createAvailabilityViewModel({
     listAvailabilityUseCase: availabilityServiceLocator.listAvailabilityUseCase,
     createAvailabilityUseCase: availabilityServiceLocator.createAvailabilityUseCase,
     updateAvailabilityUseCase: availabilityServiceLocator.updateAvailabilityUseCase,
@@ -14,7 +14,7 @@ export const useAvailabilityScreen = async () => {
     },
   })
 
-  await screen.loadAvailability()
+  await viewModel.loadAvailability()
 
-  return screen
+  return viewModel
 }
