@@ -52,6 +52,22 @@ export class MockPatientRepository implements PatientRepository {
     return this.patients.find((patient) => patient.id === id && !patient.deletedAt) ?? null
   }
 
+  async findByExactPhoneAndEmail(
+    organizationId: string,
+    phone: string,
+    email: string | null,
+  ): Promise<Patient | null> {
+    return (
+      this.patients.find(
+        (patient) =>
+          patient.organizationId === organizationId &&
+          !patient.deletedAt &&
+          patient.phone === phone &&
+          (!email || patient.email === email),
+      ) ?? null
+    )
+  }
+
   async create(patient: Patient): Promise<Patient> {
     this.patients.push(patient)
     return patient

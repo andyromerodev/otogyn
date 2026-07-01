@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
@@ -254,3 +255,77 @@ export const auditLogs = pgTable('audit_logs', {
   metadataJson: text('metadata_json'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 })
+
+export const preEvalSymptomDurationEnum = pgEnum('pre_eval_symptom_duration', [
+  'lt_1mo',
+  '1_3mo',
+  '3_12mo',
+  'gt_1yr',
+])
+
+export const preEvalSymptomPatternEnum = pgEnum('pre_eval_symptom_pattern', [
+  'constant',
+  'intermittent',
+  'worsening',
+])
+
+export const preEvalYesNoEnum = pgEnum('pre_eval_yes_no', ['yes', 'no'])
+
+export const preEvalImprovementEnum = pgEnum('pre_eval_improvement', ['yes', 'partial', 'no'])
+
+export const preEvalStatusEnum = pgEnum('pre_eval_status', [
+  'pending_review',
+  'reviewed',
+  'scheduled',
+  'dismissed',
+])
+
+export const preEvaluationForms = pgTable(
+  'pre_evaluation_forms',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    patientId: uuid('patient_id').references(() => patients.id, { onDelete: 'set null' }),
+
+    fullName: varchar('full_name', { length: 180 }).notNull(),
+    age: integer('age'),
+    city: varchar('city', { length: 120 }),
+    phone: varchar('phone', { length: 40 }).notNull(),
+    email: varchar('email', { length: 255 }),
+
+    mainReasons: jsonb('main_reasons').$type<string[]>().notNull().default([]),
+    mainReasonOtherText: text('main_reason_other_text'),
+    complaintDescription: text('complaint_description'),
+
+    symptomDuration: preEvalSymptomDurationEnum('symptom_duration'),
+    symptomPattern: preEvalSymptomPatternEnum('symptom_pattern'),
+
+    associatedSymptoms: jsonb('associated_symptoms').$type<string[]>().notNull().default([]),
+    aggravatingFactors: jsonb('aggravating_factors').$type<string[]>().notNull().default([]),
+
+    hasPriorRefluxDiagnosis: preEvalYesNoEnum('has_prior_reflux_diagnosis'),
+    hasPriorTreatment: preEvalYesNoEnum('has_prior_treatment'),
+    priorMedicationUsed: text('prior_medication_used'),
+    treatmentImprovement: preEvalImprovementEnum('treatment_improvement'),
+
+    priorExams: jsonb('prior_exams').$type<string[]>().notNull().default([]),
+    attachmentKeys: jsonb('attachment_keys').$type<string[]>().notNull().default([]),
+
+    alertSigns: jsonb('alert_signs').$type<string[]>().notNull().default([]),
+    consultationExpectations: jsonb('consultation_expectations').$type<string[]>().notNull().default([]),
+
+    consentInfoTruthful: boolean('consent_info_truthful').default(false).notNull(),
+    consentUnderstandsNotConsultation: boolean('consent_understands_not_consultation')
+      .default(false)
+      .notNull(),
+
+    status: preEvalStatusEnum('status').default('pending_review').notNull(),
+
+    ...timestamps,
+  },
+  (table) => [
+    index('pre_evaluation_forms_org_created_idx').on(table.organizationId, table.createdAt),
+  ],
+)

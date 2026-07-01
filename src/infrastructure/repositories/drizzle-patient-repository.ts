@@ -137,6 +137,30 @@ export class DrizzlePatientRepository implements PatientRepository {
     return row[0] ? mapPatient(row[0]) : null
   }
 
+  async findByExactPhoneAndEmail(
+    organizationId: string,
+    phone: string,
+    email: string | null,
+  ): Promise<Patient | null> {
+    const conditions = [
+      eq(patients.organizationId, organizationId),
+      isNull(patients.deletedAt),
+      eq(patients.phone, phone),
+    ]
+
+    if (email) {
+      conditions.push(eq(patients.email, email))
+    }
+
+    const row = await this.db
+      .select()
+      .from(patients)
+      .where(and(...conditions))
+      .limit(1)
+
+    return row[0] ? mapPatient(row[0]) : null
+  }
+
   async create(patient: Patient): Promise<Patient> {
     const row = await this.db
       .insert(patients)
