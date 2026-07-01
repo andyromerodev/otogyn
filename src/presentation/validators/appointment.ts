@@ -11,6 +11,12 @@ export const appointmentSchema = z.object({
   notes: z.string().max(2000).nullable().optional(),
 })
 
+export const appointmentAvailableSlotsQuerySchema = z.object({
+  serviceId: z.string().uuid('ID de servicio invalido.'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha invalido, usar YYYY-MM-DD.'),
+  excludeAppointmentId: z.string().uuid('ID de cita invalido.').optional(),
+})
+
 export const appointmentStatusSchema = z.object({
   status: z.enum(
     appointmentStatuses.filter((status) => status !== 'cancelled') as [
