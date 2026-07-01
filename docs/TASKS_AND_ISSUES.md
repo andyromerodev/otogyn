@@ -157,7 +157,7 @@ Convencion sugerida de nombre visible:
 - E3: resolucion server-side de sesion y autorizacion ya separada en mini-feature de auth con `server auth repository`, use cases y service locator.
 - E3: gestion de asistentes ya implementada con crear, editar, desvincular, reactivar y eliminar.
 - E3 pendiente: permisos finos adicionales por modulo si se amplian configuraciones criticas.
-- E4: dashboard inicial con mock data ya operativo.
+- E4: dashboard administrativo ya opera con datos reales desde `GET /api/dashboard/summary`; cuando el dia no tiene citas, muestra estado vacio en vez de dejar la tarjeta en blanco.
 - E4: frontend de `dashboard` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
 - E5: `GET/POST/PATCH /api/patients` y `GET /api/patients/:id` ya persisten/leen desde PostgreSQL con Drizzle; la UI ya registra, lista y edita pacientes reales.
 - E5: frontend de `patients` ya fue refactorizado al flujo `Page -> ViewModel -> UseCase -> Repository -> RemoteDataSource -> API`.
@@ -165,7 +165,8 @@ Convencion sugerida de nombre visible:
 - E5.1: `GET /api/patients` ahora acepta `search`, `filter`, `page` y `pageSize`, y responde resultado paginado con `items`, `total`, `allTotal`, `page`, `pageSize`, `totalPages`.
 - E5.2: `patients` ya soporta prioridad urgente persistida (`isUrgent`) en create/edit, badge visual rojo en listado y compatibilidad del filtro `urgent` con pacientes urgentes y citas urgentes activas.
 - E8: CRUD completo de servicios implementado: `GET/POST/PATCH /api/services` persisten en PostgreSQL con Drizzle.
-- E8: edicion de servicio con formulario inline y activacion/desactivacion via toggle ya implementados en UI.
+- E8: `services` ya fue rediseñado a flujo Android-like con listado, alta separada, detalle/edicion y borrado completo.
+- E8: al intentar eliminar un servicio con citas asociadas, la UI ya muestra dialogo bloqueado tambien en produccion.
 - E8: permisos endurecidos: asistentes solo leen servicios, admin_doctor escribe (create/update/toggle).
 - E8: tests para `UpdateServiceUseCase` (5 tests) y view model de services (5 tests) integrados.
 - E6: crear, editar, cancelar y cambiar estado de citas ya operan con PostgreSQL validando paciente, servicio, disponibilidad inicial y choques.
@@ -181,6 +182,9 @@ Convencion sugerida de nombre visible:
 - E13: `book` (reserva publica) ya cumplia los criterios de responsividad sin cambios, validado con el layout `public.vue` (max-width 640px centrado, viewport meta confirmado).
 - E13: navegacion mobile rediseñada: bottom-nav fijo de 4 items (Inicio, Pacientes, Agenda, Consultas) reemplaza el menu hamburguesa con drawer; rutas secundarias (Citas, Servicios, Disponibilidad, Ajustes, Reserva publica) se agrupan en el nuevo hub `/consultations`. `app-shell-loading.vue` (skeleton de carga) actualizado para reflejar el bottom-nav.
 - E13: `dashboard` rediseñado para acercarse al mockup de referencia: encabezado con saludo dinamico y avatar de iniciales, metricas 2x2 con icono y color por tono, tarjeta de "consulta activa" (derivada del estado `in_progress` ya existente, sin cambios de backend) y agenda de hoy con avatares e icono de completado.
+- E13: loading global ya fue ajustado para desktop y mobile con estados visuales sin bloquear la navegacion fija.
+- E14: deploy productivo en Netlify ya validado con dominio principal operativo y flujo CLI/documentacion actualizados.
+- E14: corregidos bloqueadores reales de release: `pnpm` workspace root local, secrets scanning por `PNPM_FLAGS`/`AUTH_URL`, y `500` SSR de Better Auth en `/login`.
 - Existe `pnpm docs:update` para regenerar el inventario tecnico consumido por otros agentes.
 
 ## Issues propuestos
@@ -205,3 +209,16 @@ Convencion sugerida de nombre visible:
 - Issue `E3: Auth y roles`: ya cubre login, signup, persistencia de sesion, `session-context` y middleware `admin`.
 - Issue `E3: Auth y roles`: ya cubre tambien permisos de escritura diferenciados en endpoints base.
 - Proximo update recomendado para `E3`: cerrar cuando existan permisos por rol aplicados tambien en mas endpoints criticos y UI de gestion de asistentes/configuracion.
+
+## Proximo foco recomendado
+
+1. `E11.1 Hardening final de produccion`
+   - agregar headers de seguridad HTTP revisados para Netlify/Nitro
+   - definir CORS explicito para `/api/public/*` si el formulario publico se consume fuera del mismo dominio
+   - evaluar constraint/refuerzo en DB para doble reserva como defensa extra ademas de la transaccion SERIALIZABLE
+2. `E12.1 Testing de integracion critica`
+   - pruebas de login, reserva publica y borrado bloqueado de servicios
+   - smoke tests de rutas admin principales
+3. `E6.1 Polish de citas`
+   - reprogramacion mas fluida
+   - mensajes/estados mas claros en create-edit-detail
