@@ -1,14 +1,8 @@
 import { computed, ref, watch } from 'vue'
-import type { ListPatientsInput, PatientListResult } from '~~/src/application/dto/patient-management'
-import type { PatientListFilter, PatientListItem } from '~~/src/domain/repositories/patient-repository'
+import type { PatientListItem } from '~~/src/domain/repositories/patient-repository'
+import type { PatientsListViewModelDependencies } from './patients-list-view-model.module'
 
-export interface PatientsListScreenDependencies {
-  listPatientsUseCase: { execute(input: ListPatientsInput): Promise<PatientListResult> }
-  initialSearch?: string
-  initialFilter?: PatientListFilter
-  initialPage?: number
-  initialPageSize?: number
-}
+export type { PatientsListViewModelDependencies } from './patients-list-view-model.module'
 
 const resolveListPatientsErrorMessage = (error: unknown) => {
   const statusMessage = error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
@@ -17,7 +11,6 @@ const resolveListPatientsErrorMessage = (error: unknown) => {
   const statusCode = error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number'
     ? error.statusCode
     : null
-  const errorMessage = error instanceof Error ? error.message : null
   const errorData = error && typeof error === 'object' && 'data' in error
     ? error.data
     : null
@@ -26,7 +19,7 @@ const resolveListPatientsErrorMessage = (error: unknown) => {
     env: import.meta.server ? 'server' : 'client',
     statusCode,
     statusMessage,
-    message: errorMessage,
+    message: error instanceof Error ? error.message : null,
     data: errorData,
     error,
   })
@@ -34,29 +27,48 @@ const resolveListPatientsErrorMessage = (error: unknown) => {
   return 'No se pudo cargar la lista de pacientes.'
 }
 
-export const createPatientsListScreen = (dependencies: PatientsListScreenDependencies) => {
+// Factory del ViewModel — equivale al constructor de PatientsListViewModel : ViewModel()
+export const createPatientsListViewModel = (dependencies: PatientsListViewModelDependencies) => {
+  // Como StateFlow<List<PatientListItem>> — lista vacía como estado inicial
   const patients = ref<PatientListItem[]>([])
+
+  // Como StateFlow<Boolean> — la UI lo observa para mostrar el skeleton/placeholder
   const loading = ref(false)
+
+  // Como StateFlow<String?> — expuesto read-only a la UI; solo el ViewModel lo muta via .value
   const errorMessage = ref<string | null>(null)
+
+  // Como MutableStateFlow<String> — ligado 2-way al campo de búsqueda via v-model;
+  // un watch lo debouncea antes de disparar loadPatients()
   const searchTerm = ref(dependencies.initialSearch ?? '')
-  const selectedFilter = ref<PatientListFilter>(dependencies.initialFilter ?? 'all')
+
+  // Como MutableStateFlow<PatientListFilter> — filtro activo seleccionado por el usuario
+  const selectedFilter = ref(dependencies.initialFilter ?? 'all')
+
+  // Como StateFlow<Int> — página actual de paginación (mínimo 1)
   const page = ref(Math.max(dependencies.initialPage ?? 1, 1))
+
+  // Como StateFlow<Int> — tamaño de página (mínimo 1)
   const pageSize = ref(Math.max(dependencies.initialPageSize ?? 10, 1))
+
+  // Como StateFlow<Int> — total de items del filtro activo
   const total = ref(0)
+
+  // Como StateFlow<Int> — total global sin filtros (para mostrar el contador del header)
   const allTotal = ref(0)
+
+  // Como StateFlow<Int> — número total de páginas calculado por el servidor
   const totalPages = ref(1)
 
   let searchTimer: ReturnType<typeof setTimeout> | null = null
 
   const clearSearchTimer = () => {
-    if (!searchTimer) {
-      return
-    }
-
+    if (!searchTimer) return
     clearTimeout(searchTimer)
     searchTimer = null
   }
 
+  // Equivale a fun loadPatients() — dispara el UseCase y actualiza los StateFlows
   const loadPatients = async () => {
     loading.value = true
     errorMessage.value = null
@@ -82,17 +94,16 @@ export const createPatientsListScreen = (dependencies: PatientsListScreenDepende
     }
   }
 
+  // Como derivedStateOf { } — valores calculados y cacheados desde los StateFlows base
   const totalLabel = computed(() => `${allTotal.value} pacientes · ORL`)
   const isSearching = computed(() => searchTerm.value.trim().length > 0)
   const hasNext = computed(() => page.value < totalPages.value)
   const hasPrevious = computed(() => page.value > 1)
-  const emptyStateMessage = computed(() => {
-    if (allTotal.value === 0) {
-      return 'Aún no hay pacientes registrados.'
-    }
-
-    return 'No se encontraron pacientes con estos filtros.'
-  })
+  const emptyStateMessage = computed(() =>
+    allTotal.value === 0
+      ? 'Aún no hay pacientes registrados.'
+      : 'No se encontraron pacientes con estos filtros.',
+  )
   const filterChips = computed(() => [
     { key: 'all' as const, label: `Todos (${allTotal.value})` },
     { key: 'today' as const, label: 'Hoy' },
@@ -100,11 +111,8 @@ export const createPatientsListScreen = (dependencies: PatientsListScreenDepende
     { key: 'follow_up' as const, label: 'Seguimiento' },
   ])
 
-  const selectFilter = async (filter: PatientListFilter) => {
-    if (selectedFilter.value === filter) {
-      return
-    }
-
+  const selectFilter = async (filter: typeof selectedFilter.value) => {
+    if (selectedFilter.value === filter) return
     clearSearchTimer()
     selectedFilter.value = filter
     page.value = 1
@@ -112,31 +120,16 @@ export const createPatientsListScreen = (dependencies: PatientsListScreenDepende
   }
 
   const goToPage = async (nextPage: number) => {
-    if (nextPage === page.value || nextPage < 1 || nextPage > totalPages.value) {
-      return
-    }
-
+    if (nextPage === page.value || nextPage < 1 || nextPage > totalPages.value) return
     clearSearchTimer()
     page.value = nextPage
     await loadPatients()
   }
 
-  const goToNextPage = async () => {
-    if (!hasNext.value) {
-      return
-    }
+  const goToNextPage = async () => { if (hasNext.value) await goToPage(page.value + 1) }
+  const goToPreviousPage = async () => { if (hasPrevious.value) await goToPage(page.value - 1) }
 
-    await goToPage(page.value + 1)
-  }
-
-  const goToPreviousPage = async () => {
-    if (!hasPrevious.value) {
-      return
-    }
-
-    await goToPage(page.value - 1)
-  }
-
+  // Como LaunchedEffect(searchTerm) + debounce — reacciona a cambios en el campo de búsqueda
   watch(searchTerm, () => {
     page.value = 1
     clearSearchTimer()

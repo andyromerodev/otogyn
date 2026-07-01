@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createPatientDetailScreen } from './create-patient-detail-screen'
+import { createPatientDetailViewModel } from './patient-detail-view-model'
 
 const patientFixture = {
   id: 'patient_1',
@@ -16,9 +16,9 @@ const patientFixture = {
   deletedAt: null,
 }
 
-describe('createPatientDetailScreen', () => {
+describe('createPatientDetailViewModel', () => {
   it('loads the patient detail into the form', async () => {
-    const screen = createPatientDetailScreen({
+    const screen = createPatientDetailViewModel({
       patientId: 'patient_1',
       getPatientDetailUseCase: {
         execute: vi.fn().mockResolvedValue(patientFixture),
@@ -44,7 +44,7 @@ describe('createPatientDetailScreen', () => {
       }),
     }
 
-    const screen = createPatientDetailScreen({
+    const screen = createPatientDetailViewModel({
       patientId: 'patient_1',
       getPatientDetailUseCase: {
         execute: vi.fn().mockResolvedValue(patientFixture),
@@ -80,7 +80,7 @@ describe('createPatientDetailScreen', () => {
   })
 
   it('reverts unsaved changes when editing is cancelled', async () => {
-    const screen = createPatientDetailScreen({
+    const screen = createPatientDetailViewModel({
       patientId: 'patient_1',
       getPatientDetailUseCase: {
         execute: vi.fn().mockResolvedValue(patientFixture),

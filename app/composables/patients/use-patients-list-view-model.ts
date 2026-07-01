@@ -1,9 +1,9 @@
 import { onMounted } from 'vue'
 import { patientServiceLocator } from '~~/src/infrastructure/patients/service-locator'
-import { createPatientsListScreen } from '~~/src/presentation/view-models/patients/create-patients-list-screen'
+import { createPatientsListViewModel } from '~~/src/presentation/view-models/patients/patients-list-view-model'
 import type { PatientListFilter } from '~~/src/domain/repositories/patient-repository'
 
-export const usePatientsListScreen = () => {
+export const usePatientsListViewModel = () => {
   const route = useRoute()
   const search = typeof route.query.search === 'string' ? route.query.search : ''
   const filter = typeof route.query.filter === 'string' &&
@@ -13,7 +13,7 @@ export const usePatientsListScreen = () => {
   const page = typeof route.query.page === 'string' ? Number.parseInt(route.query.page, 10) : 1
   const pageSize = typeof route.query.pageSize === 'string' ? Number.parseInt(route.query.pageSize, 10) : 10
 
-  const screen = createPatientsListScreen({
+  const viewModel = createPatientsListViewModel({
     listPatientsUseCase: patientServiceLocator.listPatientsUseCase,
     initialSearch: search,
     initialFilter: filter,
@@ -22,8 +22,8 @@ export const usePatientsListScreen = () => {
   })
 
   onMounted(() => {
-    void screen.loadPatients()
+    void viewModel.loadPatients()
   })
 
-  return screen
+  return viewModel
 }

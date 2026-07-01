@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { usePatientCreateScreen } from '../../composables/patients/use-patient-create-screen'
+import { usePatientCreateViewModel } from '../../composables/patients/use-patient-create-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = usePatientCreateScreen()
+const viewModel = usePatientCreateViewModel()
 </script>
 
 <template>
@@ -24,47 +24,47 @@ const screen = usePatientCreateScreen()
     </div>
 
     <article class="surface-card patient-create-card">
-      <form class="patient-create-form" @submit.prevent="screen.submitPatient">
+      <form class="patient-create-form" @submit.prevent="viewModel.submitPatient">
         <label class="patient-field">
           <span>Nombre completo</span>
-          <input v-model="screen.form.fullName" type="text" placeholder="María Torres" required>
+          <input v-model="viewModel.form.fullName" type="text" placeholder="María Torres" required>
         </label>
 
         <div class="patient-grid">
           <label class="patient-field">
             <span>Teléfono</span>
-            <input v-model="screen.form.phone" type="text" placeholder="999888777" required>
+            <input v-model="viewModel.form.phone" type="text" placeholder="999888777" required>
           </label>
 
           <label class="patient-field">
             <span>Email</span>
-            <input v-model="screen.form.email" type="email" placeholder="maria@example.com">
+            <input v-model="viewModel.form.email" type="email" placeholder="maria@example.com">
           </label>
         </div>
 
         <div class="patient-grid">
           <label class="patient-field">
             <span>Fecha de nacimiento</span>
-            <input v-model="screen.form.birthDate" type="date">
+            <input v-model="viewModel.form.birthDate" type="date">
           </label>
 
           <label class="patient-field">
             <span>Documento</span>
-            <input v-model="screen.form.documentId" type="text" placeholder="DNI o cédula">
+            <input v-model="viewModel.form.documentId" type="text" placeholder="DNI o cédula">
           </label>
         </div>
 
         <label class="patient-field">
           <span>Notas administrativas</span>
           <textarea
-            v-model="screen.form.administrativeNotes"
+            v-model="viewModel.form.administrativeNotes"
             rows="5"
             placeholder="Preferencias de agenda, contacto o seguimiento administrativo."
           />
         </label>
 
         <label class="patient-flag">
-          <input v-model="screen.form.isUrgent" type="checkbox">
+          <input v-model="viewModel.form.isUrgent" type="checkbox">
           <div>
             <strong>Marcar paciente como urgente</strong>
             <p>Se resaltará en listados y quedará dentro del filtro Urgentes.</p>
@@ -76,16 +76,16 @@ const screen = usePatientCreateScreen()
             Cancelar
           </NuxtLink>
 
-          <button class="patient-primary-button" type="submit" :disabled="screen.pending.value">
-            {{ screen.pending.value ? 'Guardando...' : 'Registrar paciente' }}
+          <button class="patient-primary-button" type="submit" :disabled="viewModel.pending.value">
+            {{ viewModel.pending.value ? 'Guardando...' : 'Registrar paciente' }}
           </button>
         </div>
 
-        <p v-if="screen.errorMessage.value" class="patient-message patient-message-error">
-          {{ screen.errorMessage.value }}
+        <p v-if="viewModel.errorMessage.value" class="patient-message patient-message-error">
+          {{ viewModel.errorMessage.value }}
         </p>
-        <p v-if="screen.successMessage.value" class="patient-message patient-message-success">
-          {{ screen.successMessage.value }}
+        <p v-if="viewModel.successMessage.value" class="patient-message patient-message-success">
+          {{ viewModel.successMessage.value }}
         </p>
       </form>
     </article>

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createPatientsListScreen } from './create-patients-list-screen'
+import { createPatientsListViewModel } from './patients-list-view-model'
 import type { PatientListResult } from '~~/src/application/dto/patient-management'
 
 const makePatient = (name: string) => ({
@@ -32,10 +32,10 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('createPatientsListScreen', () => {
+describe('createPatientsListViewModel', () => {
   it('loads patients through use case with initial paging state', async () => {
     const execute = vi.fn().mockResolvedValue(makeResult())
-    const screen = createPatientsListScreen({
+    const screen = createPatientsListViewModel({
       listPatientsUseCase: {
         execute,
       },
@@ -59,7 +59,7 @@ describe('createPatientsListScreen', () => {
       .mockResolvedValueOnce(makeResult({ page: 2, totalPages: 3 }))
       .mockResolvedValueOnce(makeResult({ items: [makePatient('Lienny')], page: 1 }))
 
-    const screen = createPatientsListScreen({
+    const screen = createPatientsListViewModel({
       listPatientsUseCase: { execute },
       initialPage: 2,
     })
@@ -84,7 +84,7 @@ describe('createPatientsListScreen', () => {
       .mockResolvedValueOnce(makeResult({ page: 3, totalPages: 3 }))
       .mockResolvedValueOnce(makeResult({ items: [makePatient('Andy Romero')], total: 1, page: 1 }))
 
-    const screen = createPatientsListScreen({
+    const screen = createPatientsListViewModel({
       listPatientsUseCase: { execute },
       initialPage: 3,
     })
@@ -109,7 +109,7 @@ describe('createPatientsListScreen', () => {
       .mockResolvedValueOnce(makeResult({ page: 2, totalPages: 3 }))
       .mockResolvedValueOnce(makeResult({ page: 1, totalPages: 3 }))
 
-    const screen = createPatientsListScreen({
+    const screen = createPatientsListViewModel({
       listPatientsUseCase: { execute },
     })
 
@@ -137,7 +137,7 @@ describe('createPatientsListScreen', () => {
       statusMessage: 'Unauthorized',
     })
 
-    const screen = createPatientsListScreen({
+    const screen = createPatientsListViewModel({
       listPatientsUseCase: { execute },
     })
 

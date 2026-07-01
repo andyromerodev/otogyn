@@ -1,4 +1,5 @@
-export interface PatientScreenPort<TInput, TResult> {
+// Equivale a la interfaz genérica de UseCase en Android (ej. PatientUseCase<TInput, TResult>)
+export interface PatientViewModelPort<TInput, TResult> {
   execute(input: TInput): Promise<TResult>
 }
 

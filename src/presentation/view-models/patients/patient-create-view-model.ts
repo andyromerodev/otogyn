@@ -1,20 +1,29 @@
 import { reactive, ref } from 'vue'
 import type { Patient } from '~~/src/domain/entities/patient'
-import type { PatientMutationInput } from '~~/src/application/dto/patient-management'
-import { createInitialPatientForm, type PatientScreenPort } from './patient-screen.types'
+import { createInitialPatientForm } from './patient-view-model.types'
+import type { PatientCreateViewModelDependencies } from './patient-create-view-model.module'
 
-export interface PatientCreateScreenDependencies {
-  createPatientUseCase: PatientScreenPort<PatientMutationInput, Patient>
-}
+export type { PatientCreateViewModelDependencies } from './patient-create-view-model.module'
 
-export const createPatientCreateScreen = (dependencies: PatientCreateScreenDependencies) => {
+// Factory del ViewModel — equivale al constructor de PatientCreateViewModel : ViewModel()
+export const createPatientCreateViewModel = (dependencies: PatientCreateViewModelDependencies) => {
+  // Como StateFlow<Boolean> — la UI lo observa para deshabilitar el botón de submit
   const pending = ref(false)
+
+  // Como StateFlow<String?> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref<string | null>(null)
+
+  // Como StateFlow<String?> — mensaje de éxito tras registrar al paciente
   const successMessage = ref<string | null>(null)
+
+  // Como StateFlow<Patient?> — paciente recién creado, null hasta que el submit tiene éxito
   const createdPatient = ref<Patient | null>(null)
 
+  // Como MutableStateFlow<PatientFormState> — estado mutable del formulario,
+  // se resetea a valores vacíos tras un registro exitoso
   const form = reactive(createInitialPatientForm())
 
+  // Equivale a fun onSubmitPatient() — lanza el UseCase y actualiza los StateFlows
   const submitPatient = async () => {
     pending.value = true
     errorMessage.value = null

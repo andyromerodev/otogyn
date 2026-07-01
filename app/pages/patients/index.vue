@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import PatientListItem from '../../components/patients/patient-list-item.vue'
-import { usePatientsListScreen } from '../../composables/patients/use-patients-list-screen'
+import { usePatientsListViewModel } from '../../composables/patients/use-patients-list-view-model'
 
 definePageMeta({
   middleware: 'auth',
 })
 
-const screen = usePatientsListScreen()
+const viewModel = usePatientsListViewModel()
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const screen = usePatientsListScreen()
     <div class="patients-header">
       <div>
         <h1 class="patients-title">Pacientes</h1>
-        <p class="patients-subtitle">{{ screen.totalLabel.value }}</p>
+        <p class="patients-subtitle">{{ viewModel.totalLabel.value }}</p>
       </div>
 
       <NuxtLink to="/patients/new" class="patients-add-desktop" aria-label="Registrar paciente">
@@ -26,7 +26,7 @@ const screen = usePatientsListScreen()
       <UIcon name="i-heroicons-magnifying-glass-20-solid" class="patients-search-icon" />
       <input
         type="text"
-        v-model="screen.searchTerm.value"
+        v-model="viewModel.searchTerm.value"
         placeholder="Nombre o seguimiento..."
         class="patients-search-input"
       >
@@ -34,57 +34,57 @@ const screen = usePatientsListScreen()
 
     <div class="patients-chips">
       <button
-        v-for="chip in screen.filterChips.value"
+        v-for="chip in viewModel.filterChips.value"
         :key="chip.key"
         type="button"
         class="patients-chip"
-        :class="{ 'patients-chip-active': screen.selectedFilter.value === chip.key }"
-        :aria-pressed="screen.selectedFilter.value === chip.key"
-        @click="screen.selectFilter(chip.key)"
+        :class="{ 'patients-chip-active': viewModel.selectedFilter.value === chip.key }"
+        :aria-pressed="viewModel.selectedFilter.value === chip.key"
+        @click="viewModel.selectFilter(chip.key)"
       >
         {{ chip.label }}
       </button>
     </div>
 
     <ClientOnly>
-      <p v-if="screen.errorMessage.value" class="patients-message patients-message-error">
-        {{ screen.errorMessage.value }}
+      <p v-if="viewModel.errorMessage.value" class="patients-message patients-message-error">
+        {{ viewModel.errorMessage.value }}
       </p>
 
       <section class="patients-list-card">
-        <div v-if="screen.loading.value" class="patients-list-state">
+        <div v-if="viewModel.loading.value" class="patients-list-state">
           Cargando pacientes...
         </div>
 
-        <div v-else-if="screen.patients.value.length" class="patients-list">
+        <div v-else-if="viewModel.patients.value.length" class="patients-list">
           <PatientListItem
-            v-for="patient in screen.patients.value"
+            v-for="patient in viewModel.patients.value"
             :key="patient.id"
             :patient="patient"
           />
         </div>
 
         <div v-else class="patients-list-state">
-          {{ screen.emptyStateMessage.value }}
+          {{ viewModel.emptyStateMessage.value }}
         </div>
       </section>
 
-      <div v-if="screen.totalPages.value > 1" class="patients-pagination">
+      <div v-if="viewModel.totalPages.value > 1" class="patients-pagination">
         <div class="patients-pagination-mobile">
           <button
             type="button"
             class="patients-page-button"
-            :disabled="!screen.hasPrevious.value"
-            @click="screen.goToPreviousPage"
+            :disabled="!viewModel.hasPrevious.value"
+            @click="viewModel.goToPreviousPage"
           >
             Anterior
           </button>
-          <span class="patients-page-indicator">Página {{ screen.page.value }} de {{ screen.totalPages.value }}</span>
+          <span class="patients-page-indicator">Página {{ viewModel.page.value }} de {{ viewModel.totalPages.value }}</span>
           <button
             type="button"
             class="patients-page-button"
-            :disabled="!screen.hasNext.value"
-            @click="screen.goToNextPage"
+            :disabled="!viewModel.hasNext.value"
+            @click="viewModel.goToNextPage"
           >
             Siguiente
           </button>
@@ -92,16 +92,16 @@ const screen = usePatientsListScreen()
 
         <UPagination
           class="patients-pagination-desktop"
-          :page="screen.page.value"
-          :items-per-page="screen.pageSize.value"
-          :total="screen.total.value"
+          :page="viewModel.page.value"
+          :items-per-page="viewModel.pageSize.value"
+          :total="viewModel.total.value"
           :show-controls="true"
           :show-edges="true"
           color="neutral"
           variant="outline"
           active-color="primary"
           active-variant="solid"
-          @update:page="screen.goToPage"
+          @update:page="viewModel.goToPage"
         />
       </div>
     </ClientOnly>

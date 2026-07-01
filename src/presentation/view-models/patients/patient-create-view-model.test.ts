@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createPatientCreateScreen } from './create-patient-create-screen'
+import { createPatientCreateViewModel } from './patient-create-view-model'
 
-describe('createPatientCreateScreen', () => {
+describe('createPatientCreateViewModel', () => {
   it('submits a patient and exposes a success message', async () => {
     const createPatientUseCase = {
       execute: vi.fn().mockResolvedValue({
@@ -20,7 +20,7 @@ describe('createPatientCreateScreen', () => {
       }),
     }
 
-    const screen = createPatientCreateScreen({
+    const screen = createPatientCreateViewModel({
       createPatientUseCase,
     })
 
