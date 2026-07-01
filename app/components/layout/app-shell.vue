@@ -19,6 +19,7 @@ const { data: sessionContext } = isAuthEnabled.value
 const navigation = computed(() => [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Pacientes', to: '/patients' },
+  { label: 'Pre-evaluaciones', to: '/pre-evaluacion-forms' },
   { label: 'Citas', to: '/appointments' },
   { label: 'Calendario', to: '/calendar' },
   { label: 'Servicios', to: '/services' },
@@ -128,6 +129,9 @@ if (import.meta.client) {
           <span class="pill">Base lista para Better Auth</span>
           <NuxtLink to="/book">
             <UButton color="primary" variant="soft" block>Reserva publica</UButton>
+          </NuxtLink>
+          <NuxtLink to="/pre-evaluacion">
+            <UButton color="primary" variant="outline" block>Formulario de pre-evaluación</UButton>
           </NuxtLink>
         </div>
       </aside>
