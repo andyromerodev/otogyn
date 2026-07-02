@@ -4,7 +4,7 @@ import type { AvailabilityRepository } from '../../../domain/repositories/availa
 import type { PatientRepository } from '../../../domain/repositories/patient-repository'
 import type { ServiceRepository } from '../../../domain/repositories/service-repository'
 import { activeAppointmentStatuses } from '../../../domain/value-objects/appointment-status'
-import { formatLocalDate } from '../../utils/date/local-date'
+import { formatLocalDate, getAppDayBounds, getAppWeekday } from '../../utils/date/local-date'
 import { computeFreeSlots } from './free-slots'
 
 const statusLabels: Record<string, string> = {
@@ -28,10 +28,7 @@ export class GetCalendarDayUseCase {
   async execute(input: { organizationId: string; date: Date }): Promise<CalendarDayDto> {
     const { organizationId, date } = input
 
-    const dayStart = new Date(date)
-    dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(date)
-    dayEnd.setHours(23, 59, 59, 999)
+    const { start: dayStart } = getAppDayBounds(date)
 
     const [appointments, weeklyAvailability, blockedSlots, patients, services] = await Promise.all([
       this.appointmentRepository.listByDay(organizationId, date),
@@ -41,7 +38,7 @@ export class GetCalendarDayUseCase {
       this.serviceRepository.listByOrganization(organizationId),
     ])
 
-    const weekday = date.getDay()
+    const weekday = getAppWeekday(date)
     const activeWindows = weeklyAvailability
       .filter((a) => a.weekday === weekday && a.isActive)
       .map((a) => ({ startTime: a.startTime, endTime: a.endTime }))

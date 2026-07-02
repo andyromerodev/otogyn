@@ -1,5 +1,6 @@
 import type { AppointmentRepository } from '../../domain/repositories/appointment-repository'
 import type { DashboardSummaryDto } from '../dto/dashboard'
+import { toAppTimeLabel } from '../utils/date/local-date'
 
 export class GetDashboardSummaryUseCase {
   constructor(private readonly appointmentRepository: AppointmentRepository) {}
@@ -20,7 +21,7 @@ export class GetDashboardSummaryUseCase {
       pendingToday,
       urgentToday,
       activeConsultationLabel: activeConsultation
-        ? `${activeConsultation.startAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`
+        ? toAppTimeLabel(activeConsultation.startAt)
         : null,
     }
   }

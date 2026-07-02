@@ -1,3 +1,4 @@
+import { parseAppDateTime } from '../../../src/application/utils/date/local-date'
 import { appointmentSchema } from '../../../src/presentation/validators/appointment'
 import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
@@ -17,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     const payload = await readBody(event)
     const input = appointmentSchema.parse(payload)
-    const startAt = new Date(input.startAt)
+    const startAt = parseAppDateTime(input.startAt)
 
     if (Number.isNaN(startAt.getTime())) {
       throw createError({

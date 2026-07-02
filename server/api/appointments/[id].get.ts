@@ -1,3 +1,4 @@
+import { toAppTimeLabel } from '../../../src/application/utils/date/local-date'
 import type { TodayAppointmentViewModel } from '../../../src/presentation/view-models/dashboard'
 import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
       ...item,
       startAt: item.startAt.toISOString(),
       endAt: item.endAt.toISOString(),
-      timeLabel: `${item.startAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })} - ${item.endAt.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`,
+      timeLabel: `${toAppTimeLabel(item.startAt)} - ${toAppTimeLabel(item.endAt)}`,
       statusLabel: statusLabels[item.status],
     } satisfies TodayAppointmentViewModel
   } catch (error) {

@@ -1,4 +1,5 @@
 import type { CalendarFreeSlot } from '../../dto/calendar'
+import { getAppDateParts, getAppTimeInMinutes, createAppDateTime } from '../../utils/date/local-date'
 
 interface BusyInterval {
   startsAt: Date
@@ -11,9 +12,8 @@ function toMinutes(hhmm: string): number {
 }
 
 function minutesToDate(baseDate: Date, minutes: number): Date {
-  const result = new Date(baseDate)
-  result.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
-  return result
+  const { year, month, day } = getAppDateParts(baseDate)
+  return createAppDateTime(year, month, day, Math.floor(minutes / 60), minutes % 60)
 }
 
 export function computeFreeSlots(
@@ -30,8 +30,8 @@ export function computeFreeSlots(
 
     const busyRanges = busyIntervals
       .map((b) => ({
-        start: b.startsAt.getHours() * 60 + b.startsAt.getMinutes(),
-        end: b.endsAt.getHours() * 60 + b.endsAt.getMinutes(),
+        start: getAppTimeInMinutes(b.startsAt),
+        end: getAppTimeInMinutes(b.endsAt),
       }))
       .filter((b) => b.start < windowEnd && b.end > windowStart)
       .map((b) => ({

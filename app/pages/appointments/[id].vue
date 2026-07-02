@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { parseAppDateTime, toAppTimeLabel } from '~~/src/application/utils/date/local-date'
 import { useAppointmentDetailViewModel } from '../../composables/appointments/use-appointment-detail-view-model'
 
 definePageMeta({
@@ -14,10 +15,10 @@ const handleStatusChange = (event: Event) => {
 }
 
 const formatSlotTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+  toAppTimeLabel(new Date(iso))
 
 const isSlotSelected = (startsAt: string) => {
-  const current = new Date(viewModel.form.startAt)
+  const current = parseAppDateTime(viewModel.form.startAt)
   const slot = new Date(startsAt)
   return current.getTime() === slot.getTime()
 }

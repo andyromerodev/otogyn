@@ -1,3 +1,4 @@
+import { setAppTime, toAppDatetimeLocalValue } from '../../../application/utils/date/local-date'
 import type { AppointmentStatus } from '../../../domain/value-objects/appointment-status'
 
 // Equivale a la interfaz genérica de UseCase en Android (ej. AppointmentUseCase<TInput, TResult>)
@@ -15,14 +16,11 @@ export interface AppointmentFormState {
 }
 
 export const toDatetimeLocalValue = (date: Date) => {
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  return localDate.toISOString().slice(0, 16)
+  return toAppDatetimeLocalValue(date)
 }
 
 export const defaultStartAt = () => {
-  const date = new Date()
-  date.setHours(9, 0, 0, 0)
-  return toDatetimeLocalValue(date)
+  return toDatetimeLocalValue(setAppTime(new Date(), 9))
 }
 
 export const fromIsoToDatetimeLocalValue = (value: string) => {

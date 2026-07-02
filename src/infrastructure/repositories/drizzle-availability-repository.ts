@@ -8,6 +8,7 @@ import type {
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { BlockedTimeSlot } from '../../domain/entities/blocked-time-slot'
 import type { DoctorAvailability } from '../../domain/entities/doctor-availability'
+import { getAppDayBounds } from '../../application/utils/date/local-date'
 import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { blockedTimeSlots, doctorAvailability } from '../database/schema'
@@ -69,11 +70,7 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
   }
 
   async listBlockedSlots(organizationId: string, day: Date): Promise<BlockedTimeSlot[]> {
-    const start = new Date(day)
-    start.setHours(0, 0, 0, 0)
-
-    const end = new Date(day)
-    end.setHours(23, 59, 59, 999)
+    const { start, end } = getAppDayBounds(day)
 
     const rows = await this.db
       .select()

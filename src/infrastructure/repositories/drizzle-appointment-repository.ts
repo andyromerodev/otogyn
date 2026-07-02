@@ -3,6 +3,7 @@ import type { Appointment } from '../../domain/entities/appointment'
 import type { AppointmentRepository } from '../../domain/repositories/appointment-repository'
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import { activeAppointmentStatuses } from '../../domain/value-objects/appointment-status'
+import { getAppDayBounds } from '../../application/utils/date/local-date'
 import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { appointments } from '../database/schema'
@@ -40,11 +41,7 @@ export class DrizzleAppointmentRepository implements AppointmentRepository {
   }
 
   async listByDay(organizationId: string, day: Date): Promise<Appointment[]> {
-    const start = new Date(day)
-    start.setHours(0, 0, 0, 0)
-
-    const end = new Date(day)
-    end.setHours(23, 59, 59, 999)
+    const { start, end } = getAppDayBounds(day)
 
     const rows = await this.db
       .select()

@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import type { CalendarDayDto, CalendarMonthDto } from '../../../application/dto/calendar'
-import { formatLocalDate, parseLocalDate } from '../../../application/utils/date/local-date'
+import { formatLocalDate, parseLocalDate, toAppTimeLabel } from '../../../application/utils/date/local-date'
 import type { CalendarViewModelDependencies } from './calendar-view-model.module'
 
 export type { CalendarViewModelDependencies } from './calendar-view-model.module'
@@ -152,7 +152,7 @@ export async function createCalendarViewModel(deps: CalendarViewModelDependencie
   }
 
   function formatTime(isoString: string): string {
-    return new Date(isoString).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+    return toAppTimeLabel(new Date(isoString))
   }
 
   await loadMonthAndDay()

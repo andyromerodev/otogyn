@@ -1,4 +1,5 @@
 import { BusinessRuleError } from '../../../src/domain/errors/business-rule-error'
+import { parseAppDateTime } from '../../../src/application/utils/date/local-date'
 import { appointmentSchema } from '../../../src/presentation/validators/appointment'
 import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
@@ -15,7 +16,7 @@ export default defineEventHandler(async (event) => {
       throw new BusinessRuleError('No puede existir una cita sin servicio.')
     }
 
-    const startAt = new Date(input.startAt)
+    const startAt = parseAppDateTime(input.startAt)
 
     if (Number.isNaN(startAt.getTime())) {
       throw createError({

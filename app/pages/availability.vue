@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toAppTimeLabel } from '~~/src/application/utils/date/local-date'
 import { useAvailabilityViewModel } from '../composables/availability/use-availability-view-model'
 
 definePageMeta({
@@ -218,9 +219,9 @@ const viewModel = await useAvailabilityViewModel()
           >
             <div class="space-y-1">
               <p class="text-sm font-semibold text-slate-900">
-                {{ new Date(slot.startsAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) }}
+                {{ toAppTimeLabel(new Date(slot.startsAt)) }}
                 –
-                {{ new Date(slot.endsAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) }}
+                {{ toAppTimeLabel(new Date(slot.endsAt)) }}
               </p>
               <p v-if="slot.reason" class="text-sm text-slate-500">{{ slot.reason }}</p>
             </div>

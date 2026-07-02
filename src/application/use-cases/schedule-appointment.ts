@@ -4,6 +4,7 @@ import type { AppointmentRepository } from '../../domain/repositories/appointmen
 import type { AvailabilityRepository } from '../../domain/repositories/availability-repository'
 import type { PatientRepository } from '../../domain/repositories/patient-repository'
 import type { ServiceRepository } from '../../domain/repositories/service-repository'
+import { getAppWeekday, toAppSortableTimeLabel } from '../utils/date/local-date'
 
 export class ScheduleAppointmentUseCase {
   constructor(
@@ -35,9 +36,9 @@ export class ScheduleAppointmentUseCase {
       throw new BusinessRuleError('No puede existir una cita sin servicio.')
     }
 
-    const weekday = appointment.startAt.getDay()
-    const slotLabel = this.toTimeLabel(appointment.startAt)
-    const endLabel = this.toTimeLabel(appointment.endAt)
+    const weekday = getAppWeekday(appointment.startAt)
+    const slotLabel = toAppSortableTimeLabel(appointment.startAt)
+    const endLabel = toAppSortableTimeLabel(appointment.endAt)
     const matchesAvailability = weeklyAvailability.some(
       (item) =>
         item.weekday === weekday &&
@@ -65,9 +66,5 @@ export class ScheduleAppointmentUseCase {
     }
 
     return this.appointmentRepository.saveWithLock(appointment)
-  }
-
-  private toTimeLabel(date: Date) {
-    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
   }
 }

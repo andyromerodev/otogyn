@@ -1,4 +1,5 @@
 import { computed, reactive, ref } from 'vue'
+import { formatLocalDate, parseAppDateTime } from '../../../application/utils/date/local-date'
 import type { BlockedTimeSlot } from '../../../domain/entities/blocked-time-slot'
 import type { DoctorAvailability } from '../../../domain/entities/doctor-availability'
 import type { AvailabilityViewModelDependencies } from './availability-view-model.module'
@@ -13,7 +14,7 @@ const createInitialForm = () => ({
 })
 
 const createBlockForm = () => ({
-  date: new Date().toISOString().slice(0, 10),
+  date: formatLocalDate(new Date()),
   startTime: '13:00',
   endTime: '14:00',
   reason: '',
@@ -173,8 +174,8 @@ export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelD
 
     try {
       const date = blockForm.date
-      const startsAt = new Date(`${date}T${blockForm.startTime}:00`).toISOString()
-      const endsAt = new Date(`${date}T${blockForm.endTime}:00`).toISOString()
+      const startsAt = parseAppDateTime(`${date}T${blockForm.startTime}:00`).toISOString()
+      const endsAt = parseAppDateTime(`${date}T${blockForm.endTime}:00`).toISOString()
 
       await dependencies.createBlockedSlotUseCase.execute({
         startsAt,

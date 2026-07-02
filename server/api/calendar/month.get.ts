@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseLocalDate } from '../../../src/application/utils/date/local-date'
 import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
 import { serverServiceLocator } from '../../utils/server-service-locator'
@@ -12,8 +13,7 @@ export default defineEventHandler(async (event) => {
     const session = await requireAuthorizedUser(event, 'calendar:read')
     const query = await getValidatedQuery(event, querySchema.parse)
 
-    const [year, month, day] = query.date.split('-').map(Number)
-    const referenceDate = new Date(year!, month! - 1, day!)
+    const referenceDate = parseLocalDate(query.date)
 
     return await serverServiceLocator.calendar.getCalendarMonthUseCase.execute({
       organizationId: session.organizationId,

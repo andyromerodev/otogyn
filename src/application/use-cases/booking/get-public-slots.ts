@@ -3,6 +3,7 @@ import type { AppointmentRepository } from '../../../domain/repositories/appoint
 import type { AvailabilityRepository } from '../../../domain/repositories/availability-repository'
 import type { ServiceRepository } from '../../../domain/repositories/service-repository'
 import { activeAppointmentStatuses } from '../../../domain/value-objects/appointment-status'
+import { getAppDayBounds, getAppWeekday } from '../../utils/date/local-date'
 import { computeFreeSlots } from '../calendar/free-slots'
 
 function generateSlotsInWindow(
@@ -43,8 +44,7 @@ export class GetPublicSlotsUseCase {
     const service = await this.serviceRepository.findById(input.serviceId)
     if (!service || !service.isActive) return []
 
-    const dayStart = new Date(input.date)
-    dayStart.setHours(0, 0, 0, 0)
+    const { start: dayStart } = getAppDayBounds(input.date)
 
     const [appointments, weeklyAvailability, blockedSlots] = await Promise.all([
       this.appointmentRepository.listByDay(input.organizationId, input.date),
@@ -52,7 +52,7 @@ export class GetPublicSlotsUseCase {
       this.availabilityRepository.listBlockedSlots(input.organizationId, input.date),
     ])
 
-    const weekday = input.date.getDay()
+    const weekday = getAppWeekday(input.date)
     const activeWindows = weeklyAvailability
       .filter((a) => a.weekday === weekday && a.isActive)
       .map((a) => ({ startTime: a.startTime, endTime: a.endTime }))

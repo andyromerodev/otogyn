@@ -3,6 +3,7 @@ import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { Patient } from '../../domain/entities/patient'
 import type { PatientListItem, PatientListPageQuery, PatientListPageResult, PatientRepository } from '../../domain/repositories/patient-repository'
 import { activeAppointmentStatuses } from '../../domain/value-objects/appointment-status'
+import { getAppDayBounds } from '../../application/utils/date/local-date'
 import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { appointments, patients } from '../database/schema'
@@ -216,11 +217,7 @@ export class DrizzlePatientRepository implements PatientRepository {
   }
 
   private async resolveTodayPatientIds(organizationId: string): Promise<string[]> {
-    const start = new Date()
-    start.setHours(0, 0, 0, 0)
-
-    const end = new Date(start)
-    end.setDate(end.getDate() + 1)
+    const { start, end } = getAppDayBounds(new Date())
 
     const rows = await this.db
       .selectDistinct({ patientId: appointments.patientId })

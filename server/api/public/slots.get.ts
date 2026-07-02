@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseLocalDate } from '../../../src/application/utils/date/local-date'
 import { handleApiError } from '../../utils/handle-api-error'
 import { getPublicContext } from '../../utils/get-public-context'
 import { serverServiceLocator } from '../../utils/server-service-locator'
@@ -13,9 +14,7 @@ export default defineEventHandler(async (event) => {
     const { organizationId } = await getPublicContext()
     const query = await getValidatedQuery(event, querySchema.parse)
 
-    const [year, month, day] = query.date.split('-').map(Number)
-    const date = new Date(year!, month! - 1, day!)
-    date.setHours(0, 0, 0, 0)
+    const date = parseLocalDate(query.date)
 
     return await serverServiceLocator.booking.getPublicSlotsUseCase.execute({
       organizationId,

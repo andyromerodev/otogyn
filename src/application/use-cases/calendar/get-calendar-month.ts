@@ -1,44 +1,37 @@
 import type { CalendarMonthDto } from '../../dto/calendar'
 import type { AppointmentRepository } from '../../../domain/repositories/appointment-repository'
-import { formatLocalDate } from '../../utils/date/local-date'
+import {
+  addAppDays,
+  createAppDateTime,
+  formatLocalDate,
+  getAppDateParts,
+  getAppDayOfMonth,
+  getAppMonth,
+  getAppWeekday,
+  isSameAppDay,
+} from '../../utils/date/local-date'
 
 function startOfMonth(date: Date): Date {
-  const value = new Date(date)
-  value.setDate(1)
-  value.setHours(0, 0, 0, 0)
-  return value
+  const { year, month } = getAppDateParts(date)
+  return createAppDateTime(year, month, 1)
 }
 
 function endOfMonth(date: Date): Date {
-  const value = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-  value.setHours(23, 59, 59, 999)
-  return value
+  const { year, month } = getAppDateParts(date)
+  return new Date(createAppDateTime(year, month + 1, 1).getTime() - 1)
 }
 
 function startOfCalendarGrid(monthStart: Date): Date {
-  const value = new Date(monthStart)
-  const weekday = value.getDay()
+  const weekday = getAppWeekday(monthStart)
   const diff = weekday === 0 ? 6 : weekday - 1
-  value.setDate(value.getDate() - diff)
-  value.setHours(0, 0, 0, 0)
-  return value
+  return addAppDays(monthStart, -diff)
 }
 
 function endOfCalendarGrid(monthEnd: Date): Date {
-  const value = new Date(monthEnd)
-  const weekday = value.getDay()
+  const weekday = getAppWeekday(monthEnd)
   const diff = weekday === 0 ? 0 : 7 - weekday
-  value.setDate(value.getDate() + diff)
-  value.setHours(23, 59, 59, 999)
-  return value
-}
-
-function isSameDay(left: Date, right: Date): boolean {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
-  )
+  const gridEndDay = addAppDays(monthEnd, diff)
+  return new Date(addAppDays(gridEndDay, 1).getTime() - 1)
 }
 
 export class GetCalendarMonthUseCase {
@@ -49,8 +42,8 @@ export class GetCalendarMonthUseCase {
     const monthEnd = endOfMonth(input.referenceDate)
     const gridStart = startOfCalendarGrid(monthStart)
     const gridEnd = endOfCalendarGrid(monthEnd)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const todayParts = getAppDateParts(new Date())
+    const today = createAppDateTime(todayParts.year, todayParts.month, todayParts.day)
 
     const appointments = await this.appointmentRepository.listByRange(input.organizationId, gridStart, gridEnd)
 
@@ -62,20 +55,21 @@ export class GetCalendarMonthUseCase {
 
     const days = []
     const cursor = new Date(gridStart)
+    const currentMonth = getAppMonth(monthStart)
 
     while (cursor <= gridEnd) {
       const dateKey = formatLocalDate(cursor)
 
       days.push({
         date: dateKey,
-        dayOfMonth: cursor.getDate(),
-        isCurrentMonth: cursor.getMonth() === monthStart.getMonth(),
-        isToday: isSameDay(cursor, today),
+        dayOfMonth: getAppDayOfMonth(cursor),
+        isCurrentMonth: getAppMonth(cursor) === currentMonth,
+        isToday: isSameAppDay(cursor, today),
         hasAppointments: (countsByDate[dateKey] ?? 0) > 0,
         appointmentsCount: countsByDate[dateKey] ?? 0,
       })
 
-      cursor.setDate(cursor.getDate() + 1)
+      cursor.setTime(addAppDays(cursor, 1).getTime())
     }
 
     return {

@@ -1,5 +1,6 @@
 import { reactive, ref } from 'vue'
 import type { PublicBookingResult, PublicServiceDto, PublicSlotDto } from '../../../application/dto/public-booking'
+import { APP_TIME_ZONE, formatLocalDate, parseLocalDate, toAppTimeLabel } from '../../../application/utils/date/local-date'
 import type { GetPublicServicesFrontendUseCase } from '../../../application/use-cases/booking/frontend/get-public-services'
 import type { GetPublicSlotsFrontendUseCase } from '../../../application/use-cases/booking/frontend/get-public-slots'
 import type { CreatePublicBookingFrontendUseCase } from '../../../application/use-cases/booking/frontend/create-public-booking'
@@ -13,7 +14,7 @@ export interface BookingScreenDependencies {
 }
 
 function todayString(): string {
-  return new Date().toISOString().slice(0, 10)
+  return formatLocalDate(new Date())
 }
 
 export function createBookingScreen(deps: BookingScreenDependencies) {
@@ -122,13 +123,18 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
   }
 
   function formatTime(isoString: string): string {
-    return new Date(isoString).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+    return toAppTimeLabel(new Date(isoString))
   }
 
   function formatDate(dateStr: string): string {
-    const [y, m, d] = dateStr.split('-').map(Number)
-    const date = new Date(y!, m! - 1, d!)
-    return date.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    const date = parseLocalDate(dateStr)
+    return date.toLocaleDateString('es-PE', {
+      timeZone: APP_TIME_ZONE,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
   }
 
   return {

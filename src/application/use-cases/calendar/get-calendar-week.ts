@@ -4,7 +4,7 @@ import type { AvailabilityRepository } from '../../../domain/repositories/availa
 import type { PatientRepository } from '../../../domain/repositories/patient-repository'
 import type { ServiceRepository } from '../../../domain/repositories/service-repository'
 import { activeAppointmentStatuses } from '../../../domain/value-objects/appointment-status'
-import { formatLocalDate } from '../../utils/date/local-date'
+import { addAppDays, formatLocalDate, getAppDayBounds, getAppWeekday } from '../../utils/date/local-date'
 import { computeFreeSlots } from './free-slots'
 
 const statusLabels: Record<string, string> = {
@@ -18,12 +18,9 @@ const statusLabels: Record<string, string> = {
 }
 
 function getMondayOfWeek(date: Date): Date {
-  const d = new Date(date)
-  const day = d.getDay()
+  const day = getAppWeekday(date)
   const diff = day === 0 ? -6 : 1 - day
-  d.setDate(d.getDate() + diff)
-  d.setHours(0, 0, 0, 0)
-  return d
+  return addAppDays(date, diff)
 }
 
 export class GetCalendarWeekUseCase {
@@ -38,9 +35,7 @@ export class GetCalendarWeekUseCase {
     const { organizationId, referenceDate } = input
 
     const weekStart = getMondayOfWeek(referenceDate)
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekStart.getDate() + 6)
-    weekEnd.setHours(23, 59, 59, 999)
+    const weekEnd = getAppDayBounds(addAppDays(weekStart, 6)).end
 
     const [appointments, weeklyAvailability, blockedSlots, patients, services] = await Promise.all([
       this.appointmentRepository.listByRange(organizationId, weekStart, weekEnd),
@@ -51,14 +46,10 @@ export class GetCalendarWeekUseCase {
     ])
 
     const days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(weekStart)
-      date.setDate(weekStart.getDate() + i)
-      date.setHours(0, 0, 0, 0)
+      const date = addAppDays(weekStart, i)
+      const { end: nextDay } = getAppDayBounds(date)
 
-      const nextDay = new Date(date)
-      nextDay.setHours(23, 59, 59, 999)
-
-      const weekday = date.getDay()
+      const weekday = getAppWeekday(date)
 
       const dayAppointments = appointments
         .filter((a) => a.startAt >= date && a.startAt <= nextDay)
