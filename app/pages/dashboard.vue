@@ -15,7 +15,7 @@ const { data: sessionContext } = isAuthEnabled.value
     })
   : { data: ref<AppSessionContext | null>(null) }
 
-const viewModel = await useDashboardViewModel()
+const viewModel = useDashboardViewModel()
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -55,9 +55,7 @@ const todayLabel = computed(() =>
       </div>
     </header>
 
-    <div v-if="viewModel.loading.value" class="surface-card placeholder-panel">
-      Cargando resumen operativo...
-    </div>
+    <LayoutAppShellLoading v-if="viewModel.loading.value" variant="dashboard" />
 
     <template v-else>
       <section class="dashboard-metrics">
