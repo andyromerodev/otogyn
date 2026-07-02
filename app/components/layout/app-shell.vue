@@ -127,11 +127,13 @@ if (import.meta.client) {
 
         <div class="sidebar-foot">
           <span class="pill">Base lista para Better Auth</span>
-          <NuxtLink to="/book">
-            <UButton color="primary" variant="soft" block>Reserva publica</UButton>
+          <NuxtLink to="/book" class="sidebar-external-link sidebar-external-link-primary">
+            <UIcon name="i-heroicons-calendar-days-20-solid" />
+            <span>Reserva pública</span>
           </NuxtLink>
-          <NuxtLink to="/pre-evaluacion">
-            <UButton color="primary" variant="outline" block>Formulario de pre-evaluación</UButton>
+          <NuxtLink to="/pre-evaluacion" class="sidebar-external-link sidebar-external-link-secondary">
+            <UIcon name="i-heroicons-clipboard-document-check-20-solid" />
+            <span>Pre-evaluación</span>
           </NuxtLink>
         </div>
       </aside>
@@ -285,7 +287,37 @@ if (import.meta.client) {
 .sidebar-foot {
   margin-top: auto;
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+.sidebar-external-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.15;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sidebar-external-link:hover {
+  transform: translateY(-1px);
+}
+
+.sidebar-external-link-primary {
+  background: #176f6d;
+  color: white;
+  box-shadow: 0 10px 24px rgba(23, 111, 109, 0.22);
+}
+
+.sidebar-external-link-secondary {
+  background: rgba(23, 111, 109, 0.08);
+  color: #176f6d;
+  border: 1px solid rgba(23, 111, 109, 0.18);
 }
 
 .shell-main {

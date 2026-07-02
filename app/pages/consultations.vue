@@ -27,6 +27,12 @@ const links = computed(() => [
     to: '/services',
     icon: 'i-heroicons-clipboard-document-list',
   },
+  {
+    label: 'Pre-evaluaciones',
+    description: 'Formularios de pre-evaluacion recibidos de pacientes.',
+    to: '/pre-evaluacion-forms',
+    icon: 'i-heroicons-clipboard-document-check',
+  },
   ...(sessionContext.value?.role === 'admin_doctor'
     ? [
         {
@@ -48,6 +54,12 @@ const links = computed(() => [
     description: 'Vista del formulario de reserva sin autenticacion.',
     to: '/book',
     icon: 'i-heroicons-globe-alt',
+  },
+  {
+    label: 'Formulario de pre-evaluación',
+    description: 'Vista publica del formulario de pre-evaluacion sin autenticacion.',
+    to: '/pre-evaluacion',
+    icon: 'i-heroicons-clipboard-document-check',
   },
 ])
 
