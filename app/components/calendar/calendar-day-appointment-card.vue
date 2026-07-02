@@ -43,32 +43,48 @@ const accentClass = computed(() => {
 </script>
 
 <template>
-  <article class="appointment-card">
-    <div class="appointment-time">
-      <p class="appointment-time-value">{{ formattedTime }}</p>
-      <p class="appointment-duration">{{ appointment.durationMinutes }} min</p>
-    </div>
-
-    <div class="appointment-divider" :class="accentClass" />
-
-    <SharedAvatarInitials :name="appointment.patientName" />
-
-    <div class="appointment-copy">
-      <div class="appointment-title-row">
-        <p class="appointment-patient">{{ appointment.patientName }}</p>
-        <span v-if="appointment.isUrgent" class="appointment-urgent">Urgente</span>
+  <NuxtLink :to="`/appointments/${appointment.id}`" class="appointment-card-link">
+    <article class="appointment-card">
+      <div class="appointment-time">
+        <p class="appointment-time-value">{{ formattedTime }}</p>
+        <p class="appointment-duration">{{ appointment.durationMinutes }} min</p>
       </div>
 
-      <p class="appointment-service">{{ appointment.serviceName }}</p>
-    </div>
+      <div class="appointment-divider" :class="accentClass" />
 
-    <span class="appointment-status" :class="statusClass">
-      {{ appointment.statusLabel }}
-    </span>
-  </article>
+      <SharedAvatarInitials :name="appointment.patientName" />
+
+      <div class="appointment-copy">
+        <div class="appointment-title-row">
+          <p class="appointment-patient">{{ appointment.patientName }}</p>
+          <span v-if="appointment.isUrgent" class="appointment-urgent">Urgente</span>
+        </div>
+
+        <p class="appointment-service">{{ appointment.serviceName }}</p>
+      </div>
+
+      <span class="appointment-status" :class="statusClass">
+        {{ appointment.statusLabel }}
+      </span>
+    </article>
+  </NuxtLink>
 </template>
 
 <style scoped>
+.appointment-card-link {
+  display: block;
+  color: inherit;
+  border-radius: 1.6rem;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.appointment-card-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(20, 82, 76, 0.1);
+}
+
 .appointment-card {
   display: grid;
   grid-template-columns: auto 0.28rem auto minmax(0, 1fr) auto;
