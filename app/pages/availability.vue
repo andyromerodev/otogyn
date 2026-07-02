@@ -160,32 +160,34 @@ const viewModel = await useAvailabilityViewModel()
       </article>
 
       <section class="space-y-4">
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))]">
           <article
             v-for="avail in viewModel.availabilities.value"
             :key="avail.id"
-            class="surface-card space-y-3 rounded-[28px] p-5"
+            class="surface-card flex flex-col gap-3 rounded-[28px] p-4"
           >
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <p class="text-base font-semibold text-slate-900">{{ viewModel.weekdaysList[avail.weekday] }}</p>
-                <p class="text-sm text-slate-500">{{ avail.startTime }} – {{ avail.endTime }}</p>
-              </div>
-              <span class="pill text-xs" :class="avail.isActive ? '' : 'bg-amber-100 text-amber-700'">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-base font-semibold text-slate-900">{{ viewModel.weekdaysList[avail.weekday] }}</p>
+              <span
+                class="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold"
+                :class="avail.isActive ? 'bg-teal-50 text-teal-700' : 'bg-amber-100 text-amber-700'"
+              >
                 {{ avail.isActive ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
 
-            <div v-if="viewModel.canManageAvailability.value" class="flex flex-wrap gap-2">
+            <p class="whitespace-nowrap text-sm text-slate-500">{{ avail.startTime }} – {{ avail.endTime }}</p>
+
+            <div v-if="viewModel.canManageAvailability.value" class="mt-auto flex gap-2 pt-1">
               <button
-                class="rounded-2xl border border-teal-200 px-3 py-2 text-xs font-semibold text-teal-700 transition hover:bg-teal-50"
+                class="flex-1 rounded-2xl border border-teal-200 px-3 py-2 text-center text-xs font-semibold text-teal-700 transition hover:bg-teal-50"
                 type="button"
                 @click="viewModel.startEditingAvailability(avail)"
               >
                 Editar
               </button>
               <button
-                class="rounded-2xl px-3 py-2 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-70"
+                class="flex-1 rounded-2xl px-3 py-2 text-center text-xs font-semibold whitespace-nowrap transition disabled:cursor-wait disabled:opacity-70"
                 :class="avail.isActive
                   ? 'border border-amber-200 text-amber-700 hover:bg-amber-50'
                   : 'border border-emerald-200 text-emerald-700 hover:bg-emerald-50'"
@@ -193,14 +195,14 @@ const viewModel = await useAvailabilityViewModel()
                 :disabled="viewModel.togglingId.value === avail.id"
                 @click="viewModel.toggleAvailabilityActive(avail.id)"
               >
-                {{ viewModel.togglingId.value === avail.id ? 'Cambiando...' : (avail.isActive ? 'Desactivar' : 'Activar') }}
+                {{ viewModel.togglingId.value === avail.id ? '...' : (avail.isActive ? 'Desactivar' : 'Activar') }}
               </button>
             </div>
           </article>
 
           <article
             v-if="!viewModel.availabilities.value.length"
-            class="surface-card rounded-[28px] p-5 text-sm text-slate-500 lg:col-span-3 xl:col-span-4"
+            class="surface-card rounded-[28px] p-5 text-sm text-slate-500 sm:col-span-full"
           >
             Aun no hay horarios configurados para esta organizacion.
           </article>
