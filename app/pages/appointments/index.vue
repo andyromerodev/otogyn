@@ -224,18 +224,20 @@ const viewModel = useAppointmentsListViewModel()
 }
 
 .appointments-list-card {
-  overflow: hidden;
+  display: contents;
+}
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.appointments-list-state {
   border-radius: 1.9rem;
   border: 1px solid #bfdedd;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 16px 38px rgba(20, 82, 76, 0.08);
-}
-
-.appointments-list > :deep(.appointment-row-link:not(:last-child)) {
-  border-bottom: 1px solid #d4ebe8;
-}
-
-.appointments-list-state {
   padding: 1.4rem;
   color: #6f9a9d;
   font-size: 0.98rem;
