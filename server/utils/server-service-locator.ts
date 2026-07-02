@@ -19,6 +19,7 @@ import { GetPatientDetailUseCase } from '../../src/application/use-cases/get-pat
 import { GetServiceDetailUseCase } from '../../src/application/use-cases/get-service-detail'
 import { GetTodayAppointmentsUseCase } from '../../src/application/use-cases/get-today-appointments'
 import { ListAssistantsUseCase } from '../../src/application/use-cases/list-assistants'
+import { ListAppointmentsUseCase } from '../../src/application/use-cases/list-appointments'
 import { ListAvailabilityUseCase } from '../../src/application/use-cases/availability/list-availability'
 import { ListBlockedSlotsUseCase } from '../../src/application/use-cases/availability/list-blocked-slots'
 import { ListPatientsUseCase } from '../../src/application/use-cases/list-patients'
@@ -105,6 +106,7 @@ export const serverServiceLocator = {
   },
   appointments: {
     scheduleAppointmentUseCase,
+    listAppointmentsUseCase: new ListAppointmentsUseCase(appointmentRepository),
     getAppointmentDetailUseCase: new GetAppointmentDetailUseCase(
       appointmentRepository,
       patientRepository,

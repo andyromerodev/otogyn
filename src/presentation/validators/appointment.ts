@@ -17,6 +17,20 @@ export const appointmentAvailableSlotsQuerySchema = z.object({
   excludeAppointmentId: z.string().uuid('ID de cita invalido.').optional(),
 })
 
+export const appointmentListQuerySchema = z.object({
+  search: z.string().trim().max(120).optional().default(''),
+  filter: z.enum([
+    'all',
+    'today',
+    'current_week',
+    'last_week',
+    'current_month',
+    'last_month',
+  ]).optional().default('all'),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).optional().default(10),
+})
+
 export const appointmentStatusSchema = z.object({
   status: z.enum(
     appointmentStatuses.filter((status) => status !== 'cancelled') as [

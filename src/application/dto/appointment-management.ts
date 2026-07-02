@@ -3,6 +3,30 @@ import type { Patient } from '../../domain/entities/patient'
 import type { AppointmentStatus } from '../../domain/value-objects/appointment-status'
 import type { TodayAppointmentViewModel } from '../../presentation/view-models/dashboard'
 
+export type AppointmentListFilter =
+  | 'all'
+  | 'today'
+  | 'current_week'
+  | 'last_week'
+  | 'current_month'
+  | 'last_month'
+
+export interface AppointmentListQuery {
+  search?: string
+  filter?: AppointmentListFilter
+  page?: number
+  pageSize?: number
+}
+
+export interface AppointmentListResult {
+  items: TodayAppointmentViewModel[]
+  total: number
+  allTotal: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 export interface AppointmentMutationInput {
   patientId: string
   serviceId: string

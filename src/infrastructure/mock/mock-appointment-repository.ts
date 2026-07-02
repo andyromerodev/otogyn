@@ -1,5 +1,9 @@
 import type { Appointment } from '../../domain/entities/appointment'
-import type { AppointmentRepository } from '../../domain/repositories/appointment-repository'
+import type {
+  AppointmentListPageQuery,
+  AppointmentListPageResult,
+  AppointmentRepository,
+} from '../../domain/repositories/appointment-repository'
 import { activeAppointmentStatuses } from '../../domain/value-objects/appointment-status'
 
 export class MockAppointmentRepository implements AppointmentRepository {
@@ -7,6 +11,39 @@ export class MockAppointmentRepository implements AppointmentRepository {
 
   async findById(appointmentId: string): Promise<Appointment | null> {
     return this.appointments.find((appointment) => appointment.id === appointmentId) ?? null
+  }
+
+  async listPage(input: AppointmentListPageQuery): Promise<AppointmentListPageResult> {
+    const pageSize = Math.min(Math.max(input.pageSize, 1), 50)
+    const allItems = this.appointments.filter((appointment) => appointment.organizationId === input.organizationId)
+    const search = input.search.trim().toLowerCase()
+    const filtered = allItems
+      .filter((appointment) => !input.startAtFrom || appointment.startAt >= input.startAtFrom)
+      .filter((appointment) => !input.startAtTo || appointment.startAt < input.startAtTo)
+      .filter((appointment) => {
+        if (!search) return true
+        return [appointment.reason, appointment.notes, appointment.patientId, appointment.serviceId]
+          .some((value) => value?.toLowerCase().includes(search))
+      })
+      .sort((left, right) => right.startAt.getTime() - left.startAt.getTime())
+
+    const total = filtered.length
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    const page = Math.min(Math.max(input.page, 1), totalPages)
+    const start = (page - 1) * pageSize
+
+    return {
+      items: filtered.slice(start, start + pageSize).map((appointment) => ({
+        ...appointment,
+        patientName: appointment.patientId,
+        serviceName: appointment.serviceId,
+      })),
+      total,
+      allTotal: allItems.length,
+      page,
+      pageSize,
+      totalPages,
+    }
   }
 
   async listByDay(organizationId: string, day: Date): Promise<Appointment[]> {

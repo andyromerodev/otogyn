@@ -6,6 +6,7 @@ import { GetAppointmentDetailUseCase } from '../../application/use-cases/appoint
 import { GetAppointmentSessionContextUseCase } from '../../application/use-cases/appointments/get-appointment-session-context'
 import { ListAppointmentPatientsUseCase } from '../../application/use-cases/appointments/list-appointment-patients'
 import { ListAppointmentServicesUseCase } from '../../application/use-cases/appointments/list-appointment-services'
+import { ListAppointmentsUseCase } from '../../application/use-cases/appointments/list-appointments'
 import { ListTodayAppointmentsUseCase } from '../../application/use-cases/appointments/list-today-appointments'
 import { UpdateAppointmentUseCase } from '../../application/use-cases/appointments/update-appointment'
 import { HttpAppointmentRemoteDataSource } from './remote/http-appointment-remote-data-source'
@@ -18,6 +19,7 @@ export const appointmentServiceLocator = {
   getAppointmentDetailUseCase: new GetAppointmentDetailUseCase(appointmentRepository),
   getAppointmentSessionContextUseCase: new GetAppointmentSessionContextUseCase(appointmentRepository),
   getAppointmentAvailableSlotsUseCase: new GetAppointmentAvailableSlotsUseCase(appointmentRepository),
+  listAppointmentsUseCase: new ListAppointmentsUseCase(appointmentRepository),
   listAppointmentPatientsUseCase: new ListAppointmentPatientsUseCase(appointmentRepository),
   listAppointmentServicesUseCase: new ListAppointmentServicesUseCase(appointmentRepository),
   listTodayAppointmentsUseCase: new ListTodayAppointmentsUseCase(appointmentRepository),

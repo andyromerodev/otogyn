@@ -1,5 +1,7 @@
 import type {
   AppointmentAvailableSlotsQuery,
+  AppointmentListQuery,
+  AppointmentListResult,
   AppointmentDetailResult,
   AppointmentCancellationInput,
   AppointmentMutationInput,
@@ -16,6 +18,17 @@ import type { AppointmentRemoteDataSource } from './appointment-remote-data-sour
 export class HttpAppointmentRemoteDataSource implements AppointmentRemoteDataSource {
   async getAppointmentDetail(appointmentId: string): Promise<AppointmentDetailResult> {
     return $fetch<AppointmentDetailResult>(`/api/appointments/${appointmentId}` as string)
+  }
+
+  async listAppointments(query: AppointmentListQuery): Promise<AppointmentListResult> {
+    return $fetch<AppointmentListResult>('/api/appointments' as string, {
+      query: {
+        search: query.search ?? '',
+        filter: query.filter ?? 'all',
+        page: query.page ?? 1,
+        pageSize: query.pageSize ?? 10,
+      },
+    })
   }
 
   async listPatients(): Promise<AppointmentPatientListResult> {

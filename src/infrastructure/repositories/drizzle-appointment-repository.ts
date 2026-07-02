@@ -1,12 +1,17 @@
-import { and, asc, eq, gt, gte, inArray, lt, ne } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gt, gte, ilike, inArray, lt, ne, or } from 'drizzle-orm'
 import type { Appointment } from '../../domain/entities/appointment'
-import type { AppointmentRepository } from '../../domain/repositories/appointment-repository'
+import type {
+  AppointmentListItem,
+  AppointmentListPageQuery,
+  AppointmentListPageResult,
+  AppointmentRepository,
+} from '../../domain/repositories/appointment-repository'
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import { activeAppointmentStatuses } from '../../domain/value-objects/appointment-status'
 import { getAppDayBounds } from '../../application/utils/date/local-date'
 import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
-import { appointments } from '../database/schema'
+import { appointments, patients, services } from '../database/schema'
 
 const mapAppointment = (row: typeof appointments.$inferSelect): Appointment => ({
   id: row.id,
@@ -27,6 +32,16 @@ const mapAppointment = (row: typeof appointments.$inferSelect): Appointment => (
   cancelledAt: row.cancelledAt,
 })
 
+const mapAppointmentListItem = (row: {
+  appointment: typeof appointments.$inferSelect
+  patientName: string | null
+  serviceName: string | null
+}): AppointmentListItem => ({
+  ...mapAppointment(row.appointment),
+  patientName: row.patientName ?? 'Paciente desconocido',
+  serviceName: row.serviceName ?? 'Servicio desconocido',
+})
+
 export class DrizzleAppointmentRepository implements AppointmentRepository {
   constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
@@ -38,6 +53,75 @@ export class DrizzleAppointmentRepository implements AppointmentRepository {
       .limit(1)
 
     return rows[0] ? mapAppointment(rows[0]) : null
+  }
+
+  async listPage(input: AppointmentListPageQuery): Promise<AppointmentListPageResult> {
+    const pageSize = Math.min(Math.max(input.pageSize, 1), 50)
+    const allTotalRows = await this.db
+      .select({ value: count() })
+      .from(appointments)
+      .where(eq(appointments.organizationId, input.organizationId))
+
+    const allTotal = allTotalRows[0]?.value ?? 0
+    const conditions = [eq(appointments.organizationId, input.organizationId)]
+
+    if (input.startAtFrom) {
+      conditions.push(gte(appointments.startAt, input.startAtFrom))
+    }
+
+    if (input.startAtTo) {
+      conditions.push(lt(appointments.startAt, input.startAtTo))
+    }
+
+    const trimmedSearch = input.search.trim()
+
+    if (trimmedSearch) {
+      const searchLike = `%${trimmedSearch}%`
+      conditions.push(
+        or(
+          ilike(patients.fullName, searchLike),
+          ilike(services.name, searchLike),
+          ilike(appointments.reason, searchLike),
+          ilike(appointments.notes, searchLike),
+        )!,
+      )
+    }
+
+    const filteredWhere = and(...conditions)
+    const totalRows = await this.db
+      .select({ value: count() })
+      .from(appointments)
+      .innerJoin(patients, eq(appointments.patientId, patients.id))
+      .innerJoin(services, eq(appointments.serviceId, services.id))
+      .where(filteredWhere)
+
+    const total = totalRows[0]?.value ?? 0
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    const page = Math.min(Math.max(input.page, 1), totalPages)
+    const offset = (page - 1) * pageSize
+
+    const rows = await this.db
+      .select({
+        appointment: appointments,
+        patientName: patients.fullName,
+        serviceName: services.name,
+      })
+      .from(appointments)
+      .innerJoin(patients, eq(appointments.patientId, patients.id))
+      .innerJoin(services, eq(appointments.serviceId, services.id))
+      .where(filteredWhere)
+      .orderBy(desc(appointments.startAt))
+      .limit(pageSize)
+      .offset(offset)
+
+    return {
+      items: rows.map(mapAppointmentListItem),
+      total,
+      allTotal,
+      page,
+      pageSize,
+      totalPages,
+    }
   }
 
   async listByDay(organizationId: string, day: Date): Promise<Appointment[]> {

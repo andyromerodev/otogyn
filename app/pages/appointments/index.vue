@@ -23,6 +23,30 @@ const viewModel = useAppointmentsListViewModel()
     </div>
 
     <ClientOnly>
+      <div class="appointments-search-shell">
+        <UIcon name="i-heroicons-magnifying-glass-20-solid" class="appointments-search-icon" />
+        <input
+          v-model="viewModel.searchTerm.value"
+          class="appointments-search-input"
+          type="search"
+          placeholder="Buscar por paciente, servicio, motivo o notas"
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="appointments-chips">
+        <button
+          v-for="chip in viewModel.filterChips.value"
+          :key="chip.key"
+          class="appointments-chip"
+          :class="{ 'appointments-chip-active': viewModel.selectedFilter.value === chip.key }"
+          type="button"
+          @click="viewModel.selectFilter(chip.key)"
+        >
+          {{ chip.label }}
+        </button>
+      </div>
+
       <p v-if="viewModel.errorMessage.value" class="appointments-message appointments-message-error">
         {{ viewModel.errorMessage.value }}
       </p>
@@ -34,7 +58,7 @@ const viewModel = useAppointmentsListViewModel()
 
         <div v-else-if="viewModel.appointments.value.length" class="appointments-list">
           <AppointmentListItem
-            v-for="appointment in viewModel.paginatedAppointments.value"
+            v-for="appointment in viewModel.appointments.value"
             :key="appointment.id"
             :appointment="appointment"
           />
@@ -139,6 +163,66 @@ const viewModel = useAppointmentsListViewModel()
   color: #b91c1c;
 }
 
+.appointments-search-shell {
+  position: relative;
+}
+
+.appointments-search-icon {
+  position: absolute;
+  left: 1.05rem;
+  top: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  transform: translateY(-50%);
+  color: #7ca0a2;
+}
+
+.appointments-search-input {
+  width: 100%;
+  border: 1px solid #bfdedd;
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #132b2d;
+  padding: 0.95rem 1rem 0.95rem 3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
+  box-shadow: 0 12px 28px rgba(20, 82, 76, 0.06);
+}
+
+.appointments-search-input::placeholder {
+  color: #8ba8aa;
+  font-weight: 600;
+}
+
+.appointments-search-input:focus {
+  border-color: #1b7676;
+  box-shadow: 0 0 0 3px rgba(27, 118, 118, 0.12);
+}
+
+.appointments-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.appointments-chip {
+  border: 1px solid #bfdedd;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #52797c;
+  padding: 0.6rem 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.appointments-chip-active {
+  border-color: #1b7676;
+  background: #1b7676;
+  color: #fff;
+}
+
 .appointments-list-card {
   overflow: hidden;
   border-radius: 1.9rem;
@@ -222,6 +306,32 @@ const viewModel = useAppointmentsListViewModel()
 
   .appointments-add-desktop {
     display: none;
+  }
+
+  .appointments-search-shell {
+    margin-top: 0.25rem;
+  }
+
+  .appointments-search-input {
+    min-height: 3.35rem;
+    font-size: 0.95rem;
+  }
+
+  .appointments-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    margin-right: -1rem;
+    padding-right: 1rem;
+    scrollbar-width: none;
+  }
+
+  .appointments-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .appointments-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   .appointments-pagination-mobile {
