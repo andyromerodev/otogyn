@@ -20,6 +20,9 @@ export const createAppointmentsListViewModel = (dependencies: AppointmentsListVi
   // Como StateFlow<String?> — expuesto read-only a la UI; solo el ViewModel lo muta via .value
   const errorMessage = ref<string | null>(null)
 
+  const page = ref(Math.max(dependencies.initialPage ?? 1, 1))
+  const pageSize = ref(Math.max(dependencies.initialPageSize ?? 10, 1))
+
   // Equivale a fun loadAppointments() — dispara el UseCase y actualiza los StateFlows
   const loadAppointments = async () => {
     loading.value = true
@@ -44,15 +47,41 @@ export const createAppointmentsListViewModel = (dependencies: AppointmentsListVi
 
   // Como derivedStateOf { } — valores calculados y cacheados desde los StateFlows base
   const totalLabel = computed(() => `${appointments.value.length} citas hoy`)
+  const total = computed(() => appointments.value.length)
+  const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+  const hasNext = computed(() => page.value < totalPages.value)
+  const hasPrevious = computed(() => page.value > 1)
+  const paginatedAppointments = computed(() => {
+    const start = (page.value - 1) * pageSize.value
+    return appointments.value.slice(start, start + pageSize.value)
+  })
   const emptyStateMessage = computed(() => 'No hay citas registradas para hoy.')
+
+  const goToPage = (nextPage: number) => {
+    if (nextPage === page.value || nextPage < 1 || nextPage > totalPages.value) return
+    page.value = nextPage
+  }
+
+  const goToNextPage = () => { if (hasNext.value) goToPage(page.value + 1) }
+  const goToPreviousPage = () => { if (hasPrevious.value) goToPage(page.value - 1) }
 
   return {
     appointments,
+    paginatedAppointments,
     sessionContext,
     loading,
     errorMessage,
+    page,
+    pageSize,
+    total,
+    totalPages,
+    hasNext,
+    hasPrevious,
     totalLabel,
     emptyStateMessage,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
     loadAppointments,
     loadSessionContext,
   }

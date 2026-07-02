@@ -19,6 +19,9 @@ export const createServicesListViewModel = (dependencies: ServicesListViewModelD
   // Como StateFlow<String?> — expuesto read-only a la UI; solo el ViewModel lo muta via .value
   const errorMessage = ref<string | null>(null)
 
+  const page = ref(Math.max(dependencies.initialPage ?? 1, 1))
+  const pageSize = ref(Math.max(dependencies.initialPageSize ?? 10, 1))
+
   // Equivale a fun loadServices() — dispara el UseCase y actualiza los StateFlows
   const loadServices = async () => {
     loading.value = true
@@ -50,16 +53,42 @@ export const createServicesListViewModel = (dependencies: ServicesListViewModelD
   // Como derivedStateOf { } — valores calculados y cacheados desde los StateFlows base
   const canManageServices = computed(() => screenContext.value?.role === 'admin_doctor')
   const totalLabel = computed(() => `${services.value.length} servicios · ORL`)
+  const total = computed(() => services.value.length)
+  const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+  const hasNext = computed(() => page.value < totalPages.value)
+  const hasPrevious = computed(() => page.value > 1)
+  const paginatedServices = computed(() => {
+    const start = (page.value - 1) * pageSize.value
+    return services.value.slice(start, start + pageSize.value)
+  })
   const emptyStateMessage = computed(() => 'Aún no hay servicios registrados.')
+
+  const goToPage = (nextPage: number) => {
+    if (nextPage === page.value || nextPage < 1 || nextPage > totalPages.value) return
+    page.value = nextPage
+  }
+
+  const goToNextPage = () => { if (hasNext.value) goToPage(page.value + 1) }
+  const goToPreviousPage = () => { if (hasPrevious.value) goToPage(page.value - 1) }
 
   return {
     services,
+    paginatedServices,
     screenContext,
     loading,
     errorMessage,
+    page,
+    pageSize,
+    total,
+    totalPages,
+    hasNext,
+    hasPrevious,
     canManageServices,
     totalLabel,
     emptyStateMessage,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
     loadServices,
     loadScreenContext,
   }

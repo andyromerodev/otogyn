@@ -5,4 +5,6 @@ import type { TodayAppointmentViewModel } from '../dashboard'
 export interface AppointmentsListViewModelDependencies {
   listTodayAppointmentsUseCase: { execute(): Promise<TodayAppointmentViewModel[]> }
   getAppointmentSessionContextUseCase: { execute(): Promise<AppointmentSessionContextDto> }
+  initialPage?: number
+  initialPageSize?: number
 }

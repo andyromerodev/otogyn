@@ -20,6 +20,8 @@ export interface AssistantsScreenDependencies {
   reactivateAssistantUseCase: { execute(input: { userId: string }): Promise<Assistant> }
   deleteAssistantUseCase: { execute(input: { userId: string }): Promise<void> }
   getAssistantScreenContextUseCase: { execute(): Promise<AssistantScreenContextDto> }
+  initialPage?: number
+  initialPageSize?: number
 }
 
 const createInitialForm = () => ({
@@ -60,6 +62,8 @@ export const createAssistantsScreen = (dependencies: AssistantsScreenDependencie
   const editingUserId = ref<string | null>(null)
   const errorMessage = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
+  const page = ref(Math.max(dependencies.initialPage ?? 1, 1))
+  const pageSize = ref(Math.max(dependencies.initialPageSize ?? 10, 1))
 
   const form = reactive(createInitialForm())
   const editForm = reactive(createEditForm())
@@ -67,6 +71,13 @@ export const createAssistantsScreen = (dependencies: AssistantsScreenDependencie
 
   const canManageAssistants = computed(() => screenContext.value?.role === 'admin_doctor')
   const assistantsCount = computed(() => assistants.value.length)
+  const totalPages = computed(() => Math.max(1, Math.ceil(assistants.value.length / pageSize.value)))
+  const hasNext = computed(() => page.value < totalPages.value)
+  const hasPrevious = computed(() => page.value > 1)
+  const paginatedAssistants = computed(() => {
+    const start = (page.value - 1) * pageSize.value
+    return assistants.value.slice(start, start + pageSize.value)
+  })
 
   const loadAssistants = async () => {
     loading.value = true
@@ -74,6 +85,7 @@ export const createAssistantsScreen = (dependencies: AssistantsScreenDependencie
 
     try {
       assistants.value = await dependencies.listAssistantsUseCase.execute()
+      if (page.value > totalPages.value) page.value = totalPages.value
     } catch (error) {
       errorMessage.value =
         error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
@@ -102,6 +114,14 @@ export const createAssistantsScreen = (dependencies: AssistantsScreenDependencie
   const closeReuseDialog = () => {
     Object.assign(reuseDialog, createReuseDialog())
   }
+
+  const goToPage = (nextPage: number) => {
+    if (nextPage === page.value || nextPage < 1 || nextPage > totalPages.value) return
+    page.value = nextPage
+  }
+
+  const goToNextPage = () => { if (hasNext.value) goToPage(page.value + 1) }
+  const goToPreviousPage = () => { if (hasPrevious.value) goToPage(page.value - 1) }
 
   const runAssistantCreation = async (reuseExistingUser: boolean) => {
     await dependencies.createAssistantUseCase.execute({
@@ -374,6 +394,7 @@ export const createAssistantsScreen = (dependencies: AssistantsScreenDependencie
 
   return {
     assistants,
+    paginatedAssistants,
     screenContext,
     form,
     editForm,
@@ -386,10 +407,18 @@ export const createAssistantsScreen = (dependencies: AssistantsScreenDependencie
     editingUserId,
     errorMessage,
     successMessage,
+    page,
+    pageSize,
+    totalPages,
+    hasNext,
+    hasPrevious,
     canManageAssistants,
     assistantsCount,
     loadAssistants,
     loadScreenContext,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
     submitAssistant,
     closeReuseDialog,
     confirmReuseAssistant,

@@ -134,7 +134,7 @@ const permissionGroups = [
 
           <div v-if="screen.assistants.value.length" class="mt-4 grid gap-3">
             <article
-              v-for="assistant in screen.assistants.value"
+              v-for="assistant in screen.paginatedAssistants.value"
               :key="assistant.userId"
               class="rounded-3xl border border-teal-100 bg-white/80 p-4"
             >
@@ -251,6 +251,38 @@ const permissionGroups = [
                 </div>
               </div>
             </article>
+
+            <div v-if="screen.totalPages.value > 1" class="pt-2">
+              <div class="flex items-center justify-between gap-3 md:hidden">
+                <button
+                  class="rounded-2xl border border-teal-200 px-3 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  :disabled="!screen.hasPrevious.value"
+                  @click="screen.goToPreviousPage"
+                >
+                  Anterior
+                </button>
+                <span class="text-sm font-semibold text-slate-500">
+                  Página {{ screen.page.value }} de {{ screen.totalPages.value }}
+                </span>
+                <button
+                  class="rounded-2xl border border-teal-200 px-3 py-2 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  :disabled="!screen.hasNext.value"
+                  @click="screen.goToNextPage"
+                >
+                  Siguiente
+                </button>
+              </div>
+
+              <UPagination
+                class="hidden justify-center md:flex"
+                :page="screen.page.value"
+                :items-per-page="screen.pageSize.value"
+                :total="screen.assistantsCount.value"
+                @update:page="screen.goToPage"
+              />
+            </div>
           </div>
 
           <div v-else class="mt-4 rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500">

@@ -39,7 +39,7 @@ const viewModel = useServicesListViewModel()
 
         <div v-else-if="viewModel.services.value.length" class="services-list">
           <ServiceListItem
-            v-for="service in viewModel.services.value"
+            v-for="service in viewModel.paginatedServices.value"
             :key="service.id"
             :service="service"
           />
@@ -49,6 +49,36 @@ const viewModel = useServicesListViewModel()
           {{ viewModel.emptyStateMessage.value }}
         </div>
       </section>
+
+      <div v-if="viewModel.totalPages.value > 1" class="services-pagination">
+        <div class="services-pagination-mobile">
+          <button
+            class="services-page-button"
+            type="button"
+            :disabled="!viewModel.hasPrevious.value"
+            @click="viewModel.goToPreviousPage"
+          >
+            Anterior
+          </button>
+          <span class="services-page-indicator">Página {{ viewModel.page.value }} de {{ viewModel.totalPages.value }}</span>
+          <button
+            class="services-page-button"
+            type="button"
+            :disabled="!viewModel.hasNext.value"
+            @click="viewModel.goToNextPage"
+          >
+            Siguiente
+          </button>
+        </div>
+
+        <UPagination
+          class="services-pagination-desktop"
+          :page="viewModel.page.value"
+          :items-per-page="viewModel.pageSize.value"
+          :total="viewModel.total.value"
+          @update:page="viewModel.goToPage"
+        />
+      </div>
     </ClientOnly>
 
     <NuxtLink
@@ -137,6 +167,43 @@ const viewModel = useServicesListViewModel()
   font-size: 0.98rem;
 }
 
+.services-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+.services-pagination-mobile {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.services-pagination-desktop {
+  display: flex;
+}
+
+.services-page-button {
+  border: 1px solid #bfdedd;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #1b7676;
+  padding: 0.7rem 1rem;
+  font-weight: 800;
+}
+
+.services-page-button:disabled {
+  cursor: not-allowed;
+  color: #9dbabd;
+  opacity: 0.65;
+}
+
+.services-page-indicator {
+  color: #668b8e;
+  font-weight: 800;
+}
+
 .services-fab {
   position: fixed;
   right: 1.25rem;
@@ -164,6 +231,14 @@ const viewModel = useServicesListViewModel()
   }
 
   .services-add-desktop {
+    display: none;
+  }
+
+  .services-pagination-mobile {
+    display: flex;
+  }
+
+  .services-pagination-desktop {
     display: none;
   }
 }

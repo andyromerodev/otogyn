@@ -5,4 +5,6 @@ import type { ServiceScreenContextDto } from '../../../application/dto/service-m
 export interface ServicesListViewModelDependencies {
   listServicesUseCase: { execute(): Promise<MedicalService[]> }
   getServiceScreenContextUseCase: { execute(): Promise<ServiceScreenContextDto> }
+  initialPage?: number
+  initialPageSize?: number
 }

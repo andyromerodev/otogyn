@@ -34,7 +34,7 @@ const viewModel = useAppointmentsListViewModel()
 
         <div v-else-if="viewModel.appointments.value.length" class="appointments-list">
           <AppointmentListItem
-            v-for="appointment in viewModel.appointments.value"
+            v-for="appointment in viewModel.paginatedAppointments.value"
             :key="appointment.id"
             :appointment="appointment"
           />
@@ -44,6 +44,36 @@ const viewModel = useAppointmentsListViewModel()
           {{ viewModel.emptyStateMessage.value }}
         </div>
       </section>
+
+      <div v-if="viewModel.totalPages.value > 1" class="appointments-pagination">
+        <div class="appointments-pagination-mobile">
+          <button
+            class="appointments-page-button"
+            type="button"
+            :disabled="!viewModel.hasPrevious.value"
+            @click="viewModel.goToPreviousPage"
+          >
+            Anterior
+          </button>
+          <span class="appointments-page-indicator">Página {{ viewModel.page.value }} de {{ viewModel.totalPages.value }}</span>
+          <button
+            class="appointments-page-button"
+            type="button"
+            :disabled="!viewModel.hasNext.value"
+            @click="viewModel.goToNextPage"
+          >
+            Siguiente
+          </button>
+        </div>
+
+        <UPagination
+          class="appointments-pagination-desktop"
+          :page="viewModel.page.value"
+          :items-per-page="viewModel.pageSize.value"
+          :total="viewModel.total.value"
+          @update:page="viewModel.goToPage"
+        />
+      </div>
     </ClientOnly>
 
     <NuxtLink to="/appointments/new" class="appointments-fab" aria-label="Registrar cita">
@@ -127,6 +157,43 @@ const viewModel = useAppointmentsListViewModel()
   font-size: 0.98rem;
 }
 
+.appointments-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+.appointments-pagination-mobile {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.appointments-pagination-desktop {
+  display: flex;
+}
+
+.appointments-page-button {
+  border: 1px solid #bfdedd;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #1b7676;
+  padding: 0.7rem 1rem;
+  font-weight: 800;
+}
+
+.appointments-page-button:disabled {
+  cursor: not-allowed;
+  color: #9dbabd;
+  opacity: 0.65;
+}
+
+.appointments-page-indicator {
+  color: #668b8e;
+  font-weight: 800;
+}
+
 .appointments-fab {
   position: fixed;
   right: 1.25rem;
@@ -154,6 +221,14 @@ const viewModel = useAppointmentsListViewModel()
   }
 
   .appointments-add-desktop {
+    display: none;
+  }
+
+  .appointments-pagination-mobile {
+    display: flex;
+  }
+
+  .appointments-pagination-desktop {
     display: none;
   }
 }
