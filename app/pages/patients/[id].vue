@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { usePatientDetailViewModel } from '../../composables/patients/use-patient-detail-view-model'
+import { consultationServiceLocator } from '~~/src/infrastructure/consultations/service-locator'
+import type { PatientConsultationHistoryItem } from '~~/src/application/dto/consultation'
 
 definePageMeta({
   middleware: 'auth',
@@ -8,6 +11,20 @@ definePageMeta({
 const route = useRoute()
 const patientId = String(route.params.id)
 const viewModel = await usePatientDetailViewModel(patientId)
+
+const consultationHistory = ref<PatientConsultationHistoryItem[]>([])
+const consultationHistoryLoading = ref(true)
+const consultationHistoryError = ref<string | null>(null)
+
+onMounted(async () => {
+  try {
+    consultationHistory.value = await consultationServiceLocator.listConsultationsByPatientUseCase.execute(patientId)
+  } catch {
+    consultationHistoryError.value = 'No se pudo cargar la historia clínica.'
+  } finally {
+    consultationHistoryLoading.value = false
+  }
+})
 </script>
 
 <template>
@@ -96,12 +113,34 @@ const viewModel = await usePatientDetailViewModel(patientId)
         @cancel="viewModel.cancelConfirm"
       />
     </article>
+
+    <article class="surface-card history-card">
+      <h2 class="history-title">Historia clínica</h2>
+      <ConsultationsConsultationHistoryList
+        :consultations="consultationHistory"
+        :loading="consultationHistoryLoading"
+        :error-message="consultationHistoryError"
+      />
+    </article>
   </div>
 </template>
 
 <style scoped>
 .detail-card {
   padding: 1.5rem;
+}
+
+.history-card {
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.history-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .detail-form {

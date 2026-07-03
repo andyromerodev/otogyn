@@ -47,6 +47,7 @@ const handleSignOut = async () => {
   const authClient = useAuthClient()
 
   await authClient.signOut()
+  await clearPwaCaches()
 
   if (import.meta.client) {
     window.location.replace('/login')

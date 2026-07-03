@@ -29,4 +29,6 @@ export type ServerAuthorizationAction =
   | 'availability:read'
   | 'availability:write'
   | 'calendar:read'
+  | 'consultations:read'
+  | 'consultations:write'
 

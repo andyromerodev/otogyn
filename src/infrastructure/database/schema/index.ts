@@ -330,6 +330,72 @@ export const preEvaluationForms = pgTable(
   ],
 )
 
+export const consultationStatusEnum = pgEnum('consultation_status', ['draft', 'completed'])
+
+export interface ConsultationAdditionalExam {
+  name: string
+  findings: string
+}
+
+export interface ConsultationDiagnosis {
+  description: string
+  cie10Code: string | null
+  type: 'presuntivo' | 'definitivo' | 'recurrente'
+}
+
+export interface ConsultationMedication {
+  name: string
+  dose: string | null
+  route: string | null
+  frequency: string | null
+  duration: string | null
+  additionalInfo: string | null
+  isUsualMedication: boolean
+}
+
+export const consultations = pgTable(
+  'consultations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'restrict' })
+      .notNull(),
+    appointmentId: uuid('appointment_id')
+      .references(() => appointments.id, { onDelete: 'restrict' })
+      .notNull()
+      .unique(),
+    patientId: uuid('patient_id')
+      .references(() => patients.id, { onDelete: 'restrict' })
+      .notNull(),
+    createdBy: uuid('created_by')
+      .references(() => users.id, { onDelete: 'restrict' })
+      .notNull(),
+    // Anamnesis
+    anamnesisText: text('anamnesis_text'),
+    attachmentKeys: jsonb('attachment_keys').$type<string[]>().notNull().default([]),
+    // Examen físico
+    bloodPressure: varchar('blood_pressure', { length: 20 }),
+    heartRate: integer('heart_rate'),
+    respiratoryRate: integer('respiratory_rate'),
+    oxygenSaturation: integer('oxygen_saturation'),
+    temperature: numeric('temperature', { precision: 4, scale: 1 }),
+    additionalExams: jsonb('additional_exams').$type<ConsultationAdditionalExam[]>().notNull().default([]),
+    // Diagnóstico
+    diagnoses: jsonb('diagnoses').$type<ConsultationDiagnosis[]>().notNull().default([]),
+    appreciation: text('appreciation'),
+    // Plan
+    medications: jsonb('medications').$type<ConsultationMedication[]>().notNull().default([]),
+    treatmentPlan: text('treatment_plan'),
+    auxiliaryExams: jsonb('auxiliary_exams').$type<string[]>().notNull().default([]),
+    status: consultationStatusEnum('status').default('draft').notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index('consultations_org_patient_idx').on(table.organizationId, table.patientId, table.createdAt),
+  ],
+)
+
 export const publicRateLimits = pgTable(
   'public_rate_limits',
   {

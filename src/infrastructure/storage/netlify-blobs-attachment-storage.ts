@@ -2,8 +2,10 @@ import { getStore } from '@netlify/blobs'
 import type { AttachmentStoragePort } from '../../application/ports/attachment-storage'
 
 export class NetlifyBlobsAttachmentStorage implements AttachmentStoragePort {
+  constructor(private readonly storeName: string = 'pre-evaluation-attachments') {}
+
   private getBlobStore() {
-    return getStore({ name: 'pre-evaluation-attachments', consistency: 'strong' })
+    return getStore({ name: this.storeName, consistency: 'strong' })
   }
 
   async store(key: string, data: Buffer, contentType: string): Promise<void> {

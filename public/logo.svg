@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0f766e"/>
+  <text
+    x="256"
+    y="256"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="'IBM Plex Sans', 'Segoe UI', sans-serif"
+    font-size="150"
+    font-weight="700"
+    letter-spacing="6"
+    fill="#f5fcfb"
+  >ORL</text>
+</svg>

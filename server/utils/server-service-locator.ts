@@ -41,12 +41,18 @@ import { ListPreEvaluationFormsUseCase } from '../../src/application/use-cases/p
 import { GetPreEvaluationFormDetailUseCase } from '../../src/application/use-cases/pre-evaluation-forms/get-pre-evaluation-form-detail'
 import { LinkPreEvaluationFormToPatientUseCase } from '../../src/application/use-cases/pre-evaluation-forms/link-pre-evaluation-form-to-patient'
 import { CreatePatientFromPreEvaluationFormUseCase } from '../../src/application/use-cases/pre-evaluation-forms/create-patient-from-pre-evaluation-form'
+import { StartConsultationUseCase } from '../../src/application/use-cases/consultations/start-consultation'
+import { UpdateConsultationUseCase } from '../../src/application/use-cases/consultations/update-consultation'
+import { CompleteConsultationUseCase } from '../../src/application/use-cases/consultations/complete-consultation'
+import { GetConsultationByAppointmentUseCase } from '../../src/application/use-cases/consultations/get-consultation-by-appointment'
+import { ListPatientConsultationsUseCase } from '../../src/application/use-cases/consultations/list-patient-consultations'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
 import { DrizzleAvailabilityRepository } from '../../src/infrastructure/repositories/drizzle-availability-repository'
 import { DrizzlePatientRepository } from '../../src/infrastructure/repositories/drizzle-patient-repository'
 import { DrizzlePreEvaluationFormRepository } from '../../src/infrastructure/repositories/drizzle-pre-evaluation-form-repository'
 import { DrizzleServiceRepository } from '../../src/infrastructure/repositories/drizzle-service-repository'
+import { DrizzleConsultationRepository } from '../../src/infrastructure/repositories/drizzle-consultation-repository'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
 
@@ -56,7 +62,9 @@ const assistantRepository = new DrizzleAssistantRepository()
 const appointmentRepository = new DrizzleAppointmentRepository()
 const availabilityRepository = new DrizzleAvailabilityRepository()
 const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
+const consultationRepository = new DrizzleConsultationRepository()
 const attachmentStorage = new NetlifyBlobsAttachmentStorage()
+const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
 const notificationService = new ResendNotificationService()
 
 const scheduleAppointmentUseCase = new ScheduleAppointmentUseCase(
@@ -65,6 +73,7 @@ const scheduleAppointmentUseCase = new ScheduleAppointmentUseCase(
   serviceRepository,
   availabilityRepository,
 )
+const changeAppointmentStatusUseCase = new ChangeAppointmentStatusUseCase(appointmentRepository)
 
 export const serverServiceLocator = {
   repositories: {
@@ -73,6 +82,7 @@ export const serverServiceLocator = {
     assistantRepository,
     appointmentRepository,
     availabilityRepository,
+    consultationRepository,
   },
   patients: {
     listPatientsUseCase: new ListPatientsUseCase(patientRepository),
@@ -123,7 +133,7 @@ export const serverServiceLocator = {
       scheduleAppointmentUseCase,
     ),
     cancelAppointmentUseCase: new CancelAppointmentUseCase(appointmentRepository),
-    changeAppointmentStatusUseCase: new ChangeAppointmentStatusUseCase(appointmentRepository),
+    changeAppointmentStatusUseCase,
     getAppointmentAvailableSlotsUseCase: new GetAppointmentAvailableSlotsUseCase(
       appointmentRepository,
       availabilityRepository,
@@ -168,6 +178,22 @@ export const serverServiceLocator = {
       patientRepository,
     ),
     attachmentStorage,
+  },
+  consultations: {
+    startConsultationUseCase: new StartConsultationUseCase(
+      consultationRepository,
+      appointmentRepository,
+    ),
+    updateConsultationUseCase: new UpdateConsultationUseCase(consultationRepository),
+    completeConsultationUseCase: new CompleteConsultationUseCase(
+      consultationRepository,
+      changeAppointmentStatusUseCase,
+    ),
+    getConsultationByAppointmentUseCase: new GetConsultationByAppointmentUseCase(
+      consultationRepository,
+    ),
+    listPatientConsultationsUseCase: new ListPatientConsultationsUseCase(consultationRepository),
+    attachmentStorage: consultationAttachmentStorage,
   },
   calendar: {
     getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),

@@ -36,8 +36,15 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
 
         <div class="schedule-meta">
           <span v-if="appointment.isUrgent" class="pill">Urgente</span>
+          <NuxtLink
+            v-if="appointment.status === 'checked_in' || appointment.status === 'in_progress'"
+            :to="`/consultations/${appointment.id}`"
+            class="schedule-attend-button"
+          >
+            Atender
+          </NuxtLink>
           <UIcon
-            v-if="appointment.status === 'completed'"
+            v-else-if="appointment.status === 'completed'"
             name="i-heroicons-check-circle-solid"
             class="schedule-status-icon"
           />
@@ -119,6 +126,19 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
 .schedule-status-icon {
   font-size: 1.4rem;
   color: #15803d;
+}
+
+.schedule-attend-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: #0f766e;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .schedule-see-all {

@@ -20,6 +20,7 @@
     "docs:inventory": "node scripts/generate-agent-docs.mjs",
     "docs:update": "pnpm docs:inventory",
     "generate": "nuxt generate",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
@@ -39,6 +40,8 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@nuxt/test-utils": "^4.0.3",
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vite-pwa/nuxt": "^1.1.1",
     "@vitest/coverage-v8": "^4.1.8",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",

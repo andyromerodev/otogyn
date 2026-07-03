@@ -74,6 +74,7 @@ export const createDashboardViewModel = (dependencies: DashboardViewModelDepende
     )
 
     return {
+      appointmentId: appointment.id,
       patientName: appointment.patientName,
       serviceName: appointment.serviceName,
       timeLabel: appointment.timeLabel,

@@ -16,6 +16,7 @@ if (config.public.authEnabled) {
     if (sessionContext === 'deactivated') {
       const { useAuthClient } = await import('~/utils/auth-client')
       await useAuthClient().signOut()
+      await clearPwaCaches()
     }
 
     await navigateTo(destination)

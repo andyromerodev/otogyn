@@ -21,7 +21,7 @@ defineProps<{
       <span>{{ consultation.durationMinutes }} min</span>
     </div>
 
-    <NuxtLink to="/appointments" class="active-consultation-cta">
+    <NuxtLink :to="`/consultations/${consultation.appointmentId}`" class="active-consultation-cta">
       Abrir consulta
       <UIcon name="i-heroicons-arrow-right" />
     </NuxtLink>

@@ -68,6 +68,7 @@ describe('createDashboardViewModel', () => {
     await viewModel.loadDashboard()
 
     expect(viewModel.activeConsultation.value).toEqual({
+      appointmentId: 'appointment_2',
       patientName: 'Maria Torres',
       serviceName: 'Consulta ginecologica',
       timeLabel: '10:30 - 11:00',

@@ -12,6 +12,7 @@ export interface DashboardMetricViewModel {
 }
 
 export interface ActiveConsultationViewModel {
+  appointmentId: string
   patientName: string
   serviceName: string
   timeLabel: string

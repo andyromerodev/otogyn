@@ -1,5 +1,6 @@
 import { useAuthClient } from '~/utils/auth-client'
 import { buildLoginRedirect, getAuthErrorStatus, resolveSessionContext } from '~/utils/auth/session-context'
+import { clearPwaCaches } from '~/utils/pwa-cache'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const config = useRuntimeConfig()
@@ -40,6 +41,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   if (sessionContext === 'deactivated') {
     await authClient.signOut()
+    await clearPwaCaches()
   }
 
   if (sessionContext === 'deactivated') {
