@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { parseAppDateTime, toAppTimeLabel } from '~~/src/application/utils/date/local-date'
 import { useAppointmentDetailViewModel } from '../../composables/appointments/use-appointment-detail-view-model'
 
@@ -22,6 +23,21 @@ const isSlotSelected = (startsAt: string) => {
   const slot = new Date(startsAt)
   return current.getTime() === slot.getTime()
 }
+
+const consultationAction = computed(() => {
+  const appointment = viewModel.appointment.value
+  if (!appointment) return null
+
+  if (appointment.status === 'checked_in' || appointment.status === 'in_progress') {
+    return { label: 'Atender', variant: 'primary' as const }
+  }
+
+  if (appointment.status === 'completed') {
+    return { label: 'Ver atención', variant: 'secondary' as const }
+  }
+
+  return null
+})
 </script>
 
 <template>
@@ -124,6 +140,14 @@ const isSlotSelected = (startsAt: string) => {
         <div class="detail-actions">
           <span class="pill">Cita real en PostgreSQL</span>
           <div class="detail-actions-buttons">
+            <NuxtLink
+              v-if="consultationAction"
+              :to="`/consultations/${viewModel.appointment.value.id}`"
+              class="consultation-button"
+              :class="`consultation-button-${consultationAction.variant}`"
+            >
+              {{ consultationAction.label }}
+            </NuxtLink>
             <template v-if="!viewModel.isEditing.value">
               <button
                 type="button"
@@ -245,6 +269,7 @@ const isSlotSelected = (startsAt: string) => {
 
 .detail-actions-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
@@ -259,18 +284,42 @@ const isSlotSelected = (startsAt: string) => {
 
 .submit-button,
 .edit-button,
-.delete-button {
+.delete-button,
+.consultation-button {
   border: 0;
   border-radius: 14px;
   padding: 0.95rem 1rem;
-  color: white;
   font-weight: 700;
+}
+
+.submit-button,
+.edit-button,
+.delete-button {
+  color: white;
   cursor: pointer;
 }
 
 .edit-button,
 .submit-button {
   background: #0f766e;
+}
+
+.consultation-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.consultation-button-primary {
+  background: #0f766e;
+  color: white;
+}
+
+.consultation-button-secondary {
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: #0f766e;
 }
 
 .delete-button {
