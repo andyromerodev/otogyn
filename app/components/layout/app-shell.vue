@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { AppSessionContext } from '~/utils/auth/session-context'
+import { useSessionContext } from '~/composables/auth/use-session-context'
+import { useNetworkStatus } from '~/composables/pwa/use-network-status'
 import { resolveRouteLoadingVariant } from '~/utils/route-loading'
 
 const config = useRuntimeConfig()
@@ -10,11 +11,10 @@ const route = useRoute()
 const routeLoadingTarget = useState<string>('route-loading-target', () => route.path)
 const loadingVariant = computed(() => resolveRouteLoadingVariant(routeLoadingTarget.value || route.path))
 
-const { data: sessionContext } = isAuthEnabled.value
-  ? await useFetch<AppSessionContext | null>('/api/auth/session-context', {
-      headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
-    })
-  : { data: ref<AppSessionContext | null>(null) }
+const { sessionContext } = useSessionContext()
+const { isOnline, setupNetworkListeners } = useNetworkStatus()
+
+onMounted(setupNetworkListeners)
 
 const navigation = computed(() => [
   { label: 'Dashboard', to: '/dashboard' },
@@ -104,6 +104,13 @@ if (import.meta.client) {
 
 <template>
   <div class="shell-frame">
+    <Transition name="offline-fade">
+      <div v-if="!isOnline" class="offline-banner" role="status">
+        <UIcon name="i-heroicons-signal-slash" class="offline-banner-icon" />
+        <span>Sin conexión — mostrando datos guardados</span>
+      </div>
+    </Transition>
+
     <div class="shell">
       <aside class="surface-card shell-sidebar">
         <div class="brand">
@@ -140,6 +147,11 @@ if (import.meta.client) {
       </aside>
 
       <main class="shell-main">
+        <ClientOnly>
+          <PwaUpdatePrompt />
+          <PwaInstallBanner />
+        </ClientOnly>
+
         <header class="surface-card shell-topbar">
           <div class="topbar-text">
             <p class="muted-text topbar-copy">Agenda clínica para pacientes, citas y disponibilidad.</p>
@@ -201,6 +213,38 @@ if (import.meta.client) {
 <style scoped>
 .shell-frame {
   position: relative;
+}
+
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: calc(0.45rem + env(safe-area-inset-top)) 1rem 0.45rem;
+  background: #b45309;
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.offline-banner-icon {
+  font-size: 1rem;
+}
+
+.offline-fade-enter-active,
+.offline-fade-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.offline-fade-enter-from,
+.offline-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
 }
 
 .shell {
@@ -268,6 +312,8 @@ if (import.meta.client) {
   border-radius: 1rem;
   padding: 0.8rem 1rem;
   color: var(--text-soft);
+  user-select: none;
+  -webkit-user-select: none;
   transition:
     background-color 160ms ease,
     color 160ms ease,
@@ -374,6 +420,8 @@ if (import.meta.client) {
   .shell {
     grid-template-columns: 1fr;
     padding: 1rem;
+    /* Con viewport-fit=cover el contenido queda bajo el notch sin este padding. */
+    padding-top: calc(1rem + env(safe-area-inset-top));
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 
@@ -437,6 +485,8 @@ if (import.meta.client) {
     font-size: 0.72rem;
     font-weight: 600;
     text-align: center;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .bottom-nav-icon {

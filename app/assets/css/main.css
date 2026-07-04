@@ -30,6 +30,10 @@ body,
   overflow-x: hidden;
 }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   margin: 0;
   font-family:
@@ -38,6 +42,14 @@ body {
     sans-serif;
   background: var(--page-bg);
   color: var(--text-main);
+  /* Sin rebote elástico al hacer overscroll en Safari iOS. */
+  overscroll-behavior-y: none;
+}
+
+button,
+a {
+  /* Evita el retraso de doble tap / zoom accidental en iOS. */
+  touch-action: manipulation;
 }
 
 a {

@@ -43,6 +43,8 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'es' },
       meta: [
+        // viewport-fit=cover habilita env(safe-area-inset-*) en iOS standalone.
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#0f766e' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
@@ -67,7 +69,13 @@ export default defineNuxtConfig({
     },
   },
   pwa: {
-    registerType: 'autoUpdate',
+    // 'prompt': el SW nuevo espera a que el usuario acepte el aviso de
+    // actualización (UpdatePrompt); el HTML sigue llegando fresco por SSR.
+    registerType: 'prompt',
+    client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 3600,
+    },
     manifest: {
       name: 'OtoGyn',
       short_name: 'OtoGyn',
@@ -82,6 +90,24 @@ export default defineNuxtConfig({
         { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
         { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
         { src: '/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+      // Solo Android/escritorio: iOS ignora los shortcuts del manifest.
+      shortcuts: [
+        {
+          name: 'Nueva cita',
+          url: '/appointments/new',
+          icons: [{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' }],
+        },
+        {
+          name: 'Pacientes',
+          url: '/patients',
+          icons: [{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' }],
+        },
+        {
+          name: 'Calendario',
+          url: '/calendar',
+          icons: [{ src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' }],
+        },
       ],
     },
     workbox: {

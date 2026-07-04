@@ -26,7 +26,7 @@
 .public-header {
   background: white;
   border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 1.5rem;
+  padding: calc(1rem + env(safe-area-inset-top)) 1.5rem 1rem;
 }
 
 .public-header-inner {
