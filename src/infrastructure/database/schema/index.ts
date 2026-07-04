@@ -408,3 +408,24 @@ export const publicRateLimits = pgTable(
     index('public_rate_limits_reset_idx').on(table.resetAt),
   ],
 )
+
+export const treatmentTemplates = pgTable(
+  'treatment_templates',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    name: text('name').notNull(),
+    // Código CIE-11 con el que se asocia esta plantilla (opcional).
+    diagnosisCode: text('diagnosis_code'),
+    diagnosisLabel: text('diagnosis_label'),
+    treatmentPlan: text('treatment_plan').notNull().default(''),
+    medications: jsonb('medications').$type<ConsultationMedication[]>().notNull().default([]),
+    auxiliaryExams: jsonb('auxiliary_exams').$type<string[]>().notNull().default([]),
+    ...timestamps,
+  },
+  (table) => [
+    index('treatment_templates_org_diagnosis_idx').on(table.organizationId, table.diagnosisCode),
+  ],
+)
