@@ -3,8 +3,8 @@ import { buildLoginRedirect, resolveSessionContext } from '~/utils/auth/session-
 import { useAuthClient } from '~/utils/auth-client'
 import { clearPwaCaches } from '~/utils/pwa-cache'
 
-// Revalidar la sesión en background como máximo una vez por minuto,
-// no en cada navegación del bottom nav.
+// Throttle de revalidación de sesión en background (~1 min).
+// Evita múltiples requests al cambiar de tabs en el bottom nav.
 const REVALIDATE_INTERVAL_MS = 60_000
 
 interface SessionContextState {
