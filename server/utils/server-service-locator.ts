@@ -46,6 +46,10 @@ import { UpdateConsultationUseCase } from '../../src/application/use-cases/consu
 import { CompleteConsultationUseCase } from '../../src/application/use-cases/consultations/complete-consultation'
 import { GetConsultationByAppointmentUseCase } from '../../src/application/use-cases/consultations/get-consultation-by-appointment'
 import { ListPatientConsultationsUseCase } from '../../src/application/use-cases/consultations/list-patient-consultations'
+import { ListTreatmentTemplatesUseCase } from '../../src/application/use-cases/consultations/list-treatment-templates'
+import { CreateTreatmentTemplateUseCase } from '../../src/application/use-cases/consultations/create-treatment-template'
+import { DeleteTreatmentTemplateUseCase } from '../../src/application/use-cases/consultations/delete-treatment-template'
+import { DrizzleTreatmentTemplateRepository } from '../../src/infrastructure/repositories/drizzle-treatment-template-repository'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
 import { DrizzleAvailabilityRepository } from '../../src/infrastructure/repositories/drizzle-availability-repository'
@@ -63,6 +67,7 @@ const appointmentRepository = new DrizzleAppointmentRepository()
 const availabilityRepository = new DrizzleAvailabilityRepository()
 const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
 const consultationRepository = new DrizzleConsultationRepository()
+const treatmentTemplateRepository = new DrizzleTreatmentTemplateRepository()
 const attachmentStorage = new NetlifyBlobsAttachmentStorage()
 const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
 const notificationService = new ResendNotificationService()
@@ -193,6 +198,9 @@ export const serverServiceLocator = {
       consultationRepository,
     ),
     listPatientConsultationsUseCase: new ListPatientConsultationsUseCase(consultationRepository),
+    listTreatmentTemplatesUseCase: new ListTreatmentTemplatesUseCase(treatmentTemplateRepository),
+    createTreatmentTemplateUseCase: new CreateTreatmentTemplateUseCase(treatmentTemplateRepository),
+    deleteTreatmentTemplateUseCase: new DeleteTreatmentTemplateUseCase(treatmentTemplateRepository),
     attachmentStorage: consultationAttachmentStorage,
   },
   calendar: {

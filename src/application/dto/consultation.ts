@@ -32,6 +32,34 @@ export interface UpdateConsultationInput {
 
 export type ConsultationDetail = Consultation
 
+export interface TreatmentTemplate {
+  id: string
+  organizationId: string
+  name: string
+  diagnosisCode: string | null
+  diagnosisLabel: string | null
+  treatmentPlan: string
+  medications: ConsultationMedication[]
+  auxiliaryExams: string[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CreateTreatmentTemplateInput {
+  organizationId: string
+  name: string
+  diagnosisCode?: string | null
+  diagnosisLabel?: string | null
+  treatmentPlan: string
+  medications: ConsultationMedication[]
+  auxiliaryExams: string[]
+}
+
+export interface ListTreatmentTemplatesInput {
+  organizationId: string
+  diagnosisCode?: string
+}
+
 export interface PatientConsultationHistoryItem {
   id: string
   appointmentId: string

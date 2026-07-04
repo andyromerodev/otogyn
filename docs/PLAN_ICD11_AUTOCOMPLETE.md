@@ -25,7 +25,7 @@ En la pantalla de atención clínica (wizard de consultas):
 | ST-0 Credenciales OMS | Hecha | usuario | 2026-07-04 | n/a | |
 | ST-1 Proxy CIE-11 | Hecha | Claude Fable 5 | 2026-07-04 | ~9k | nuxt.config + server/utils/who-icd-client.ts + server/api/icd11/search.get.ts |
 | ST-2 Tabla treatment_templates | Hecha | Claude Fable 5 | 2026-07-04 | ~5k | schema/index.ts + migración 0008_broad_terror (when bumpeado a 1783310592004) |
-| ST-3 Backend CRUD plantillas | Pendiente | | | | |
+| ST-3 Backend CRUD plantillas | Hecha | Claude Fable 5 | 2026-07-04 | ~12k | DTO, 3 use cases, port, DrizzleRepo, 3 rutas API, service locator |
 | ST-4 Autocomplete diagnóstico UI | Pendiente | | | | |
 | ST-5 Plantillas en step-plan | Pendiente | | | | |
 | ST-6 Tests | Pendiente | | | | |
