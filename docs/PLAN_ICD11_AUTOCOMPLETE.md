@@ -27,7 +27,7 @@ En la pantalla de atención clínica (wizard de consultas):
 | ST-2 Tabla treatment_templates | Hecha | Claude Fable 5 | 2026-07-04 | ~5k | schema/index.ts + migración 0008_broad_terror (when bumpeado a 1783310592004) |
 | ST-3 Backend CRUD plantillas | Hecha | Claude Fable 5 | 2026-07-04 | ~12k | DTO, 3 use cases, port, DrizzleRepo, 3 rutas API, service locator |
 | ST-4 Autocomplete diagnóstico UI | Hecha | Claude Fable 5 | 2026-07-04 | ~8k | diagnosis-search-picker.vue (picker modal) + step-diagnostico.vue (debounce 300ms, $fetch, onSelect) |
-| ST-5 Plantillas en step-plan | Pendiente | | | | |
+| ST-5 Plantillas en step-plan | Hecha | Claude Fable 5 | 2026-07-04 | ~10k | use-treatment-templates-view-model.ts + step-plan.vue (selector con badge "Coincide", confirm overwrite, save-as dialog) + wizard VM applyTemplate + [appointmentId].vue wired |
 | ST-6 Tests | Pendiente | | | | |
 | ST-7 Offline + E2E | Pendiente | | | | |
 

@@ -4,7 +4,7 @@ import type {
   ConsultationDiagnosis,
   ConsultationMedication,
 } from '../../../infrastructure/database/schema'
-import type { ConsultationDetail } from '../../../application/dto/consultation'
+import type { ConsultationDetail, TreatmentTemplate } from '../../../application/dto/consultation'
 import type { ConsultationUpdatePayload } from '../../../application/dto/consultation-update-payload'
 import type { StartConsultationFrontendUseCase } from '../../../application/use-cases/consultations/frontend/start-consultation'
 import type { GetConsultationByAppointmentFrontendUseCase } from '../../../application/use-cases/consultations/frontend/get-consultation-by-appointment'
@@ -290,6 +290,13 @@ export function createConsultationWizardViewModel(dependencies: ConsultationWiza
     form.auxiliaryExams.splice(index, 1, value)
   }
 
+  const applyTemplate = (template: TreatmentTemplate) => {
+    form.treatmentPlan = template.treatmentPlan
+    form.medications = template.medications.map((m) => ({ ...m }))
+    form.auxiliaryExams = [...template.auxiliaryExams]
+    onFieldChange()
+  }
+
   // Adjuntos
   const uploadAttachment = async (file: File) => {
     if (!consultation.value || readOnly.value) return
@@ -377,6 +384,7 @@ export function createConsultationWizardViewModel(dependencies: ConsultationWiza
     addAuxiliaryExam,
     removeAuxiliaryExam,
     updateAuxiliaryExam,
+    applyTemplate,
 
     uploadAttachment,
     removeAttachment,

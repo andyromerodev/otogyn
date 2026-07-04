@@ -106,12 +106,15 @@ const handleSelectStep = (step: number) => {
           :medications="viewModel.form.medications"
           :auxiliary-exams="viewModel.form.auxiliaryExams"
           :read-only="viewModel.readOnly.value"
+          :diagnosis-code="viewModel.form.diagnoses[0]?.cie10Code ?? null"
+          :diagnosis-label="viewModel.form.diagnoses[0]?.description ?? null"
           @change="viewModel.onFieldChange"
           @add-medication="viewModel.addMedication"
           @remove-medication="(index) => viewModel.removeMedication(index)"
           @add-auxiliary-exam="viewModel.addAuxiliaryExam"
           @remove-auxiliary-exam="(index) => viewModel.removeAuxiliaryExam(index)"
           @update-auxiliary-exam="(index, value) => viewModel.updateAuxiliaryExam(index, value)"
+          @apply-template="viewModel.applyTemplate"
         />
 
         <p v-if="viewModel.errorMessage.value" class="message message-error">{{ viewModel.errorMessage.value }}</p>
