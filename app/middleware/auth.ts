@@ -1,6 +1,5 @@
-import { useAuthClient } from '~/utils/auth-client'
 import { buildLoginRedirect, getAuthErrorStatus, resolveSessionContext } from '~/utils/auth/session-context'
-import { clearPwaCaches } from '~/utils/pwa-cache'
+import { useSessionContext } from '~/composables/auth/use-session-context'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const config = useRuntimeConfig()
@@ -8,6 +7,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!config.public.authEnabled) {
     return
   }
+
+  const session = useSessionContext()
 
   if (import.meta.server) {
     const sessionContext = await resolveSessionContext(useRequestHeaders(['cookie'])).catch((error) => {
@@ -31,24 +32,31 @@ export default defineNuxtRouteMiddleware(async (to) => {
       return navigateTo(buildLoginRedirect(to.fullPath))
     }
 
+    // Se serializa al payload SSR: el cliente arranca hidratado y las
+    // navegaciones del bottom nav no vuelven a esperar a la red.
+    session.setSessionContext(sessionContext)
     return
   }
 
-  const authClient = useAuthClient()
-  const sessionContext = await resolveSessionContext().catch((error) => {
-    throw error
-  })
+  // Cliente: con sesión cacheada la navegación es instantánea y la
+  // revalidación corre en background (throttled, sin await).
+  if (session.sessionContext.value) {
+    if (session.shouldRevalidate()) {
+      void session.refresh(to.fullPath)
+    }
 
-  if (sessionContext === 'deactivated') {
-    await authClient.signOut()
-    await clearPwaCaches()
+    return
   }
 
-  if (sessionContext === 'deactivated') {
-    return navigateTo(buildLoginRedirect(to.fullPath, 'deactivated'))
+  // Sin sesión cacheada y sin red: fail-open. La UI navega con lo que tenga
+  // cacheado el service worker; las API routes siguen exigiendo sesión.
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return
   }
 
-  if (!sessionContext) {
+  await session.refresh(to.fullPath)
+
+  if (!session.sessionContext.value) {
     return navigateTo(buildLoginRedirect(to.fullPath))
   }
 })

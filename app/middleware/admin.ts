@@ -1,4 +1,5 @@
 import { buildLoginRedirect, resolveSessionContext } from '~/utils/auth/session-context'
+import { useSessionContext } from '~/composables/auth/use-session-context'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const config = useRuntimeConfig()
@@ -7,19 +8,44 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  const sessionContext = await resolveSessionContext(
-    import.meta.server ? useRequestHeaders(['cookie']) : undefined,
-  )
+  const session = useSessionContext()
 
-  if (sessionContext === 'deactivated') {
-    return navigateTo(buildLoginRedirect(to.fullPath, 'deactivated'))
+  if (import.meta.server) {
+    const sessionContext = await resolveSessionContext(useRequestHeaders(['cookie']))
+
+    if (sessionContext === 'deactivated') {
+      return navigateTo(buildLoginRedirect(to.fullPath, 'deactivated'))
+    }
+
+    if (!sessionContext?.role) {
+      return navigateTo(buildLoginRedirect(to.fullPath))
+    }
+
+    if (sessionContext.role !== 'admin_doctor') {
+      return navigateTo('/dashboard')
+    }
+
+    session.setSessionContext(sessionContext)
+    return
   }
 
-  if (!sessionContext?.role) {
+  // Cliente: decide con el rol cacheado; solo consulta a la red si el
+  // estado está vacío (arranque frío sin payload SSR).
+  if (!session.sessionContext.value) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return navigateTo('/dashboard')
+    }
+
+    await session.refresh(to.fullPath)
+  }
+
+  const role = session.sessionContext.value?.role
+
+  if (!role) {
     return navigateTo(buildLoginRedirect(to.fullPath))
   }
 
-  if (sessionContext.role !== 'admin_doctor') {
+  if (role !== 'admin_doctor') {
     return navigateTo('/dashboard')
   }
 })

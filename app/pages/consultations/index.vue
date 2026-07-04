@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AppSessionContext } from '~/utils/auth/session-context'
+import { useSessionContext } from '~/composables/auth/use-session-context'
 
 definePageMeta({
   middleware: 'auth',
@@ -8,11 +8,7 @@ definePageMeta({
 const config = useRuntimeConfig()
 const isAuthEnabled = computed(() => config.public.authEnabled)
 
-const { data: sessionContext } = isAuthEnabled.value
-  ? await useFetch<AppSessionContext | null>('/api/auth/session-context', {
-      headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
-    })
-  : { data: ref<AppSessionContext | null>(null) }
+const { sessionContext } = useSessionContext()
 
 const links = computed(() => [
   {
