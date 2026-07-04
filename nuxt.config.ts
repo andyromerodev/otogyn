@@ -150,6 +150,9 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    // Credenciales server-only de la API CIE-11 de la OMS.
+    whoIcdClientId: process.env.WHO_ICD_CLIENT_ID ?? '',
+    whoIcdClientSecret: process.env.WHO_ICD_CLIENT_SECRET ?? '',
     public: {
       authEnabled: Boolean(process.env.DATABASE_URL && process.env.AUTH_SECRET),
       authBaseURL: `${runtimeAuthUrl}/api/auth`,

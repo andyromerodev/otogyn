@@ -22,8 +22,8 @@ En la pantalla de atención clínica (wizard de consultas):
 
 | Subtarea | Estado | Agente | Fecha | Tokens (aprox.) | Notas |
 |---|---|---|---|---|---|
-| ST-0 Credenciales OMS | Pendiente | (usuario) | | n/a | |
-| ST-1 Proxy CIE-11 | Pendiente | | | | |
+| ST-0 Credenciales OMS | Hecha | usuario | 2026-07-04 | n/a | |
+| ST-1 Proxy CIE-11 | Hecha | Claude Fable 5 | 2026-07-04 | ~9k | nuxt.config + server/utils/who-icd-client.ts + server/api/icd11/search.get.ts |
 | ST-2 Tabla treatment_templates | Pendiente | | | | |
 | ST-3 Backend CRUD plantillas | Pendiente | | | | |
 | ST-4 Autocomplete diagnóstico UI | Pendiente | | | | |
