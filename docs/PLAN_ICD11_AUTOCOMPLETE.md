@@ -29,7 +29,7 @@ En la pantalla de atención clínica (wizard de consultas):
 | ST-4 Autocomplete diagnóstico UI | Hecha | Claude Fable 5 | 2026-07-04 | ~8k | diagnosis-search-picker.vue (picker modal) + step-diagnostico.vue (debounce 300ms, $fetch, onSelect) |
 | ST-5 Plantillas en step-plan | Hecha | Claude Fable 5 | 2026-07-04 | ~10k | use-treatment-templates-view-model.ts + step-plan.vue (selector con badge "Coincide", confirm overwrite, save-as dialog) + wizard VM applyTemplate + [appointmentId].vue wired |
 | ST-6 Tests | Hecha | Claude Fable 5 | 2026-07-04 | ~12k | 19 unit tests: 10 use-cases (list/create/delete + cross-org) + 9 who-icd-client (token cache, strip-em, errores); integration: templates.integration.test.ts (9 HTTP smoke tests CRUD + auth) |
-| ST-7 Offline + E2E | Pendiente | | | | |
+| ST-7 Offline + E2E | Hecha | Claude Fable 5 | 2026-07-04 | ~3k | nuxt.config.ts: icd11/search + consultations/templates añadidos al cache api-read; DATABASE_MODEL.md actualizado; build verificado |
 
 Estados: `Pendiente` → `En progreso` → `Hecha` (o `Bloqueada`).
 

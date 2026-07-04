@@ -132,7 +132,7 @@ export default defineNuxtConfig({
           urlPattern: ({ request, url, sameOrigin }) =>
             sameOrigin
             && request.method === 'GET'
-            && /^\/api\/(appointments|patients|calendar\/(month|week|day)|dashboard\/summary|services)(\/|$)/.test(url.pathname),
+            && /^\/api\/(appointments|patients|calendar\/(month|week|day)|dashboard\/summary|services|icd11\/search|consultations\/templates)(\/|$)/.test(url.pathname),
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-read',

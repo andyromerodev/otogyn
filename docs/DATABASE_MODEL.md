@@ -25,6 +25,12 @@ El modelo parte de una sola organizacion, pero todas las entidades operativas ma
 - `appointment_status_history`
 - `audit_logs`
 
+### Atención clínica
+
+- `consultations`
+- `pre_evaluation_forms`
+- `treatment_templates`
+
 ## Campos clave
 
 ### patients
@@ -84,6 +90,19 @@ El modelo parte de una sola organizacion, pero todas las entidades operativas ma
 - `appointments.service_id -> services.id`
 - `appointments.professional_id -> users.id`
 - `appointment_status_history.appointment_id -> appointments.id`
+
+### treatment_templates
+
+- `id` uuid PK
+- `organization_id` FK → organizations(id) ON DELETE CASCADE
+- `name` text NOT NULL
+- `diagnosis_code` text nullable — código CIE-11 asociado
+- `diagnosis_label` text nullable
+- `treatment_plan` text NOT NULL default ''
+- `medications` jsonb NOT NULL default '[]' — array de `ConsultationMedication`
+- `auxiliary_exams` jsonb NOT NULL default '[]' — array de strings
+- `created_at`, `updated_at`
+- índice compuesto `(organization_id, diagnosis_code)`
 
 ## Indices recomendados
 
