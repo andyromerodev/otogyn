@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ConsultationDiagnosis } from '~~/src/infrastructure/database/schema'
+import type { IcdResult } from './diagnosis-search-picker.vue'
 
 const appreciation = defineModel<string>('appreciation', { required: true })
 
@@ -25,6 +26,62 @@ function selectType(diagnosis: ConsultationDiagnosis, type: ConsultationDiagnosi
   diagnosis.type = type
   emit('change')
 }
+
+// — Autocomplete CIE-11 —
+const pickerOpen = ref(false)
+const activeIndex = ref<number | null>(null)
+const searchTerm = ref('')
+const searchResults = ref<IcdResult[]>([])
+const searchLoading = ref(false)
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function openPicker(index: number) {
+  activeIndex.value = index
+  searchTerm.value = ''
+  searchResults.value = []
+  pickerOpen.value = true
+}
+
+watch(searchTerm, (term) => {
+  if (debounceTimer) clearTimeout(debounceTimer)
+
+  if (term.trim().length < 2) {
+    searchResults.value = []
+    searchLoading.value = false
+    return
+  }
+
+  searchLoading.value = true
+  debounceTimer = setTimeout(async () => {
+    try {
+      const results = await $fetch<IcdResult[]>('/api/icd11/search', {
+        query: { q: term.trim() },
+      })
+      searchResults.value = results
+    } catch {
+      // Fallo silencioso: el médico puede escribir manualmente.
+      searchResults.value = []
+    } finally {
+      searchLoading.value = false
+    }
+  }, 300)
+})
+
+function onSelect(result: IcdResult) {
+  if (activeIndex.value === null) return
+  const diagnosis = props.diagnoses[activeIndex.value]
+  if (!diagnosis) return
+
+  diagnosis.description = result.title
+  diagnosis.cie10Code = result.code
+  emit('change')
+
+  pickerOpen.value = false
+  activeIndex.value = null
+  searchTerm.value = ''
+  searchResults.value = []
+}
 </script>
 
 <template>
@@ -37,14 +94,25 @@ function selectType(diagnosis: ConsultationDiagnosis, type: ConsultationDiagnosi
       >
         <div class="consultation-diagnosis-card-header">
           <span class="consultation-diagnosis-card-title">Diagnóstico {{ index + 1 }}</span>
-          <button
-            v-if="!props.readOnly"
-            type="button"
-            class="consultation-remove-button"
-            @click="emit('removeDiagnosis', index)"
-          >
-            Quitar
-          </button>
+          <div class="consultation-diagnosis-card-actions">
+            <button
+              v-if="!props.readOnly"
+              type="button"
+              class="consultation-search-button"
+              @click="openPicker(index)"
+            >
+              <UIcon name="i-heroicons-magnifying-glass" />
+              Buscar CIE-11
+            </button>
+            <button
+              v-if="!props.readOnly"
+              type="button"
+              class="consultation-remove-button"
+              @click="emit('removeDiagnosis', index)"
+            >
+              Quitar
+            </button>
+          </div>
         </div>
 
         <label class="field field-wide">
@@ -58,7 +126,7 @@ function selectType(diagnosis: ConsultationDiagnosis, type: ConsultationDiagnosi
         </label>
 
         <label class="field">
-          <span>CIE10</span>
+          <span>Código CIE</span>
           <input
             :value="diagnosis.cie10Code ?? ''"
             type="text"
@@ -104,6 +172,15 @@ function selectType(diagnosis: ConsultationDiagnosis, type: ConsultationDiagnosi
         @input="emit('change')"
       />
     </label>
+
+    <ConsultationsDiagnosisSearchPicker
+      v-model="pickerOpen"
+      :search-term="searchTerm"
+      :results="searchResults"
+      :loading="searchLoading"
+      @update:search-term="searchTerm = $event"
+      @select="onSelect"
+    />
   </div>
 </template>
 
@@ -128,11 +205,19 @@ function selectType(diagnosis: ConsultationDiagnosis, type: ConsultationDiagnosi
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .consultation-diagnosis-card-title {
   font-weight: 700;
   color: var(--text-main);
+}
+
+.consultation-diagnosis-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .field {
@@ -195,6 +280,20 @@ function selectType(diagnosis: ConsultationDiagnosis, type: ConsultationDiagnosi
   border: 1px solid var(--border-color);
   background: white;
   color: var(--text-soft);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.consultation-search-button {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--teal-strong);
+  background: var(--teal-soft);
+  color: var(--teal-strong);
   border-radius: 999px;
   padding: 0.4rem 0.8rem;
   font-size: 0.82rem;
