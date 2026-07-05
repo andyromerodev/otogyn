@@ -21,6 +21,10 @@ const viewModel = useExpensesViewModel()
         <NuxtLink to="/finances/categories" class="expenses-categories-link">
           Categorías
         </NuxtLink>
+        <a :href="viewModel.exportHref.value" class="expenses-export-link">
+          <UIcon name="i-heroicons-arrow-down-tray-20-solid" />
+          <span>Exportar CSV</span>
+        </a>
         <NuxtLink to="/finances/expenses/new" class="expenses-add-desktop" aria-label="Registrar gasto">
           <UIcon name="i-heroicons-plus-20-solid" />
         </NuxtLink>
@@ -39,6 +43,16 @@ const viewModel = useExpensesViewModel()
       >
         {{ chip.label }}
       </button>
+    </div>
+
+    <div class="expenses-tools">
+      <NuxtLink to="/finances/categories" class="expenses-categories-link expenses-categories-link-mobile">
+        Categorías
+      </NuxtLink>
+      <a :href="viewModel.exportHref.value" class="expenses-export-link">
+        <UIcon name="i-heroicons-arrow-down-tray-20-solid" />
+        <span>Exportar CSV</span>
+      </a>
     </div>
 
     <ClientOnly>
@@ -155,6 +169,19 @@ const viewModel = useExpensesViewModel()
   background: #edf7f5;
 }
 
+.expenses-export-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid #bddfdf;
+  border-radius: 999px;
+  padding: 0.82rem 1.2rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #1f5f63;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
 .expenses-add-desktop,
 .expenses-fab {
   display: inline-flex;
@@ -176,6 +203,16 @@ const viewModel = useExpensesViewModel()
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.expenses-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.expenses-categories-link-mobile {
+  display: none;
 }
 
 .expenses-chip {
@@ -292,6 +329,25 @@ const viewModel = useExpensesViewModel()
 }
 
 @media (max-width: 640px) {
+  .expenses-tools {
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .expenses-categories-link-mobile {
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .expenses-export-link,
+  .expenses-categories-link-mobile {
+    width: 100%;
+  }
+
+  .expenses-export-link {
+    justify-content: center;
+  }
+
   .expenses-chips {
     overflow-x: auto;
     flex-wrap: nowrap;

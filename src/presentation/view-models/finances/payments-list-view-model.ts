@@ -84,6 +84,16 @@ export const createPaymentsListViewModel = (deps: PaymentsListViewModelDependenc
     { key: 'transferencia' as PaymentMethod, label: 'Transferencia' },
   ])
 
+  const exportHref = computed(() => {
+    const params = new URLSearchParams({ type: 'payments' })
+
+    if (methodFilter.value) {
+      params.set('method', methodFilter.value)
+    }
+
+    return `/api/finances/export?${params.toString()}`
+  })
+
   const selectMethod = async (method: PaymentMethod | null) => {
     if (methodFilter.value === method) return
     methodFilter.value = method
@@ -113,6 +123,7 @@ export const createPaymentsListViewModel = (deps: PaymentsListViewModelDependenc
     hasPrevious,
     emptyStateMessage,
     methodChips,
+    exportHref,
     loadPayments,
     selectMethod,
     goToPage,

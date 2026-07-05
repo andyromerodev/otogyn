@@ -17,9 +17,16 @@ const viewModel = usePaymentsViewModel()
         <p class="payments-subtitle">{{ viewModel.total.value }} registros</p>
       </div>
 
-      <NuxtLink to="/finances/payments/new" class="payments-add-desktop" aria-label="Registrar pago">
-        <UIcon name="i-heroicons-plus-20-solid" />
-      </NuxtLink>
+      <div class="payments-header-actions">
+        <a :href="viewModel.exportHref.value" class="payments-export-link">
+          <UIcon name="i-heroicons-arrow-down-tray-20-solid" />
+          <span>Exportar CSV</span>
+        </a>
+
+        <NuxtLink to="/finances/payments/new" class="payments-add-desktop" aria-label="Registrar pago">
+          <UIcon name="i-heroicons-plus-20-solid" />
+        </NuxtLink>
+      </div>
     </div>
 
     <div class="payments-chips">
@@ -34,6 +41,13 @@ const viewModel = usePaymentsViewModel()
       >
         {{ chip.label }}
       </button>
+    </div>
+
+    <div class="payments-tools">
+      <a :href="viewModel.exportHref.value" class="payments-export-link">
+        <UIcon name="i-heroicons-arrow-down-tray-20-solid" />
+        <span>Exportar CSV</span>
+      </a>
     </div>
 
     <ClientOnly>
@@ -130,6 +144,12 @@ const viewModel = usePaymentsViewModel()
   font-size: 1.2rem;
 }
 
+.payments-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .payments-add-desktop,
 .payments-fab {
   display: inline-flex;
@@ -147,10 +167,28 @@ const viewModel = usePaymentsViewModel()
   font-size: 1.75rem;
 }
 
+.payments-export-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid #bddfdf;
+  border-radius: 999px;
+  padding: 0.82rem 1.2rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #1f5f63;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
 .payments-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.payments-tools {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .payments-chip {
@@ -267,6 +305,15 @@ const viewModel = usePaymentsViewModel()
 }
 
 @media (max-width: 640px) {
+  .payments-tools {
+    justify-content: stretch;
+  }
+
+  .payments-export-link {
+    width: 100%;
+    justify-content: center;
+  }
+
   .payments-chips {
     overflow-x: auto;
     flex-wrap: nowrap;

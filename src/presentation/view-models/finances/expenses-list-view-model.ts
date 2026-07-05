@@ -85,6 +85,16 @@ export const createExpensesListViewModel = (deps: ExpensesListViewModelDependenc
     ...categories.value.map((c) => ({ key: c.id, label: c.name })),
   ])
 
+  const exportHref = computed(() => {
+    const params = new URLSearchParams({ type: 'expenses' })
+
+    if (categoryFilter.value) {
+      params.set('categoryId', categoryFilter.value)
+    }
+
+    return `/api/finances/export?${params.toString()}`
+  })
+
   const selectCategory = async (categoryId: string | null) => {
     if (categoryFilter.value === categoryId) return
     categoryFilter.value = categoryId
@@ -115,6 +125,7 @@ export const createExpensesListViewModel = (deps: ExpensesListViewModelDependenc
     hasPrevious,
     emptyStateMessage,
     categoryChips,
+    exportHref,
     loadAll,
     loadExpenses,
     selectCategory,
