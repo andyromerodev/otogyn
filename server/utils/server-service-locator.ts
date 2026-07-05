@@ -60,6 +60,7 @@ import { DeleteExpenseUseCase } from '../../src/application/use-cases/finances/d
 import { CreateExpenseCategoryUseCase } from '../../src/application/use-cases/finances/create-expense-category'
 import { ListExpenseCategoriesUseCase } from '../../src/application/use-cases/finances/list-expense-categories'
 import { UpdateExpenseCategoryUseCase } from '../../src/application/use-cases/finances/update-expense-category'
+import { GetFinanceSummaryUseCase } from '../../src/application/use-cases/finances/get-finance-summary'
 import { DrizzleTreatmentTemplateRepository } from '../../src/infrastructure/repositories/drizzle-treatment-template-repository'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
@@ -71,6 +72,7 @@ import { DrizzleConsultationRepository } from '../../src/infrastructure/reposito
 import { DrizzlePaymentRepository } from '../../src/infrastructure/repositories/drizzle-payment-repository'
 import { DrizzleExpenseRepository } from '../../src/infrastructure/repositories/drizzle-expense-repository'
 import { DrizzleExpenseCategoryRepository } from '../../src/infrastructure/repositories/drizzle-expense-category-repository'
+import { DrizzleFinanceReportRepository } from '../../src/infrastructure/repositories/drizzle-finance-report-repository'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
 
@@ -85,6 +87,7 @@ const treatmentTemplateRepository = new DrizzleTreatmentTemplateRepository()
 const paymentRepository = new DrizzlePaymentRepository()
 const expenseRepository = new DrizzleExpenseRepository()
 const expenseCategoryRepository = new DrizzleExpenseCategoryRepository()
+const financeReportRepository = new DrizzleFinanceReportRepository()
 const attachmentStorage = new NetlifyBlobsAttachmentStorage()
 const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
 const notificationService = new ResendNotificationService()
@@ -221,6 +224,7 @@ export const serverServiceLocator = {
     attachmentStorage: consultationAttachmentStorage,
   },
   finances: {
+    getFinanceSummaryUseCase: new GetFinanceSummaryUseCase(financeReportRepository),
     listPaymentsUseCase: new ListPaymentsUseCase(paymentRepository),
     createPaymentUseCase: new CreatePaymentUseCase(paymentRepository),
     updatePaymentUseCase: new UpdatePaymentUseCase(paymentRepository),

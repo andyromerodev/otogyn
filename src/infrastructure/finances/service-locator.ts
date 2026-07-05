@@ -1,15 +1,24 @@
 import { HttpPaymentRemoteDataSource } from './remote/http-payment-remote-data-source'
+import { HttpFinanceSummaryRemoteDataSource } from './remote/http-finance-summary-remote-data-source'
 import { PaymentManagementRepositoryImpl } from './repositories/payment-management-repository-impl'
+import { FinanceSummaryManagementRepositoryImpl } from './repositories/finance-summary-management-repository-impl'
 import { HttpExpenseRemoteDataSource } from './remote/http-expense-remote-data-source'
 import { ExpenseManagementRepositoryImpl } from './repositories/expense-management-repository-impl'
 
 const paymentRemoteDataSource = new HttpPaymentRemoteDataSource()
 const paymentRepository = new PaymentManagementRepositoryImpl(paymentRemoteDataSource)
+const financeSummaryRemoteDataSource = new HttpFinanceSummaryRemoteDataSource()
+const financeSummaryRepository = new FinanceSummaryManagementRepositoryImpl(
+  financeSummaryRemoteDataSource,
+)
 
 const expenseRemoteDataSource = new HttpExpenseRemoteDataSource()
 const expenseRepository = new ExpenseManagementRepositoryImpl(expenseRemoteDataSource)
 
 export const financeServiceLocator = {
+  getFinanceSummaryUseCase: {
+    execute: () => financeSummaryRepository.getSummary(),
+  },
   listPaymentsUseCase: {
     execute: (input: Parameters<typeof paymentRepository.listPayments>[0]) =>
       paymentRepository.listPayments(input),
