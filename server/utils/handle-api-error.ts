@@ -19,9 +19,12 @@ export const handleApiError = (error: unknown) => {
   }
 
   if (error instanceof ZodError) {
+    const firstIssue = error.issues[0]
+    const field = firstIssue?.path.join('.') || 'campo'
+    const message = firstIssue?.message ?? 'Validation failed.'
     throw createError({
       statusCode: 400,
-      statusMessage: 'Validation failed.',
+      statusMessage: `${field}: ${message}`,
     })
   }
 
