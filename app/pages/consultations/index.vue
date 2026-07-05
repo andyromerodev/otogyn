@@ -32,6 +32,12 @@ const links = computed(() => [
   ...(sessionContext.value?.role === 'admin_doctor'
     ? [
         {
+          label: 'Finanzas',
+          description: 'Pagos, gastos, categorias y resumen financiero.',
+          to: '/finances',
+          icon: 'i-heroicons-banknotes',
+        },
+        {
           label: 'Disponibilidad',
           description: 'Horarios de atencion y bloqueos.',
           to: '/availability',
