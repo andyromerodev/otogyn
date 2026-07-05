@@ -1,4 +1,6 @@
-export type PaymentMethod = 'efectivo' | 'tarjeta' | 'transferencia'
+export const paymentMethods = ['efectivo', 'tarjeta', 'transferencia'] as const
+
+export type PaymentMethod = (typeof paymentMethods)[number]
 
 export interface Payment {
   id: string

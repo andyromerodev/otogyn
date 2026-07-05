@@ -49,6 +49,10 @@ import { ListPatientConsultationsUseCase } from '../../src/application/use-cases
 import { ListTreatmentTemplatesUseCase } from '../../src/application/use-cases/consultations/list-treatment-templates'
 import { CreateTreatmentTemplateUseCase } from '../../src/application/use-cases/consultations/create-treatment-template'
 import { DeleteTreatmentTemplateUseCase } from '../../src/application/use-cases/consultations/delete-treatment-template'
+import { CreatePaymentUseCase } from '../../src/application/use-cases/finances/create-payment'
+import { ListPaymentsUseCase } from '../../src/application/use-cases/finances/list-payments'
+import { UpdatePaymentUseCase } from '../../src/application/use-cases/finances/update-payment'
+import { DeletePaymentUseCase } from '../../src/application/use-cases/finances/delete-payment'
 import { DrizzleTreatmentTemplateRepository } from '../../src/infrastructure/repositories/drizzle-treatment-template-repository'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
@@ -57,6 +61,7 @@ import { DrizzlePatientRepository } from '../../src/infrastructure/repositories/
 import { DrizzlePreEvaluationFormRepository } from '../../src/infrastructure/repositories/drizzle-pre-evaluation-form-repository'
 import { DrizzleServiceRepository } from '../../src/infrastructure/repositories/drizzle-service-repository'
 import { DrizzleConsultationRepository } from '../../src/infrastructure/repositories/drizzle-consultation-repository'
+import { DrizzlePaymentRepository } from '../../src/infrastructure/repositories/drizzle-payment-repository'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
 
@@ -68,6 +73,7 @@ const availabilityRepository = new DrizzleAvailabilityRepository()
 const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
 const consultationRepository = new DrizzleConsultationRepository()
 const treatmentTemplateRepository = new DrizzleTreatmentTemplateRepository()
+const paymentRepository = new DrizzlePaymentRepository()
 const attachmentStorage = new NetlifyBlobsAttachmentStorage()
 const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
 const notificationService = new ResendNotificationService()
@@ -202,6 +208,12 @@ export const serverServiceLocator = {
     createTreatmentTemplateUseCase: new CreateTreatmentTemplateUseCase(treatmentTemplateRepository),
     deleteTreatmentTemplateUseCase: new DeleteTreatmentTemplateUseCase(treatmentTemplateRepository),
     attachmentStorage: consultationAttachmentStorage,
+  },
+  finances: {
+    listPaymentsUseCase: new ListPaymentsUseCase(paymentRepository),
+    createPaymentUseCase: new CreatePaymentUseCase(paymentRepository),
+    updatePaymentUseCase: new UpdatePaymentUseCase(paymentRepository),
+    deletePaymentUseCase: new DeletePaymentUseCase(paymentRepository),
   },
   calendar: {
     getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),
