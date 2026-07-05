@@ -25,6 +25,8 @@ const permissionMatrix: Record<ServerSessionContextDto['role'], ServerAuthorizat
     'calendar:read',
     'consultations:read',
     'consultations:write',
+    'finances:read',
+    'finances:write',
   ],
   assistant: [
     'session:read',

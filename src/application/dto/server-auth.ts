@@ -31,4 +31,6 @@ export type ServerAuthorizationAction =
   | 'calendar:read'
   | 'consultations:read'
   | 'consultations:write'
+  | 'finances:read'
+  | 'finances:write'
 
