@@ -157,14 +157,17 @@ export function createConsultationWizardViewModel(dependencies: ConsultationWiza
     respiratoryRate: toNullableNumber(form.respiratoryRate),
     oxygenSaturation: toNullableNumber(form.oxygenSaturation),
     temperature: toNullableNumber(form.temperature),
-    additionalExams: form.additionalExams,
+    // Excluye filas vacías que el usuario aún no rellenó (el servidor exige min(1)).
+    additionalExams: form.additionalExams.filter(
+      (e) => e.name.trim().length > 0 && e.findings.trim().length > 0,
+    ),
 
-    diagnoses: form.diagnoses,
+    diagnoses: form.diagnoses.filter((d) => d.description.trim().length > 0),
     appreciation: form.appreciation.trim() || null,
 
-    medications: form.medications,
+    medications: form.medications.filter((m) => m.name.trim().length > 0),
     treatmentPlan: form.treatmentPlan.trim() || null,
-    auxiliaryExams: form.auxiliaryExams,
+    auxiliaryExams: form.auxiliaryExams.filter((e) => e.trim().length > 0),
   })
 
   const persist = async (): Promise<boolean> => {

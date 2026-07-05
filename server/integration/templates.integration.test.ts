@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import postgres from 'postgres'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch, setup } from '@nuxt/test-utils/e2e'
 
 const TEST_PORT = 3013
 const TEST_BASE_URL = `http://localhost:${TEST_PORT}`
@@ -71,11 +71,10 @@ describe('treatment templates API (integration, HTTP real)', () => {
   })
 
   it('GET /api/consultations/templates — lista vacía para usuario nuevo', async () => {
-    const result = await $fetch('/api/consultations/templates', {
-      headers: { cookie: sessionCookie },
-    })
+    const res = await fetch('/api/consultations/templates', { headers: { cookie: sessionCookie } })
+    const result = await res.json() as unknown[]
     expect(Array.isArray(result)).toBe(true)
-    expect((result as unknown[]).length).toBe(0)
+    expect(result.length).toBe(0)
   })
 
   it('POST /api/consultations/templates — crea una plantilla', async () => {
@@ -98,11 +97,15 @@ describe('treatment templates API (integration, HTTP real)', () => {
       auxiliaryExams: ['Audiometría tonal'],
     }
 
-    const result = await $fetch('/api/consultations/templates', {
+    // Usamos fetch nativo para POST para evitar la inferencia recursiva de
+    // tipos de Nuxt $fetch (TS2321 "Excessive stack depth") con body complejo.
+    const res = await fetch('/api/consultations/templates', {
       method: 'POST',
-      headers: { cookie: sessionCookie },
-      body,
-    }) as { id: string; name: string; diagnosisCode: string; medications: unknown[] }
+      headers: { 'content-type': 'application/json', cookie: sessionCookie },
+      body: JSON.stringify(body),
+    })
+    expect(res.status).toBe(200)
+    const result = await res.json() as { id: string; name: string; diagnosisCode: string; medications: unknown[] }
 
     expect(result.id).toBeTruthy()
     expect(result.name).toBe('Otitis media estándar')
@@ -113,9 +116,8 @@ describe('treatment templates API (integration, HTTP real)', () => {
   })
 
   it('GET /api/consultations/templates — devuelve la plantilla creada', async () => {
-    const result = await $fetch('/api/consultations/templates', {
-      headers: { cookie: sessionCookie },
-    }) as Array<{ id: string; name: string }>
+    const res = await fetch('/api/consultations/templates', { headers: { cookie: sessionCookie } })
+    const result = await res.json() as Array<{ id: string; name: string }>
 
     expect(result).toHaveLength(1)
     expect(result[0]?.id).toBe(createdTemplateId)
@@ -124,20 +126,21 @@ describe('treatment templates API (integration, HTTP real)', () => {
 
   it('GET /api/consultations/templates?diagnosisCode=AB0Z — filtra por código', async () => {
     // crear una segunda plantilla sin código de diagnóstico
-    await $fetch('/api/consultations/templates', {
+    await fetch('/api/consultations/templates', {
       method: 'POST',
-      headers: { cookie: sessionCookie },
-      body: {
+      headers: { 'content-type': 'application/json', cookie: sessionCookie },
+      body: JSON.stringify({
         name: 'Plantilla genérica',
         treatmentPlan: 'Reposo.',
         medications: [],
         auxiliaryExams: [],
-      },
+      }),
     })
 
-    const result = await $fetch('/api/consultations/templates?diagnosisCode=AB0Z', {
+    const res = await fetch('/api/consultations/templates?diagnosisCode=AB0Z', {
       headers: { cookie: sessionCookie },
-    }) as Array<{ diagnosisCode: string }>
+    })
+    const result = await res.json() as Array<{ diagnosisCode: string }>
 
     expect(result.length).toBeGreaterThanOrEqual(1)
     expect(result.every((t) => t.diagnosisCode === 'AB0Z')).toBe(true)
@@ -169,9 +172,8 @@ describe('treatment templates API (integration, HTTP real)', () => {
     expect(response.status).toBe(200)
 
     // verificar que ya no aparece en la lista
-    const list = await $fetch('/api/consultations/templates', {
-      headers: { cookie: sessionCookie },
-    }) as Array<{ id: string }>
+    const listRes = await fetch('/api/consultations/templates', { headers: { cookie: sessionCookie } })
+    const list = await listRes.json() as Array<{ id: string }>
 
     expect(list.every((t) => t.id !== createdTemplateId)).toBe(true)
   })

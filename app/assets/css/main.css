@@ -22,11 +22,16 @@
   box-sizing: border-box;
 }
 
-html,
+html {
+  height: 100%;
+}
+
 body,
 #__nuxt {
   min-height: 100%;
   max-width: 100%;
+  /* overflow-x solo en body/wrapper, NO en html — ponerlo en <html> causa
+     un bug de iOS Safari donde el body deja de ser el scroll container. */
   overflow-x: hidden;
 }
 
