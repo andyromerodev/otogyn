@@ -53,6 +53,13 @@ import { CreatePaymentUseCase } from '../../src/application/use-cases/finances/c
 import { ListPaymentsUseCase } from '../../src/application/use-cases/finances/list-payments'
 import { UpdatePaymentUseCase } from '../../src/application/use-cases/finances/update-payment'
 import { DeletePaymentUseCase } from '../../src/application/use-cases/finances/delete-payment'
+import { CreateExpenseUseCase } from '../../src/application/use-cases/finances/create-expense'
+import { ListExpensesUseCase } from '../../src/application/use-cases/finances/list-expenses'
+import { UpdateExpenseUseCase } from '../../src/application/use-cases/finances/update-expense'
+import { DeleteExpenseUseCase } from '../../src/application/use-cases/finances/delete-expense'
+import { CreateExpenseCategoryUseCase } from '../../src/application/use-cases/finances/create-expense-category'
+import { ListExpenseCategoriesUseCase } from '../../src/application/use-cases/finances/list-expense-categories'
+import { UpdateExpenseCategoryUseCase } from '../../src/application/use-cases/finances/update-expense-category'
 import { DrizzleTreatmentTemplateRepository } from '../../src/infrastructure/repositories/drizzle-treatment-template-repository'
 import { DrizzleAppointmentRepository } from '../../src/infrastructure/repositories/drizzle-appointment-repository'
 import { DrizzleAssistantRepository } from '../../src/infrastructure/repositories/drizzle-assistant-repository'
@@ -62,6 +69,8 @@ import { DrizzlePreEvaluationFormRepository } from '../../src/infrastructure/rep
 import { DrizzleServiceRepository } from '../../src/infrastructure/repositories/drizzle-service-repository'
 import { DrizzleConsultationRepository } from '../../src/infrastructure/repositories/drizzle-consultation-repository'
 import { DrizzlePaymentRepository } from '../../src/infrastructure/repositories/drizzle-payment-repository'
+import { DrizzleExpenseRepository } from '../../src/infrastructure/repositories/drizzle-expense-repository'
+import { DrizzleExpenseCategoryRepository } from '../../src/infrastructure/repositories/drizzle-expense-category-repository'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
 
@@ -74,6 +83,8 @@ const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
 const consultationRepository = new DrizzleConsultationRepository()
 const treatmentTemplateRepository = new DrizzleTreatmentTemplateRepository()
 const paymentRepository = new DrizzlePaymentRepository()
+const expenseRepository = new DrizzleExpenseRepository()
+const expenseCategoryRepository = new DrizzleExpenseCategoryRepository()
 const attachmentStorage = new NetlifyBlobsAttachmentStorage()
 const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
 const notificationService = new ResendNotificationService()
@@ -214,6 +225,13 @@ export const serverServiceLocator = {
     createPaymentUseCase: new CreatePaymentUseCase(paymentRepository),
     updatePaymentUseCase: new UpdatePaymentUseCase(paymentRepository),
     deletePaymentUseCase: new DeletePaymentUseCase(paymentRepository),
+    listExpensesUseCase: new ListExpensesUseCase(expenseRepository),
+    createExpenseUseCase: new CreateExpenseUseCase(expenseRepository, expenseCategoryRepository),
+    updateExpenseUseCase: new UpdateExpenseUseCase(expenseRepository, expenseCategoryRepository),
+    deleteExpenseUseCase: new DeleteExpenseUseCase(expenseRepository),
+    listExpenseCategoriesUseCase: new ListExpenseCategoriesUseCase(expenseCategoryRepository),
+    createExpenseCategoryUseCase: new CreateExpenseCategoryUseCase(expenseCategoryRepository),
+    updateExpenseCategoryUseCase: new UpdateExpenseCategoryUseCase(expenseCategoryRepository),
   },
   calendar: {
     getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),
