@@ -9,6 +9,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
@@ -427,5 +428,83 @@ export const treatmentTemplates = pgTable(
   },
   (table) => [
     index('treatment_templates_org_diagnosis_idx').on(table.organizationId, table.diagnosisCode),
+  ],
+)
+
+export const paymentMethodEnum = pgEnum('payment_method', [
+  'efectivo',
+  'tarjeta',
+  'transferencia',
+])
+
+export const payments = pgTable(
+  'payments',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    patientId: uuid('patient_id').references(() => patients.id, { onDelete: 'set null' }),
+    appointmentId: uuid('appointment_id').references(() => appointments.id, {
+      onDelete: 'set null',
+    }),
+    consultationId: uuid('consultation_id').references(() => consultations.id, {
+      onDelete: 'set null',
+    }),
+    amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
+    method: paymentMethodEnum('method').notNull(),
+    concept: varchar('concept', { length: 255 }).notNull(),
+    paidAt: timestamp('paid_at', { withTimezone: true }).notNull(),
+    notes: text('notes'),
+    createdBy: uuid('created_by')
+      .references(() => users.id, { onDelete: 'restrict' })
+      .notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index('payments_org_paid_at_idx').on(table.organizationId, table.paidAt),
+    index('payments_patient_idx').on(table.patientId),
+    index('payments_appointment_idx').on(table.appointmentId),
+  ],
+)
+
+export const expenseCategories = pgTable(
+  'expense_categories',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    name: varchar('name', { length: 120 }).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('expense_categories_org_name_idx').on(table.organizationId, table.name),
+  ],
+)
+
+export const expenses = pgTable(
+  'expenses',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    categoryId: uuid('category_id')
+      .references(() => expenseCategories.id, { onDelete: 'restrict' })
+      .notNull(),
+    amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
+    description: varchar('description', { length: 255 }).notNull(),
+    expenseDate: timestamp('expense_date', { withTimezone: true }).notNull(),
+    notes: text('notes'),
+    createdBy: uuid('created_by')
+      .references(() => users.id, { onDelete: 'restrict' })
+      .notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index('expenses_org_date_idx').on(table.organizationId, table.expenseDate),
+    index('expenses_category_idx').on(table.categoryId),
   ],
 )

@@ -64,6 +64,13 @@
       "when": 1783310592004,
       "tag": "0008_broad_terror",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783310592005,
+      "tag": "0009_slim_boom_boom",
+      "breakpoints": true
     }
   ]
 }
