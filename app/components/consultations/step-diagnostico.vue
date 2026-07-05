@@ -35,6 +35,10 @@ const searchResults = ref<IcdResult[]>([])
 const searchLoading = ref(false)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+// Contador de serie: cada fetch nuevo incrementa el valor.
+// Solo se aplican los resultados del fetch más reciente; los anteriores
+// que lleguen tarde se descartan (race condition fix).
+let fetchSerial = 0
 
 function openPicker(index: number) {
   activeIndex.value = index
@@ -47,6 +51,7 @@ watch(searchTerm, (term) => {
   if (debounceTimer) clearTimeout(debounceTimer)
 
   if (term.trim().length < 2) {
+    fetchSerial++ // invalida cualquier request en vuelo
     searchResults.value = []
     searchLoading.value = false
     return
@@ -54,16 +59,23 @@ watch(searchTerm, (term) => {
 
   searchLoading.value = true
   debounceTimer = setTimeout(async () => {
+    const mySerial = ++fetchSerial
     try {
       const results = await $fetch<IcdResult[]>('/api/icd11/search', {
         query: { q: term.trim() },
       })
-      searchResults.value = results
+      if (mySerial === fetchSerial) {
+        searchResults.value = results
+      }
     } catch {
       // Fallo silencioso: el médico puede escribir manualmente.
-      searchResults.value = []
+      if (mySerial === fetchSerial) {
+        searchResults.value = []
+      }
     } finally {
-      searchLoading.value = false
+      if (mySerial === fetchSerial) {
+        searchLoading.value = false
+      }
     }
   }, 300)
 })
