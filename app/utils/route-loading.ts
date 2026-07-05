@@ -7,6 +7,7 @@ export type RouteLoadingVariant =
   | 'services'
   | 'availability'
   | 'settings'
+  | 'finances'
   | 'public-booking'
   | 'auth'
   | 'default'
@@ -38,6 +39,10 @@ export const resolveRouteLoadingVariant = (path: string): RouteLoadingVariant =>
 
   if (path.startsWith('/availability')) {
     return 'availability'
+  }
+
+  if (path.startsWith('/finances')) {
+    return 'finances'
   }
 
   if (path.startsWith('/settings')) {
