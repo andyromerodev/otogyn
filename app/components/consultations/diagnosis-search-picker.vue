@@ -40,7 +40,7 @@ const close = () => emit('update:modelValue', false)
         <input
           type="text"
           :value="searchTerm"
-          placeholder="Ej. otitis, faringitis, vértigo..."
+          placeholder="Ej. otitis media, faringitis, AB0Z…"
           class="picker-search-input"
           autofocus
           @input="emit('update:searchTerm', ($event.target as HTMLInputElement).value)"
@@ -49,11 +49,15 @@ const close = () => emit('update:modelValue', false)
 
       <div class="picker-results">
         <p v-if="loading" class="picker-state">Buscando en CIE-11...</p>
-        <p v-else-if="searchTerm.length > 1 && results.length === 0" class="picker-state">
-          Sin resultados. Puedes escribir el diagnóstico manualmente.
+        <p v-else-if="searchTerm.length > 0 && searchTerm.length < 3" class="picker-state">
+          Sigue escribiendo… (ej: <em>otitis media</em>, <em>faringitis</em>, <em>AB0Z</em>)
         </p>
-        <p v-else-if="searchTerm.length <= 1" class="picker-state">
-          Escribe al menos 2 caracteres para buscar.
+        <p v-else-if="searchTerm.length >= 3 && results.length === 0" class="picker-state">
+          Sin resultados para "<strong>{{ searchTerm }}</strong>". Intenta escribir el nombre
+          diagnóstico completo (ej: <em>otitis media</em>) o un código CIE-11 (ej: <em>AB0Z</em>).
+        </p>
+        <p v-else-if="searchTerm.length === 0" class="picker-state">
+          Escribe el nombre del diagnóstico o un código CIE-11.
         </p>
         <ul v-else class="picker-list">
           <li v-for="result in results" :key="result.code" class="picker-item">

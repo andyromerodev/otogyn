@@ -50,7 +50,7 @@ function openPicker(index: number) {
 watch(searchTerm, (term) => {
   if (debounceTimer) clearTimeout(debounceTimer)
 
-  if (term.trim().length < 2) {
+  if (term.trim().length < 3) {
     fetchSerial++ // invalida cualquier request en vuelo
     searchResults.value = []
     searchLoading.value = false

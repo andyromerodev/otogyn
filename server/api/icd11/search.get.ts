@@ -4,7 +4,7 @@ import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
 
 const querySchema = z.object({
-  q: z.string().trim().min(2).max(100),
+  q: z.string().trim().min(3).max(100),
 })
 
 export default defineEventHandler(async (event) => {
