@@ -5,11 +5,11 @@ import { serverServiceLocator } from '../../../utils/server-service-locator'
 
 const medicationSchema = z.object({
   name: z.string().trim().min(1).max(200),
-  dose: z.string().trim().max(100).nullable().optional(),
-  route: z.string().trim().max(100).nullable().optional(),
-  frequency: z.string().trim().max(100).nullable().optional(),
-  duration: z.string().trim().max(100).nullable().optional(),
-  additionalInfo: z.string().trim().max(500).nullable().optional(),
+  dose: z.string().trim().max(100).nullish().transform(v => v ?? null),
+  route: z.string().trim().max(100).nullish().transform(v => v ?? null),
+  frequency: z.string().trim().max(100).nullish().transform(v => v ?? null),
+  duration: z.string().trim().max(100).nullish().transform(v => v ?? null),
+  additionalInfo: z.string().trim().max(500).nullish().transform(v => v ?? null),
   isUsualMedication: z.boolean().default(false),
 })
 
