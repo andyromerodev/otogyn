@@ -146,6 +146,7 @@ export const serverServiceLocator = {
       appointmentRepository,
       patientRepository,
       serviceRepository,
+      paymentRepository,
     ),
     getTodayAppointmentsUseCase: new GetTodayAppointmentsUseCase(
       appointmentRepository,

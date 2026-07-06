@@ -16,6 +16,7 @@ const getTestDatabaseUrl = () => {
 }
 
 let connection: ReturnType<typeof postgres> | null = null
+let schemaPatched = false
 
 const getTestConnection = () => {
   if (!connection) {
@@ -35,6 +36,11 @@ class RollbackTestTransaction extends Error {}
 export async function withTestTransaction<T>(fn: (db: DrizzleClient) => Promise<T>): Promise<T> {
   const db = drizzle(getTestConnection())
   let result: T | undefined
+
+  if (!schemaPatched) {
+    await getTestConnection()`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS agreed_price numeric(10, 2);`
+    schemaPatched = true
+  }
 
   try {
     await db.transaction(async (tx) => {

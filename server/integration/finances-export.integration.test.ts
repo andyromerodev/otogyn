@@ -65,6 +65,11 @@ describe('finances export API (integration, HTTP real)', () => {
     `
 
     await sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS payments_appointment_unique_idx
+      ON payments (appointment_id);
+    `
+
+    await sql`
       CREATE TABLE IF NOT EXISTS expense_categories (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,

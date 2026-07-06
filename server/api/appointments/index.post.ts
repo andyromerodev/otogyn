@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
       organizationId: session.organizationId,
       patientId: input.patientId,
       serviceId: input.serviceId,
+      agreedPrice: input.agreedPrice ?? service.price ?? null,
       professionalId: input.professionalId ?? null,
       startAt,
       endAt,

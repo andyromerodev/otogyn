@@ -3,6 +3,7 @@ import type { PaymentRepository } from '../../../domain/repositories/payment-rep
 import { ListPaymentsUseCase } from './list-payments'
 
 const makeRepository = () => ({
+  findByAppointmentId: vi.fn(),
   listPage: vi.fn().mockResolvedValue({
     items: [],
     total: 0,
@@ -11,6 +12,7 @@ const makeRepository = () => ({
     totalPages: 1,
   }),
 }) as unknown as PaymentRepository & {
+  findByAppointmentId: ReturnType<typeof vi.fn>
   listPage: ReturnType<typeof vi.fn>
 }
 

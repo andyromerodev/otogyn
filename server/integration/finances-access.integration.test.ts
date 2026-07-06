@@ -33,6 +33,11 @@ const extractSessionCookie = (headers: Headers) => {
 
 const ensureFinanceSchema = async (sql: postgres.Sql) => {
   await sql`
+    ALTER TABLE appointments
+    ADD COLUMN IF NOT EXISTS agreed_price numeric(10, 2);
+  `
+
+  await sql`
     DO $$
     BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_method') THEN
@@ -58,6 +63,11 @@ const ensureFinanceSchema = async (sql: postgres.Sql) => {
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
+  `
+
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS payments_appointment_unique_idx
+    ON payments (appointment_id);
   `
 
   await sql`
@@ -96,6 +106,8 @@ describe('finances access and scoping (integration, HTTP real)', () => {
   let adminCookie: string
   let assistantCookie: string
   let adminCategoryId: string
+  let adminUserId: string
+  let adminOrganizationId: string
 
   beforeAll(async () => {
     const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
@@ -127,9 +139,20 @@ describe('finances access and scoping (integration, HTTP real)', () => {
     const adminUser = await sql<{ id: string }[]>`
       SELECT id FROM users WHERE email = ${ADMIN_EMAIL}
     `
-    const adminUserId = adminUser[0]?.id
+    adminUserId = adminUser[0]?.id ?? ''
     if (!adminUserId) {
       throw new Error('No se encontró el usuario admin principal.')
+    }
+
+    const adminMember = await sql<{ organization_id: string }[]>`
+      SELECT organization_id
+      FROM organization_members
+      WHERE user_id = ${adminUserId}
+      LIMIT 1
+    `
+    adminOrganizationId = adminMember[0]?.organization_id ?? ''
+    if (!adminOrganizationId) {
+      throw new Error('No se encontró la organización principal del admin.')
     }
 
     const createdOrg = await sql<{ id: string }[]>`
@@ -360,5 +383,178 @@ describe('finances access and scoping (integration, HTTP real)', () => {
     expect(exportResponse.status).toBe(200)
     expect(csv).toContain('Ingreso org principal')
     expect(csv).not.toContain('Ingreso org secundaria')
+  })
+
+  it('enriquece el detalle de cita con el pago ligado y bloquea duplicados por appointment_id', async () => {
+    const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
+    const suffix = crypto.randomUUID().slice(0, 8)
+
+    const serviceRows = await sql<{ id: string }[]>`
+      INSERT INTO services (
+        organization_id,
+        name,
+        description,
+        default_duration_minutes,
+        price,
+        is_active
+      )
+      VALUES (
+        ${adminOrganizationId},
+        ${`Consulta pago ${suffix}`},
+        null,
+        30,
+        650,
+        true
+      )
+      RETURNING id
+    `
+    const serviceId = serviceRows[0]?.id ?? null
+
+    const patientRows = await sql<{ id: string }[]>`
+      INSERT INTO patients (
+        organization_id,
+        full_name,
+        phone,
+        email,
+        is_urgent
+      )
+      VALUES (
+        ${adminOrganizationId},
+        ${`Paciente pago ${suffix}`},
+        ${`555-${suffix}`},
+        ${`paciente-pago-${suffix}@otogyn.test`},
+        false
+      )
+      RETURNING id
+    `
+    const patientId = patientRows[0]?.id ?? null
+
+    if (!serviceId || !patientId) {
+      await sql.end()
+      throw new Error('No se pudieron crear el servicio o el paciente para la prueba de pago por cita.')
+    }
+
+    const appointmentRows = await sql<{ id: string }[]>`
+      INSERT INTO appointments (
+        organization_id,
+        patient_id,
+        service_id,
+        professional_id,
+        start_at,
+        end_at,
+        status,
+        is_urgent,
+        reason,
+        notes,
+        created_by,
+        updated_by
+      )
+      VALUES (
+        ${adminOrganizationId},
+        ${patientId},
+        ${serviceId},
+        null,
+        ${new Date('2026-07-07T15:00:00.000Z')},
+        ${new Date('2026-07-07T15:30:00.000Z')},
+        'scheduled',
+        false,
+        'Consulta con pago',
+        null,
+        ${adminUserId},
+        null
+      )
+      RETURNING id
+    `
+    const appointmentId = appointmentRows[0]?.id ?? null
+
+    if (!serviceId || !patientId || !appointmentId) {
+      await sql.end()
+      throw new Error('No se pudieron crear los datos base para la prueba de pago por cita.')
+    }
+
+    try {
+      const detailBeforeResponse = await fetch(`/api/appointments/${appointmentId}`, {
+        headers: { cookie: adminCookie },
+      })
+      expect(detailBeforeResponse.status).toBe(200)
+
+      const detailBeforeBody = await detailBeforeResponse.json() as {
+        agreedPrice: number | null
+        linkedPayment: null | { id: string }
+      }
+      expect(detailBeforeBody.agreedPrice).toBe(650)
+      expect(detailBeforeBody.linkedPayment).toBeNull()
+
+      const paymentPayload = {
+        patientId,
+        appointmentId,
+        amount: 650,
+        method: 'tarjeta',
+        concept: `Consulta pago ${suffix}`,
+        paidAt: '2026-07-06T18:00:00.000Z',
+        notes: 'Pago desde cita',
+      }
+
+      const paymentResponse = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify(paymentPayload),
+      })
+      expect(paymentResponse.status).toBe(200)
+      const paymentBody = await paymentResponse.json() as { id: string }
+
+      const detailAfterResponse = await fetch(`/api/appointments/${appointmentId}`, {
+        headers: { cookie: adminCookie },
+      })
+      expect(detailAfterResponse.status).toBe(200)
+
+      const detailAfterBody = await detailAfterResponse.json() as {
+        linkedPayment: null | { id: string; amount: number; method: string; paidAt: string }
+      }
+      expect(detailAfterBody.linkedPayment).toMatchObject({
+        id: paymentBody.id,
+        amount: 650,
+        method: 'tarjeta',
+      })
+
+      const duplicateResponse = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify(paymentPayload),
+      })
+      expect(duplicateResponse.status).toBe(400)
+      expect(await duplicateResponse.text()).toContain('Esta cita ya tiene un pago registrado.')
+
+      await expect(sql`
+        INSERT INTO payments (
+          organization_id,
+          patient_id,
+          appointment_id,
+          amount,
+          method,
+          concept,
+          paid_at,
+          notes,
+          created_by
+        )
+        VALUES (
+          ${adminOrganizationId},
+          ${patientId},
+          ${appointmentId},
+          650,
+          'efectivo',
+          'Pago duplicado directo SQL',
+          ${new Date('2026-07-06T19:00:00.000Z')},
+          null,
+          ${adminUserId}
+        )
+      `).rejects.toThrow()
+    } finally {
+      await sql`DELETE FROM payments WHERE appointment_id = ${appointmentId}`
+      await sql`DELETE FROM appointments WHERE id = ${appointmentId}`
+      await sql`DELETE FROM patients WHERE id = ${patientId}`
+      await sql`DELETE FROM services WHERE id = ${serviceId}`
+      await sql.end()
+    }
   })
 })

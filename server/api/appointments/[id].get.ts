@@ -1,10 +1,10 @@
 import { toAppTimeLabel } from '../../../src/application/utils/date/local-date'
-import type { TodayAppointmentViewModel } from '../../../src/presentation/view-models/dashboard'
+import type { AppointmentDetailViewModel } from '../../../src/presentation/view-models/appointments/appointment-detail'
 import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
 import { serverServiceLocator } from '../../utils/server-service-locator'
 
-const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
+const statusLabels: Record<AppointmentDetailViewModel['status'], string> = {
   scheduled: 'Programada',
   confirmed: 'Confirmada',
   checked_in: 'En sala',
@@ -35,9 +35,15 @@ export default defineEventHandler(async (event) => {
       ...item,
       startAt: item.startAt.toISOString(),
       endAt: item.endAt.toISOString(),
+      linkedPayment: item.linkedPayment
+        ? {
+            ...item.linkedPayment,
+            paidAt: item.linkedPayment.paidAt.toISOString(),
+          }
+        : null,
       timeLabel: `${toAppTimeLabel(item.startAt)} - ${toAppTimeLabel(item.endAt)}`,
       statusLabel: statusLabels[item.status],
-    } satisfies TodayAppointmentViewModel
+    } satisfies AppointmentDetailViewModel
   } catch (error) {
     handleApiError(error)
   }

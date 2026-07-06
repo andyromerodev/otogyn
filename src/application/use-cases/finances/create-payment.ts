@@ -22,6 +22,17 @@ export class CreatePaymentUseCase {
       throw new BusinessRuleError('El concepto del pago es obligatorio.')
     }
 
+    if (input.appointmentId) {
+      const existingPayment = await this.paymentRepository.findByAppointmentId({
+        organizationId: input.organizationId,
+        appointmentId: input.appointmentId,
+      })
+
+      if (existingPayment) {
+        throw new BusinessRuleError('Esta cita ya tiene un pago registrado.')
+      }
+    }
+
     const now = new Date()
 
     return this.paymentRepository.create({

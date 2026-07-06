@@ -1,3 +1,4 @@
+import type { PaymentMethod } from '../../domain/entities/payment'
 import type { AppointmentStatus } from '../../domain/value-objects/appointment-status'
 
 export interface DashboardSummaryDto {
@@ -21,4 +22,16 @@ export interface TodayAppointmentDto {
   isUrgent: boolean
   reason: string | null
   notes: string | null
+}
+
+export interface AppointmentLinkedPaymentDto {
+  id: string
+  amount: number
+  method: PaymentMethod
+  paidAt: Date
+}
+
+export interface AppointmentDetailDto extends TodayAppointmentDto {
+  agreedPrice: number | null
+  linkedPayment: AppointmentLinkedPaymentDto | null
 }

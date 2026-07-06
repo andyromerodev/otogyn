@@ -9,6 +9,7 @@ export interface UpdateAppointmentInput {
   appointmentId: string
   patientId: string
   serviceId: string
+  agreedPrice?: number | null
   professionalId: string | null
   startAt: Date
   isUrgent: boolean
@@ -49,6 +50,7 @@ export class UpdateAppointmentUseCase {
       ...existingAppointment,
       patientId: input.patientId,
       serviceId: input.serviceId,
+      agreedPrice: input.agreedPrice === undefined ? existingAppointment.agreedPrice : input.agreedPrice,
       professionalId: input.professionalId,
       startAt: input.startAt,
       endAt,

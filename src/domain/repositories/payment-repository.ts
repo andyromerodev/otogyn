@@ -22,6 +22,11 @@ export interface PaymentListPageResult {
   totalPages: number
 }
 
+export interface PaymentByAppointmentQuery {
+  organizationId: string
+  appointmentId: string
+}
+
 export interface UpdatePaymentInput {
   id: string
   patientId?: string | null
@@ -36,6 +41,7 @@ export interface UpdatePaymentInput {
 
 export interface PaymentRepository {
   findById(paymentId: string): Promise<Payment | null>
+  findByAppointmentId(query: PaymentByAppointmentQuery): Promise<Payment | null>
   listPage(query: PaymentListPageQuery): Promise<PaymentListPageResult>
   create(payment: Payment): Promise<Payment>
   update(input: UpdatePaymentInput): Promise<Payment>

@@ -31,6 +31,7 @@ export default defineEventHandler(async (event) => {
       appointmentId,
       patientId: input.patientId,
       serviceId: input.serviceId,
+      agreedPrice: input.agreedPrice,
       professionalId: input.professionalId ?? null,
       startAt,
       isUrgent: input.isUrgent ?? false,

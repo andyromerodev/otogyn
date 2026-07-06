@@ -1,6 +1,7 @@
 import type { MedicalService } from '../../domain/entities/medical-service'
 import type { Patient } from '../../domain/entities/patient'
 import type { AppointmentStatus } from '../../domain/value-objects/appointment-status'
+import type { AppointmentDetailViewModel } from '../../presentation/view-models/appointments/appointment-detail'
 import type { TodayAppointmentViewModel } from '../../presentation/view-models/dashboard'
 
 export type AppointmentListFilter =
@@ -30,6 +31,7 @@ export interface AppointmentListResult {
 export interface AppointmentMutationInput {
   patientId: string
   serviceId: string
+  agreedPrice?: number | null
   professionalId?: string | null
   startAt: string
   isUrgent?: boolean
@@ -65,4 +67,4 @@ export interface AppointmentSlotDto {
 export type AppointmentPatientListResult = Patient[]
 export type AppointmentServiceListResult = MedicalService[]
 export type TodayAppointmentListResult = TodayAppointmentViewModel[]
-export type AppointmentDetailResult = TodayAppointmentViewModel
+export type AppointmentDetailResult = AppointmentDetailViewModel

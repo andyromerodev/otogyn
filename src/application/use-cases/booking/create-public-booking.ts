@@ -49,6 +49,7 @@ export class CreatePublicBookingUseCase {
       organizationId: input.organizationId,
       patientId: patient.id,
       serviceId: service.id,
+      agreedPrice: service.price ?? null,
       professionalId: null,
       startAt,
       endAt,

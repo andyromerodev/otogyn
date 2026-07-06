@@ -22,9 +22,11 @@ const existingPayment: Payment = {
 
 const makeRepository = (payment: Payment | null = existingPayment) => ({
   findById: vi.fn().mockResolvedValue(payment),
+  findByAppointmentId: vi.fn(),
   update: vi.fn().mockImplementation(async (input) => ({ ...existingPayment, ...input })),
 }) as unknown as PaymentRepository & {
   findById: ReturnType<typeof vi.fn>
+  findByAppointmentId: ReturnType<typeof vi.fn>
   update: ReturnType<typeof vi.fn>
 }
 

@@ -4,6 +4,15 @@ import { appointmentStatuses } from '../../domain/value-objects/appointment-stat
 export const appointmentSchema = z.object({
   patientId: z.string().min(1),
   serviceId: z.string().min(1),
+  agreedPrice: z.preprocess(
+    (value) => {
+      if (value === '' || value === null || value === undefined) return null
+      if (typeof value === 'number') return value
+      if (typeof value === 'string') return Number(value)
+      return value
+    },
+    z.number().positive('El precio debe ser mayor a cero.').max(99999999.99).nullable().optional(),
+  ),
   professionalId: z.string().min(1).nullable().optional(),
   startAt: z.string().min(16),
   isUrgent: z.boolean().optional(),

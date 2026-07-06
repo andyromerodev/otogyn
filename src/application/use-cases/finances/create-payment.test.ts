@@ -4,8 +4,10 @@ import type { PaymentRepository } from '../../../domain/repositories/payment-rep
 import { CreatePaymentUseCase } from './create-payment'
 
 const makeRepository = () => ({
+  findByAppointmentId: vi.fn().mockResolvedValue(null),
   create: vi.fn().mockImplementation(async (payment) => payment),
 }) as unknown as PaymentRepository & {
+  findByAppointmentId: ReturnType<typeof vi.fn>
   create: ReturnType<typeof vi.fn>
 }
 
@@ -60,6 +62,36 @@ describe('CreatePaymentUseCase', () => {
     await expect(useCase.execute({ ...baseInput, concept: '   ' })).rejects.toThrow(
       BusinessRuleError,
     )
+    expect(repository.create).not.toHaveBeenCalled()
+  })
+
+  it('rejects a second payment for the same appointment', async () => {
+    const repository = makeRepository()
+    repository.findByAppointmentId.mockResolvedValueOnce({
+      id: 'payment_existing',
+      organizationId: 'org_1',
+      patientId: 'patient_1',
+      appointmentId: 'appointment_1',
+      consultationId: null,
+      amount: 350,
+      method: 'efectivo',
+      concept: 'Consulta general',
+      paidAt: new Date('2026-07-05T15:00:00.000Z'),
+      notes: null,
+      createdBy: 'user_1',
+      createdAt: new Date('2026-07-05T15:00:00.000Z'),
+      updatedAt: new Date('2026-07-05T15:00:00.000Z'),
+    })
+    const useCase = new CreatePaymentUseCase(repository)
+
+    await expect(
+      useCase.execute({
+        ...baseInput,
+        patientId: 'patient_1',
+        appointmentId: 'appointment_1',
+      }),
+    ).rejects.toThrow(BusinessRuleError)
+
     expect(repository.create).not.toHaveBeenCalled()
   })
 })

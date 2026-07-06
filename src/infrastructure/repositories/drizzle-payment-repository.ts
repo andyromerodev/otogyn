@@ -1,6 +1,7 @@
 import { and, count, desc, eq, gte, lte } from 'drizzle-orm'
 import type { Payment } from '../../domain/entities/payment'
 import type {
+  PaymentByAppointmentQuery,
   PaymentListItem,
   PaymentListPageQuery,
   PaymentListPageResult,
@@ -43,6 +44,21 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       .select()
       .from(payments)
       .where(eq(payments.id, paymentId))
+      .limit(1)
+
+    return rows[0] ? mapPayment(rows[0]) : null
+  }
+
+  async findByAppointmentId(query: PaymentByAppointmentQuery): Promise<Payment | null> {
+    const rows = await this.db
+      .select()
+      .from(payments)
+      .where(
+        and(
+          eq(payments.organizationId, query.organizationId),
+          eq(payments.appointmentId, query.appointmentId),
+        ),
+      )
       .limit(1)
 
     return rows[0] ? mapPayment(rows[0]) : null

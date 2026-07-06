@@ -9,6 +9,7 @@ export class CreateAppointmentUseCase {
     return this.appointmentRepository.createAppointment({
       patientId: input.patientId,
       serviceId: input.serviceId,
+      agreedPrice: input.agreedPrice ?? null,
       professionalId: input.professionalId ?? null,
       startAt: input.startAt,
       isUrgent: input.isUrgent ?? false,
