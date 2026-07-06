@@ -175,6 +175,7 @@ export const appointments = pgTable(
     serviceId: uuid('service_id')
       .references(() => services.id, { onDelete: 'restrict' })
       .notNull(),
+    agreedPrice: numeric('agreed_price', { precision: 10, scale: 2 }),
     professionalId: uuid('professional_id').references(() => users.id, { onDelete: 'set null' }),
     startAt: timestamp('start_at', { withTimezone: true }).notNull(),
     endAt: timestamp('end_at', { withTimezone: true }).notNull(),
@@ -465,6 +466,7 @@ export const payments = pgTable(
     index('payments_org_paid_at_idx').on(table.organizationId, table.paidAt),
     index('payments_patient_idx').on(table.patientId),
     index('payments_appointment_idx').on(table.appointmentId),
+    uniqueIndex('payments_appointment_unique_idx').on(table.appointmentId),
   ],
 )
 

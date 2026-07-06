@@ -5,6 +5,7 @@ export interface Appointment {
   organizationId: string
   patientId: string
   serviceId: string
+  agreedPrice: number | null
   professionalId: string | null
   startAt: Date
   endAt: Date

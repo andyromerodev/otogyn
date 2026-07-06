@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "payments_appointment_unique_idx" ON "payments" USING btree ("appointment_id");

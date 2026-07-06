@@ -71,6 +71,20 @@
       "when": 1783310592005,
       "tag": "0009_slim_boom_boom",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783370303184,
+      "tag": "0010_payments_appointment_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783371151498,
+      "tag": "0011_appointments_agreed_price",
+      "breakpoints": true
     }
   ]
 }
