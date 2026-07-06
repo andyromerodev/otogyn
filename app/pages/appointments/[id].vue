@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { parseAppDateTime, toAppTimeLabel } from '~~/src/application/utils/date/local-date'
+import {
+  formatCurrency,
+  formatDate,
+  methodLabels,
+} from '~~/src/presentation/view-models/finances/payments-list-view-model'
 import { useAppointmentDetailViewModel } from '../../composables/appointments/use-appointment-detail-view-model'
 
 definePageMeta({
@@ -73,6 +78,18 @@ const consultationAction = computed(() => {
         </label>
 
         <label class="field">
+          <span>Precio acordado (MXN)</span>
+          <input
+            v-model.number="viewModel.form.agreedPrice"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="0.00"
+            :disabled="!viewModel.isEditing.value"
+          >
+        </label>
+
+        <label class="field">
           <span>Inicio</span>
           <input v-model="viewModel.form.startAt" type="datetime-local" required :disabled="!viewModel.isEditing.value">
         </label>
@@ -136,6 +153,62 @@ const consultationAction = computed(() => {
           </select>
           <span v-if="viewModel.changingStatusPending.value" class="field-inline-hint">Actualizando estado...</span>
         </label>
+
+        <section class="field field-wide payment-field">
+          <div class="payment-field-header">
+            <span>Pago</span>
+            <span
+              class="payment-pill"
+              :class="viewModel.appointment.value.linkedPayment ? 'payment-pill-paid' : 'payment-pill-pending'"
+            >
+              {{ viewModel.appointment.value.linkedPayment ? 'Pagada' : 'Pendiente' }}
+            </span>
+          </div>
+
+          <div class="payment-card">
+            <template v-if="viewModel.appointment.value.linkedPayment">
+              <p class="payment-card-title">Pago registrado</p>
+              <p class="payment-card-copy">
+                {{ formatCurrency(viewModel.appointment.value.linkedPayment.amount) }} ·
+                {{ methodLabels[viewModel.appointment.value.linkedPayment.method] }} ·
+                {{ formatDate(viewModel.appointment.value.linkedPayment.paidAt) }}
+              </p>
+            </template>
+
+            <template v-else-if="viewModel.canRegisterPayment.value && viewModel.registerPaymentHref.value">
+              <div class="payment-card-copy-block">
+                <p class="payment-card-title">Registrar pago de la cita</p>
+                <p v-if="viewModel.appointment.value.agreedPrice !== null" class="payment-card-copy">
+                  Se precargará el pago con
+                  {{ formatCurrency(viewModel.appointment.value.agreedPrice) }}
+                  para {{ viewModel.appointment.value.serviceName }}.
+                </p>
+                <p v-else class="payment-card-copy">
+                  Esta cita no tiene precio configurado. Podrás capturar el monto manualmente en el formulario.
+                </p>
+              </div>
+
+              <NuxtLink :to="viewModel.registerPaymentHref.value" class="payment-register-button">
+                Registrar pago
+              </NuxtLink>
+            </template>
+
+            <template v-else>
+              <p class="payment-card-title">Sin pago registrado</p>
+              <p class="payment-card-copy">
+                <span v-if="viewModel.appointment.value.status === 'cancelled'">
+                  La cita está cancelada y no admite registro de pago.
+                </span>
+                <span v-else-if="viewModel.sessionContext.value?.role !== 'admin_doctor'">
+                  Solo la doctora administradora puede registrar pagos desde una cita.
+                </span>
+                <span v-else>
+                  Esta cita todavía no tiene un pago asociado.
+                </span>
+              </p>
+            </template>
+          </div>
+        </section>
 
         <div class="detail-actions">
           <span class="pill">Cita real en PostgreSQL</span>
@@ -413,6 +486,78 @@ const consultationAction = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.payment-field {
+  gap: 0.6rem;
+}
+
+.payment-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.payment-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.payment-pill-paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.payment-pill-pending {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.payment-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.payment-card-copy-block {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.payment-card-title {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.payment-card-copy {
+  margin: 0;
+  color: #5f7c80;
+  font-size: 0.92rem;
+}
+
+.payment-register-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  background: #0f766e;
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .slot-button {

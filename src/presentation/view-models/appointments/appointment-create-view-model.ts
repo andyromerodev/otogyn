@@ -1,4 +1,4 @@
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import type { Appointment } from '../../../domain/entities/appointment'
 import type { MedicalService } from '../../../domain/entities/medical-service'
 import type { Patient } from '../../../domain/entities/patient'
@@ -43,6 +43,11 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
     if (!form.serviceId && services.value[0]?.id) form.serviceId = services.value[0].id
   }
 
+  const resolveServicePrice = (serviceId: string) => {
+    const price = services.value.find((service) => service.id === serviceId)?.price
+    return price ?? ''
+  }
+
   // Equivale a fun loadFormOptions() — carga paralela de pacientes y servicios disponibles
   const loadFormOptions = async () => {
     loading.value = true
@@ -58,6 +63,9 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
       patients.value = loadedPatients
       services.value = loadedServices
       syncDefaultSelections()
+      if (form.serviceId) {
+        form.agreedPrice = resolveServicePrice(form.serviceId)
+      }
     } catch (error) {
       const normalized = normalizeApiError(error, 'No se pudieron cargar los datos para registrar la cita.')
       errorMessage.value = normalized.message
@@ -78,6 +86,7 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
       createdAppointment.value = await dependencies.createAppointmentUseCase.execute({
         patientId: form.patientId,
         serviceId: form.serviceId,
+        agreedPrice: form.agreedPrice === '' ? null : Number(form.agreedPrice),
         startAt: form.startAt,
         isUrgent: form.isUrgent,
         reason: form.reason.trim() || null,
@@ -93,6 +102,15 @@ export const createAppointmentCreateViewModel = (dependencies: AppointmentCreate
       pending.value = false
     }
   }
+
+  watch(() => form.serviceId, (nextServiceId, previousServiceId) => {
+    if (!nextServiceId) return
+
+    const previousPrice = previousServiceId ? resolveServicePrice(previousServiceId) : ''
+    if (form.agreedPrice === '' || form.agreedPrice === previousPrice) {
+      form.agreedPrice = resolveServicePrice(nextServiceId)
+    }
+  })
 
   return {
     patients,

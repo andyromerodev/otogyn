@@ -3,13 +3,13 @@ import type { MedicalService } from '../../../domain/entities/medical-service'
 import type { Patient } from '../../../domain/entities/patient'
 import type { AppointmentStatus } from '../../../domain/value-objects/appointment-status'
 import type { AppointmentSessionContextDto, AppointmentSlotDto } from '../../../application/dto/appointment-management'
-import type { TodayAppointmentViewModel } from '../dashboard'
 import {
   appointmentStatusesForUi,
   createInitialAppointmentForm,
   fromIsoToDatetimeLocalValue,
   normalizeApiError,
 } from './appointment-view-model.types'
+import type { AppointmentDetailViewModel } from './appointment-detail'
 import type { AppointmentDetailViewModelDependencies } from './appointment-detail-view-model.module'
 
 export type { AppointmentDetailViewModelDependencies } from './appointment-detail-view-model.module'
@@ -17,7 +17,7 @@ export type { AppointmentDetailViewModelDependencies } from './appointment-detai
 // Factory del ViewModel — equivale al constructor de AppointmentDetailViewModel : ViewModel()
 export const createAppointmentDetailViewModel = (dependencies: AppointmentDetailViewModelDependencies) => {
   // Como StateFlow<TodayAppointmentViewModel?> — null hasta que loadAppointment() resuelve
-  const appointment = ref<TodayAppointmentViewModel | null>(null)
+  const appointment = ref<AppointmentDetailViewModel | null>(null)
 
   // Como StateFlow<List<Patient>> — opciones del select de pacientes para el formulario de edición
   const patients = ref<Patient[]>([])
@@ -69,9 +69,10 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   // en el buscador de horarios; se sincroniza con el inicio de la cita al editar
   const slotsDate = ref('')
 
-  const syncForm = (source: TodayAppointmentViewModel) => {
+  const syncForm = (source: AppointmentDetailViewModel) => {
     form.patientId = source.patientId
     form.serviceId = source.serviceId
+    form.agreedPrice = source.agreedPrice ?? ''
     form.startAt = fromIsoToDatetimeLocalValue(source.startAt)
     form.isUrgent = source.isUrgent
     form.reason = source.reason ?? ''
@@ -179,6 +180,21 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     )
   })
 
+  const canRegisterPayment = computed(() => {
+    if (!appointment.value) return false
+
+    return (
+      sessionContext.value?.role === 'admin_doctor' &&
+      appointment.value.status !== 'cancelled' &&
+      !appointment.value.linkedPayment
+    )
+  })
+
+  const registerPaymentHref = computed(() => {
+    if (!appointment.value) return null
+    return `/finances/payments/new?appointmentId=${appointment.value.id}`
+  })
+
   const startEditing = () => {
     if (!appointment.value) return
     syncForm(appointment.value)
@@ -207,6 +223,7 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       await dependencies.updateAppointmentUseCase.execute(appointment.value.id, {
         patientId: form.patientId,
         serviceId: form.serviceId,
+        agreedPrice: form.agreedPrice === '' ? null : Number(form.agreedPrice),
         startAt: form.startAt,
         isUrgent: form.isUrgent,
         reason: form.reason.trim() || null,
@@ -297,6 +314,8 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     canEditAppointment,
     canCancelAppointment,
     canChangeAppointmentStatus,
+    canRegisterPayment,
+    registerPaymentHref,
     loadAppointment,
     loadFormOptions,
     loadSessionContext,

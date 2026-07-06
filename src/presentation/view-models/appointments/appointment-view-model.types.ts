@@ -9,6 +9,7 @@ export interface AppointmentViewModelPort<TInput, TResult> {
 export interface AppointmentFormState {
   patientId: string
   serviceId: string
+  agreedPrice: string | number
   startAt: string
   isUrgent: boolean
   reason: string
@@ -31,6 +32,7 @@ export const fromIsoToDatetimeLocalValue = (value: string) => {
 export const createInitialAppointmentForm = (): AppointmentFormState => ({
   patientId: '',
   serviceId: '',
+  agreedPrice: '',
   startAt: defaultStartAt(),
   isUrgent: false,
   reason: '',

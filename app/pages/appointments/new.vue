@@ -61,6 +61,17 @@ const handleSubmit = async () => {
         </label>
 
         <label class="appointment-field">
+          <span>Precio acordado (MXN)</span>
+          <input
+            v-model.number="viewModel.form.agreedPrice"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="0.00"
+          >
+        </label>
+
+        <label class="appointment-field">
           <span>Inicio</span>
           <input v-model="viewModel.form.startAt" type="datetime-local" required>
         </label>
