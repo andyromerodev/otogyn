@@ -52,7 +52,13 @@ const lineData = computed(() => ({
       borderColor: '#0f766e',
       backgroundColor: 'rgba(15, 118, 110, 0.16)',
       fill: true,
+      borderWidth: 3,
       tension: 0.3,
+      pointRadius: 4,
+      pointHoverRadius: 5,
+      pointBorderWidth: 2,
+      pointBackgroundColor: '#ffffff',
+      pointBorderColor: '#0f766e',
     },
     {
       label: 'Gastos',
@@ -60,7 +66,13 @@ const lineData = computed(() => ({
       borderColor: '#be123c',
       backgroundColor: 'rgba(190, 18, 60, 0.12)',
       fill: true,
+      borderWidth: 2,
       tension: 0.3,
+      pointRadius: 3,
+      pointHoverRadius: 4,
+      pointBorderWidth: 2,
+      pointBackgroundColor: '#ffffff',
+      pointBorderColor: '#be123c',
     },
   ],
 }))
@@ -75,7 +87,9 @@ const balanceData = computed(() => ({
         item.balance >= 0 ? 'rgba(22, 163, 74, 0.72)' : 'rgba(225, 29, 72, 0.72)',
       ),
       borderRadius: 10,
-      maxBarThickness: 32,
+      maxBarThickness: 28,
+      categoryPercentage: 0.72,
+      barPercentage: 0.82,
     },
   ],
 }))
@@ -92,6 +106,11 @@ const lineOptions: ChartOptions<'line'> = {
       position: 'top' as const,
       labels: {
         usePointStyle: true,
+        boxWidth: 10,
+        padding: 18,
+        font: {
+          size: 13,
+        },
       },
     },
     tooltip: {
@@ -102,9 +121,40 @@ const lineOptions: ChartOptions<'line'> = {
     },
   },
   scales: {
+    x: {
+      ticks: {
+        maxRotation: 45,
+        minRotation: 45,
+        autoSkip: true,
+        maxTicksLimit: 12,
+        padding: 6,
+        font: {
+          size: 12,
+        },
+      },
+      grid: {
+        display: false,
+      },
+      border: {
+        display: false,
+      },
+    },
     y: {
+      grace: '8%',
+      beginAtZero: true,
       ticks: {
         callback: (value: string | number) => currencyFormatter.format(Number(value)),
+        maxTicksLimit: 6,
+        padding: 8,
+        font: {
+          size: 12,
+        },
+      },
+      grid: {
+        drawTicks: false,
+      },
+      border: {
+        display: false,
       },
     },
   },
@@ -125,9 +175,40 @@ const balanceOptions: ChartOptions<'bar'> = {
     },
   },
   scales: {
+    x: {
+      ticks: {
+        maxRotation: 45,
+        minRotation: 45,
+        autoSkip: true,
+        maxTicksLimit: 12,
+        padding: 6,
+        font: {
+          size: 12,
+        },
+      },
+      grid: {
+        display: false,
+      },
+      border: {
+        display: false,
+      },
+    },
     y: {
+      grace: '8%',
+      beginAtZero: true,
       ticks: {
         callback: (value: string | number) => currencyFormatter.format(Number(value)),
+        maxTicksLimit: 6,
+        padding: 8,
+        font: {
+          size: 12,
+        },
+      },
+      grid: {
+        drawTicks: false,
+      },
+      border: {
+        display: false,
       },
     },
   },
@@ -172,11 +253,14 @@ const balanceOptions: ChartOptions<'bar'> = {
   display: grid;
   gap: 1rem;
   padding: 1.25rem;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .finance-chart-copy {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .finance-chart-eyebrow {
@@ -202,12 +286,24 @@ const balanceOptions: ChartOptions<'bar'> = {
 }
 
 .finance-chart-canvas {
-  min-height: 280px;
+  min-width: 0;
+  height: 360px;
+  overflow: hidden;
 }
 
-@media (min-width: 1120px) {
-  .finance-charts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 960px) {
+  .finance-chart-canvas {
+    height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .finance-chart-card {
+    padding: 1rem;
+  }
+
+  .finance-chart-canvas {
+    height: 280px;
   }
 }
 </style>

@@ -61,30 +61,6 @@ const viewModel = useFinanceSummaryViewModel()
       </section>
 
       <div class="finances-content">
-        <section class="finances-links">
-          <NuxtLink to="/finances/payments" class="finances-link-card">
-            <div class="finances-link-icon finances-link-icon-green">
-              <UIcon name="i-heroicons-banknotes-20-solid" />
-            </div>
-            <div>
-              <p class="finances-link-title">Pagos registrados</p>
-              <p class="finances-link-text">Consulta ingresos, filtra por método y sigue el detalle por paciente.</p>
-            </div>
-            <UIcon name="i-heroicons-chevron-right-20-solid" class="finances-link-chevron" />
-          </NuxtLink>
-
-          <NuxtLink to="/finances/expenses" class="finances-link-card">
-            <div class="finances-link-icon finances-link-icon-rose">
-              <UIcon name="i-heroicons-receipt-percent-20-solid" />
-            </div>
-            <div>
-              <p class="finances-link-title">Gastos operativos</p>
-              <p class="finances-link-text">Revisa egresos por categoría y mantiene el gasto de la clínica bajo control.</p>
-            </div>
-            <UIcon name="i-heroicons-chevron-right-20-solid" class="finances-link-chevron" />
-          </NuxtLink>
-        </section>
-
         <FinanceMonthlyCharts
           v-if="viewModel.hasChartData.value"
           :series="viewModel.summary.value.series"
@@ -228,63 +204,6 @@ const viewModel = useFinanceSummaryViewModel()
   gap: 1rem;
 }
 
-.finances-links {
-  display: grid;
-  gap: 1rem;
-}
-
-.finances-link-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.15rem 1.2rem;
-  border-radius: 1.5rem;
-  border: 1px solid #bfdedd;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 10px 28px rgba(20, 82, 76, 0.06);
-  color: inherit;
-}
-
-.finances-link-icon {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 3.1rem;
-  height: 3.1rem;
-  border-radius: 1rem;
-  font-size: 1.35rem;
-}
-
-.finances-link-icon-green {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.finances-link-icon-rose {
-  background: #ffe4e6;
-  color: #9f1239;
-}
-
-.finances-link-title {
-  margin: 0;
-  color: #132b2d;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.finances-link-text {
-  margin: 0.2rem 0 0;
-  color: #6f9a9d;
-  font-size: 0.92rem;
-}
-
-.finances-link-chevron {
-  margin-left: auto;
-  color: #7ca0a2;
-  font-size: 1.35rem;
-}
-
 .finances-empty-state {
   display: grid;
   gap: 0.45rem;
@@ -306,11 +225,6 @@ const viewModel = useFinanceSummaryViewModel()
 @media (min-width: 1024px) {
   .finances-metrics {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .finances-content {
-    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.65fr);
-    align-items: start;
   }
 }
 
