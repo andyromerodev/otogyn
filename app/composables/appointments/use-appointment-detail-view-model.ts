@@ -1,4 +1,5 @@
 import { appointmentServiceLocator } from '~~/src/infrastructure/appointments/service-locator'
+import { calendarServiceLocator } from '~~/src/infrastructure/calendar/service-locator'
 import { createAppointmentDetailViewModel } from '~~/src/presentation/view-models/appointments/appointment-detail-view-model'
 
 export const useAppointmentDetailViewModel = async (appointmentId: string) => {
@@ -8,6 +9,7 @@ export const useAppointmentDetailViewModel = async (appointmentId: string) => {
     listAppointmentPatientsUseCase: appointmentServiceLocator.listAppointmentPatientsUseCase,
     listAppointmentServicesUseCase: appointmentServiceLocator.listAppointmentServicesUseCase,
     getAppointmentSessionContextUseCase: appointmentServiceLocator.getAppointmentSessionContextUseCase,
+    getCalendarMonthUseCase: calendarServiceLocator.getCalendarMonthUseCase,
     getAppointmentAvailableSlotsUseCase: appointmentServiceLocator.getAppointmentAvailableSlotsUseCase,
     updateAppointmentUseCase: appointmentServiceLocator.updateAppointmentUseCase,
     cancelAppointmentUseCase: appointmentServiceLocator.cancelAppointmentUseCase,

@@ -1,8 +1,10 @@
 import { computed, reactive, ref, watch } from 'vue'
+import type { CalendarMonthDto } from '../../../application/dto/calendar'
 import type { MedicalService } from '../../../domain/entities/medical-service'
 import type { Patient } from '../../../domain/entities/patient'
 import type { AppointmentStatus } from '../../../domain/value-objects/appointment-status'
 import type { AppointmentSessionContextDto, AppointmentSlotDto } from '../../../application/dto/appointment-management'
+import { formatLocalDate, parseLocalDate, toAppTimeLabel } from '../../../application/utils/date/local-date'
 import {
   appointmentStatusesForUi,
   createInitialAppointmentForm,
@@ -14,16 +16,38 @@ import type { AppointmentDetailViewModelDependencies } from './appointment-detai
 
 export type { AppointmentDetailViewModelDependencies } from './appointment-detail-view-model.module'
 
+const shortWeekDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+const shiftMonth = (dateString: string, offset: number) => {
+  const date = parseLocalDate(dateString)
+  return formatLocalDate(new Date(date.getFullYear(), date.getMonth() + offset, 1))
+}
+
+const dateFieldFormatter = new Intl.DateTimeFormat('es-PE', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
+
 // Factory del ViewModel — equivale al constructor de AppointmentDetailViewModel : ViewModel()
 export const createAppointmentDetailViewModel = (dependencies: AppointmentDetailViewModelDependencies) => {
   // Como StateFlow<TodayAppointmentViewModel?> — null hasta que loadAppointment() resuelve
   const appointment = ref<AppointmentDetailViewModel | null>(null)
 
-  // Como StateFlow<List<Patient>> — opciones del select de pacientes para el formulario de edición
+  // Como StateFlow<List<Patient>> — resultados de búsqueda del picker de pacientes
   const patients = ref<Patient[]>([])
+  const selectedPatient = ref<Patient | null>(null)
+  const patientSearch = ref('')
+  const patientsLoading = ref(false)
+  const isPatientPickerOpen = ref(false)
 
-  // Como StateFlow<List<MedicalService>> — opciones del select de servicios
+  // Como StateFlow<List<MedicalService>> — resultados de búsqueda del picker de servicios
   const services = ref<MedicalService[]>([])
+  const selectedService = ref<MedicalService | null>(null)
+  const serviceSearch = ref('')
+  const servicesLoading = ref(false)
+  const isServicePickerOpen = ref(false)
 
   // Como StateFlow<AppointmentSessionContextDto?> — contexto del usuario (rol, permisos)
   const sessionContext = ref<AppointmentSessionContextDto | null>(null)
@@ -56,6 +80,13 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   // Como MutableStateFlow<AppointmentFormState> — estado mutable del formulario,
   // sincronizado con `appointment` al cargar y al cancelar edición
   const form = reactive(createInitialAppointmentForm())
+  const calendarMonth = ref<CalendarMonthDto | null>(null)
+  const calendarLoading = ref(false)
+  const currentMonthReference = ref('')
+  const selectedSlotStartsAt = ref<string | null>(null)
+  let patientSearchTimer: ReturnType<typeof setTimeout> | null = null
+  let serviceSearchTimer: ReturnType<typeof setTimeout> | null = null
+  const servicePriceById = reactive<Record<string, number | null>>({})
 
   // Como StateFlow<List<AppointmentSlotDto>> — huecos disponibles para el dia
   // seleccionado, calculados excluyendo la propia cita (para poder reprogramar
@@ -77,6 +108,23 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     form.isUrgent = source.isUrgent
     form.reason = source.reason ?? ''
     form.notes = source.notes ?? ''
+    selectedSlotStartsAt.value = source.startAt
+    selectedPatient.value = null
+    selectedService.value = null
+    patientSearch.value = ''
+    serviceSearch.value = ''
+  }
+
+  const clearPatientSearchTimer = () => {
+    if (!patientSearchTimer) return
+    clearTimeout(patientSearchTimer)
+    patientSearchTimer = null
+  }
+
+  const clearServiceSearchTimer = () => {
+    if (!serviceSearchTimer) return
+    clearTimeout(serviceSearchTimer)
+    serviceSearchTimer = null
   }
 
   const setError = (error: unknown, fallback: string) => {
@@ -94,6 +142,8 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       const found = await dependencies.getAppointmentDetailUseCase.execute(dependencies.appointmentId)
       appointment.value = found
       syncForm(found)
+      slotsDate.value = found.startAt.slice(0, 10)
+      currentMonthReference.value = slotsDate.value
     } catch (error) {
       setError(error, 'No se pudo cargar la cita.')
       appointment.value = null
@@ -102,15 +152,51 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     }
   }
 
+  const loadPatients = async (search = '') => {
+    patientsLoading.value = true
+
+    try {
+      const loadedPatients = await dependencies.listAppointmentPatientsUseCase.execute({ search })
+      patients.value = loadedPatients
+
+      const matchingSelectedPatient = loadedPatients.find((patient) => patient.id === form.patientId)
+      if (matchingSelectedPatient) {
+        selectedPatient.value = matchingSelectedPatient
+      }
+    } catch (error) {
+      setError(error, 'No se pudieron cargar los pacientes para editar la cita.')
+    } finally {
+      patientsLoading.value = false
+    }
+  }
+
+  const loadServices = async (search = '') => {
+    servicesLoading.value = true
+
+    try {
+      const loadedServices = await dependencies.listAppointmentServicesUseCase.execute({ search })
+      services.value = loadedServices
+      loadedServices.forEach((service) => {
+        servicePriceById[service.id] = service.price
+      })
+
+      const matchingSelectedService = loadedServices.find((service) => service.id === form.serviceId)
+      if (matchingSelectedService) {
+        selectedService.value = matchingSelectedService
+      }
+    } catch (error) {
+      setError(error, 'No se pudieron cargar los servicios para editar la cita.')
+    } finally {
+      servicesLoading.value = false
+    }
+  }
+
   const loadFormOptions = async () => {
     try {
-      const [loadedPatients, loadedServices] = await Promise.all([
-        dependencies.listAppointmentPatientsUseCase.execute(),
-        dependencies.listAppointmentServicesUseCase.execute(),
+      await Promise.all([
+        loadPatients(),
+        loadServices(),
       ])
-
-      patients.value = loadedPatients
-      services.value = loadedServices
     } catch (error) {
       setError(error, 'No se pudieron cargar los datos para editar la cita.')
     }
@@ -121,6 +207,53 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
       sessionContext.value = await dependencies.getAppointmentSessionContextUseCase.execute()
     } catch (error) {
       setError(error, 'No se pudo cargar el contexto del usuario.')
+    }
+  }
+
+  const currentMonthTitle = computed(() => {
+    const reference = calendarMonth.value?.monthStart ?? currentMonthReference.value ?? slotsDate.value
+    if (!reference) return ''
+    const baseDate = parseLocalDate(reference)
+    return `${monthNames[baseDate.getMonth()]} ${baseDate.getFullYear()}`
+  })
+
+  const selectedDateDisplay = computed(() => {
+    if (!slotsDate.value) return ''
+    return dateFieldFormatter.format(parseLocalDate(slotsDate.value))
+  })
+
+  const selectedSlotLabel = computed(() => {
+    if (!selectedSlotStartsAt.value) return ''
+    return toAppTimeLabel(new Date(selectedSlotStartsAt.value))
+  })
+
+  const selectedPatientLabel = computed(() => selectedPatient.value?.fullName || 'Selecciona un paciente')
+  const selectedServiceLabel = computed(() => {
+    if (!selectedService.value) return 'Selecciona un servicio'
+    return `${selectedService.value.name} · ${selectedService.value.defaultDurationMinutes} min`
+  })
+
+  const canSubmitAppointmentChanges = computed(() => Boolean(
+    form.patientId &&
+    form.serviceId &&
+    selectedSlotStartsAt.value &&
+    !pending.value,
+  ))
+
+  const formatTime = (isoString: string) => toAppTimeLabel(new Date(isoString))
+
+  const loadCalendarMonth = async (referenceDate = slotsDate.value) => {
+    if (!referenceDate) return
+
+    calendarLoading.value = true
+
+    try {
+      calendarMonth.value = await dependencies.getCalendarMonthUseCase.execute(referenceDate)
+      currentMonthReference.value = referenceDate
+    } catch (error) {
+      setError(error, 'No se pudo cargar el calendario.')
+    } finally {
+      calendarLoading.value = false
     }
   }
 
@@ -149,13 +282,112 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   }
 
   const selectSlot = (slot: AppointmentSlotDto) => {
+    selectedSlotStartsAt.value = slot.startsAt
     form.startAt = fromIsoToDatetimeLocalValue(slot.startsAt)
+  }
+
+  const selectDate = async (date: string) => {
+    const previousMonth = slotsDate.value ? parseLocalDate(slotsDate.value).getMonth() : -1
+    const nextMonth = parseLocalDate(date).getMonth()
+
+    slotsDate.value = date
+
+    if (!selectedSlotStartsAt.value || !selectedSlotStartsAt.value.startsWith(date)) {
+      selectedSlotStartsAt.value = null
+    }
+
+    if (previousMonth !== nextMonth || !calendarMonth.value) {
+      await loadCalendarMonth(date)
+    } else if (calendarMonth.value) {
+      calendarMonth.value = { ...calendarMonth.value, selectedDate: date }
+    }
+
+    await loadAvailableSlots()
+  }
+
+  const openPatientPicker = async () => {
+    isPatientPickerOpen.value = true
+    patientSearch.value = ''
+    await loadPatients()
+  }
+
+  const closePatientPicker = () => {
+    isPatientPickerOpen.value = false
+    patientSearch.value = ''
+  }
+
+  const selectPatient = (patient: Patient) => {
+    selectedPatient.value = patient
+    form.patientId = patient.id
+    patientSearch.value = ''
+    isPatientPickerOpen.value = false
+  }
+
+  const openServicePicker = async () => {
+    isServicePickerOpen.value = true
+    serviceSearch.value = ''
+    await loadServices()
+  }
+
+  const closeServicePicker = () => {
+    isServicePickerOpen.value = false
+    serviceSearch.value = ''
+  }
+
+  const resolveServicePrice = (serviceId: string) => {
+    if (!serviceId) return ''
+    if (serviceId in servicePriceById) {
+      return servicePriceById[serviceId] ?? ''
+    }
+    return ''
+  }
+
+  const selectService = (service: MedicalService) => {
+    const previousServiceId = form.serviceId
+    const previousPrice = previousServiceId ? resolveServicePrice(previousServiceId) : ''
+
+    selectedService.value = service
+    form.serviceId = service.id
+    serviceSearch.value = ''
+    isServicePickerOpen.value = false
+
+    if (form.agreedPrice === '' || form.agreedPrice === previousPrice) {
+      form.agreedPrice = resolveServicePrice(service.id)
+    }
+  }
+
+  const goToPrevMonth = async () => {
+    const nextReference = shiftMonth(currentMonthReference.value || slotsDate.value, -1)
+    currentMonthReference.value = nextReference
+    await loadCalendarMonth(nextReference)
+  }
+
+  const goToNextMonth = async () => {
+    const nextReference = shiftMonth(currentMonthReference.value || slotsDate.value, 1)
+    currentMonthReference.value = nextReference
+    await loadCalendarMonth(nextReference)
   }
 
   // Recarga los huecos disponibles cuando cambia el dia explorado o el
   // servicio (la duracion del servicio cambia el tamaño de los huecos)
   watch([slotsDate, () => form.serviceId], () => {
     if (isEditing.value) void loadAvailableSlots()
+  })
+
+  watch(patientSearch, (nextValue) => {
+    clearPatientSearchTimer()
+    patientSearchTimer = setTimeout(() => {
+      void loadPatients(nextValue)
+      patientSearchTimer = null
+    }, 250)
+  })
+
+  watch(serviceSearch, (nextValue) => {
+    clearServiceSearchTimer()
+    serviceSearchTimer = setTimeout(() => {
+      void loadServices(nextValue)
+      serviceSearchTimer = null
+    }, 250)
   })
 
   // Como derivedStateOf { } — permisos calculados desde el estado de la cita y el rol del usuario
@@ -203,11 +435,14 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     errorKind.value = null
     isEditing.value = true
     slotsDate.value = form.startAt.slice(0, 10)
+    currentMonthReference.value = slotsDate.value
+    void loadCalendarMonth(slotsDate.value)
     void loadAvailableSlots()
   }
 
   const cancelEditing = () => {
     if (appointment.value) syncForm(appointment.value)
+    slotsDate.value = appointment.value?.startAt.slice(0, 10) ?? ''
     isEditing.value = false
   }
 
@@ -224,7 +459,7 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
         patientId: form.patientId,
         serviceId: form.serviceId,
         agreedPrice: form.agreedPrice === '' ? null : Number(form.agreedPrice),
-        startAt: form.startAt,
+        startAt: selectedSlotStartsAt.value ?? form.startAt,
         isUrgent: form.isUrgent,
         reason: form.reason.trim() || null,
         notes: form.notes.trim() || null,
@@ -296,9 +531,22 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
   return {
     appointment,
     patients,
+    selectedPatient,
+    patientSearch,
+    patientsLoading,
+    isPatientPickerOpen,
     services,
+    selectedService,
+    serviceSearch,
+    servicesLoading,
+    isServicePickerOpen,
     sessionContext,
     form,
+    calendarMonth,
+    calendarLoading,
+    currentMonthTitle,
+    selectedDateDisplay,
+    selectedSlotStartsAt,
     loading,
     pending,
     cancelingPending,
@@ -310,17 +558,33 @@ export const createAppointmentDetailViewModel = (dependencies: AppointmentDetail
     availableSlots,
     loadingSlots,
     slotsDate,
+    shortWeekDays,
+    selectedSlotLabel,
+    selectedPatientLabel,
+    selectedServiceLabel,
+    canSubmitAppointmentChanges,
     appointmentStatusesForUi,
     canEditAppointment,
     canCancelAppointment,
     canChangeAppointmentStatus,
     canRegisterPayment,
     registerPaymentHref,
+    formatTime,
     loadAppointment,
     loadFormOptions,
     loadSessionContext,
+    loadCalendarMonth,
     loadAvailableSlots,
     selectSlot,
+    selectDate,
+    openPatientPicker,
+    closePatientPicker,
+    selectPatient,
+    openServicePicker,
+    closeServicePicker,
+    selectService,
+    goToPrevMonth,
+    goToNextMonth,
     startEditing,
     cancelEditing,
     submitAppointment,

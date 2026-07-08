@@ -7,15 +7,17 @@ import type {
   AppointmentSlotDto,
   AppointmentStatusMutationInput,
 } from '../../../application/dto/appointment-management'
+import type { CalendarMonthDto } from '../../../application/dto/calendar'
 import type { AppointmentDetailViewModel } from './appointment-detail'
 
 // Equivale al módulo de Koin donde declaras viewModel { AppointmentDetailViewModel(get(), get(), ...) }
 export interface AppointmentDetailViewModelDependencies {
   appointmentId: string
   getAppointmentDetailUseCase: { execute(appointmentId: string): Promise<AppointmentDetailViewModel> }
-  listAppointmentPatientsUseCase: { execute(): Promise<Patient[]> }
-  listAppointmentServicesUseCase: { execute(): Promise<MedicalService[]> }
+  listAppointmentPatientsUseCase: { execute(query?: { search?: string }): Promise<Patient[]> }
+  listAppointmentServicesUseCase: { execute(query?: { search?: string }): Promise<MedicalService[]> }
   getAppointmentSessionContextUseCase: { execute(): Promise<AppointmentSessionContextDto> }
+  getCalendarMonthUseCase: { execute(referenceDate: string): Promise<CalendarMonthDto> }
   getAppointmentAvailableSlotsUseCase: { execute(query: AppointmentAvailableSlotsQuery): Promise<AppointmentSlotDto[]> }
   updateAppointmentUseCase: { execute(appointmentId: string, input: AppointmentMutationInput): Promise<unknown> }
   cancelAppointmentUseCase: { execute(appointmentId: string): Promise<unknown> }
