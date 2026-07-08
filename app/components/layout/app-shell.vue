@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import SharedConfirmDialog from '../shared/confirm-dialog.vue'
 import { useSessionContext } from '~/composables/auth/use-session-context'
+import { createAppShellSignOutController } from '~~/src/presentation/view-models/layout/app-shell-sign-out'
 import { useNetworkStatus } from '~/composables/pwa/use-network-status'
 import { resolveRouteLoadingVariant } from '~/utils/route-loading'
 
@@ -39,7 +41,7 @@ const bottomNavigation = [
   { label: 'Consultas', to: '/consultations', icon: 'i-heroicons-clipboard-document-list' },
 ]
 
-const handleSignOut = async () => {
+const performSignOut = async () => {
   if (!isAuthEnabled.value) {
     return
   }
@@ -57,6 +59,8 @@ const handleSignOut = async () => {
 
   await navigateTo('/login')
 }
+
+const signOutController = createAppShellSignOutController(performSignOut)
 
 if (import.meta.client) {
   let finishTimer: ReturnType<typeof setTimeout> | null = null
@@ -154,20 +158,15 @@ if (import.meta.client) {
         </ClientOnly>
 
         <header class="surface-card shell-topbar">
-          <div class="topbar-text">
-            <p class="muted-text topbar-copy">Agenda clínica para pacientes, citas y disponibilidad.</p>
-          </div>
-
           <div class="topbar-actions">
             <span class="pill">
               {{ sessionContext?.name ?? 'OtoGyn' }}
-              <template v-if="sessionContext?.role"> · {{ sessionContext.role }}</template>
             </span>
             <UButton
               v-if="sessionContext"
               color="neutral"
               variant="outline"
-              @click="handleSignOut"
+              @click="signOutController.requestSignOut"
             >
               Salir
             </UButton>
@@ -195,6 +194,16 @@ if (import.meta.client) {
         </section>
       </main>
     </div>
+
+    <SharedConfirmDialog
+      v-model="signOutController.isConfirmOpen.value"
+      title="Cerrar sesión"
+      message="¿Seguro que quieres salir de tu sesión ahora?"
+      confirm-label="Salir"
+      :pending="signOutController.pending.value"
+      @cancel="signOutController.cancelSignOut"
+      @confirm="signOutController.confirmSignOut"
+    />
 
     <nav class="surface-card bottom-nav" aria-label="Navegacion principal">
       <NuxtLink
@@ -376,7 +385,7 @@ if (import.meta.client) {
 .shell-topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
 }
@@ -431,7 +440,7 @@ if (import.meta.client) {
   }
 
   .shell-topbar {
-    flex-wrap: wrap;
+    justify-content: flex-start;
     align-items: center;
     padding: 0.25rem 0.1rem 1rem;
     background: transparent;
@@ -441,7 +450,8 @@ if (import.meta.client) {
   }
 
   .topbar-actions {
-    display: none;
+    width: 100%;
+    justify-content: space-between;
   }
 
   .topbar-text {
