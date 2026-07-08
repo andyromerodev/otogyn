@@ -4,7 +4,7 @@ import type { ServiceRepository } from '../../domain/repositories/service-reposi
 export class ListServicesUseCase {
   constructor(private readonly serviceRepository: ServiceRepository) {}
 
-  execute(input: { organizationId: string }): Promise<MedicalService[]> {
-    return this.serviceRepository.listByOrganization(input.organizationId)
+  execute(input: { organizationId: string, search?: string }): Promise<MedicalService[]> {
+    return this.serviceRepository.listByOrganization(input.organizationId, input.search)
   }
 }

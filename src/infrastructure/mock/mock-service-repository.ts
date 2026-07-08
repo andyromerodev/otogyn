@@ -4,8 +4,12 @@ import type { ServiceRepository, UpdateServiceInput } from '../../domain/reposit
 export class MockServiceRepository implements ServiceRepository {
   constructor(private readonly services: MedicalService[]) {}
 
-  async listByOrganization(organizationId: string): Promise<MedicalService[]> {
-    return this.services.filter((service) => service.organizationId === organizationId)
+  async listByOrganization(organizationId: string, search = ''): Promise<MedicalService[]> {
+    const trimmedSearch = search.trim().toLowerCase()
+
+    return this.services.filter((service) =>
+      service.organizationId === organizationId &&
+      (!trimmedSearch || service.name.toLowerCase().includes(trimmedSearch)))
   }
 
   async findById(id: string): Promise<MedicalService | null> {

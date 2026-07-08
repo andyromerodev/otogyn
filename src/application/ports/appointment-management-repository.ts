@@ -1,5 +1,6 @@
 import type {
   AppointmentAvailableSlotsQuery,
+  AppointmentDirectoryQuery,
   AppointmentListQuery,
   AppointmentListResult,
   AppointmentDetailResult,
@@ -17,8 +18,8 @@ import type { Appointment } from '../../domain/entities/appointment'
 export interface AppointmentManagementRepository {
   getAppointmentDetail(appointmentId: string): Promise<AppointmentDetailResult>
   listAppointments(query: AppointmentListQuery): Promise<AppointmentListResult>
-  listPatients(): Promise<AppointmentPatientListResult>
-  listServices(): Promise<AppointmentServiceListResult>
+  listPatients(query?: AppointmentDirectoryQuery): Promise<AppointmentPatientListResult>
+  listServices(query?: AppointmentDirectoryQuery): Promise<AppointmentServiceListResult>
   listTodayAppointments(): Promise<TodayAppointmentListResult>
   getSessionContext(): Promise<AppointmentSessionContextDto>
   getAvailableSlots(query: AppointmentAvailableSlotsQuery): Promise<AppointmentSlotDto[]>

@@ -2,6 +2,7 @@ import type { MedicalService } from '../../domain/entities/medical-service'
 import type { Patient } from '../../domain/entities/patient'
 import type { AppointmentStatus } from '../../domain/value-objects/appointment-status'
 import type { AppointmentDetailViewModel } from '../../presentation/view-models/appointments/appointment-detail'
+import type { AppointmentListItemViewModel } from '../../presentation/view-models/appointments/appointment-list'
 import type { TodayAppointmentViewModel } from '../../presentation/view-models/dashboard'
 
 export type AppointmentListFilter =
@@ -19,8 +20,12 @@ export interface AppointmentListQuery {
   pageSize?: number
 }
 
+export interface AppointmentDirectoryQuery {
+  search?: string
+}
+
 export interface AppointmentListResult {
-  items: TodayAppointmentViewModel[]
+  items: AppointmentListItemViewModel[]
   total: number
   allTotal: number
   page: number

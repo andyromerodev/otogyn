@@ -36,6 +36,7 @@ const extractSessionCookie = (headers: Headers) => {
 
 describe('admin routes smoke test (integration, HTTP real)', () => {
   let sessionCookie: string
+  let organizationId: string
 
   beforeAll(async () => {
     const signUpResponse = await fetch('/api/auth/sign-up/email', {
@@ -49,6 +50,20 @@ describe('admin routes smoke test (integration, HTTP real)', () => {
     }
 
     sessionCookie = extractSessionCookie(signUpResponse.headers)
+
+    const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
+    const userRows = await sql<{ organization_id: string }[]>`
+      SELECT organization_id
+      FROM organization_members
+      WHERE user_id IN (SELECT id FROM users WHERE email = ${TEST_EMAIL})
+      LIMIT 1
+    `
+    organizationId = userRows[0]?.organization_id ?? ''
+    await sql.end()
+
+    if (!organizationId) {
+      throw new Error('No se pudo resolver la organización del usuario de prueba.')
+    }
   })
 
   afterAll(async () => {
@@ -81,6 +96,79 @@ describe('admin routes smoke test (integration, HTTP real)', () => {
   it('GET /api/services responde 200 con un arreglo', async () => {
     const result = await $fetch('/api/services', { headers: { cookie: sessionCookie } })
     expect(Array.isArray(result)).toBe(true)
+  })
+
+  it('GET /api/services permite buscar por nombre', async () => {
+    const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
+    const suffix = crypto.randomUUID().slice(0, 8)
+
+    try {
+      await sql`
+        INSERT INTO services (
+          organization_id,
+          name,
+          description,
+          default_duration_minutes,
+          price,
+          is_active
+        )
+        VALUES
+          (${organizationId}, ${`Consulta Buscar ${suffix}`}, null, 30, 450, true),
+          (${organizationId}, ${`Cirugia Buscar ${suffix}`}, null, 60, 900, true)
+      `
+
+      const result = await $fetch('/api/services', {
+        headers: { cookie: sessionCookie },
+        query: { search: `Cirugia Buscar ${suffix}` },
+      })
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect((result as Array<{ name: string }>)[0]?.name).toBe(`Cirugia Buscar ${suffix}`)
+    } finally {
+      await sql`
+        DELETE FROM services
+        WHERE organization_id = ${organizationId}
+          AND name IN (${`Consulta Buscar ${suffix}`}, ${`Cirugia Buscar ${suffix}`})
+      `
+      await sql.end()
+    }
+  })
+
+  it('GET /api/appointments/patients permite buscar por nombre', async () => {
+    const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
+    const suffix = crypto.randomUUID().slice(0, 8)
+
+    try {
+      await sql`
+        INSERT INTO patients (
+          organization_id,
+          full_name,
+          phone,
+          email,
+          is_urgent
+        )
+        VALUES
+          (${organizationId}, ${`Ana Buscar ${suffix}`}, ${`555-a-${suffix}`}, ${`ana-${suffix}@otogyn.test`}, false),
+          (${organizationId}, ${`Bruno Buscar ${suffix}`}, ${`555-b-${suffix}`}, ${`bruno-${suffix}@otogyn.test`}, false)
+      `
+
+      const result = await $fetch('/api/appointments/patients', {
+        headers: { cookie: sessionCookie },
+        query: { search: `Ana Buscar ${suffix}` },
+      })
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect((result as Array<{ fullName: string }>)[0]?.fullName).toBe(`Ana Buscar ${suffix}`)
+    } finally {
+      await sql`
+        DELETE FROM patients
+        WHERE organization_id = ${organizationId}
+          AND email IN (${`ana-${suffix}@otogyn.test`}, ${`bruno-${suffix}@otogyn.test`})
+      `
+      await sql.end()
+    }
   })
 
   it('GET /api/dashboard/summary responde 200', async () => {

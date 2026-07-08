@@ -34,11 +34,22 @@ const toBirthDate = (birthDate: string | null) => {
 export class DrizzlePatientRepository implements PatientRepository {
   constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
-  async listByOrganization(organizationId: string): Promise<Patient[]> {
+  async listByOrganization(organizationId: string, search = ''): Promise<Patient[]> {
+    const conditions = [
+      eq(patients.organizationId, organizationId),
+      isNull(patients.deletedAt),
+    ]
+
+    const trimmedSearch = search.trim()
+
+    if (trimmedSearch) {
+      conditions.push(ilike(patients.fullName, `%${trimmedSearch}%`))
+    }
+
     const rows = await this.db
       .select()
       .from(patients)
-      .where(and(eq(patients.organizationId, organizationId), isNull(patients.deletedAt)))
+      .where(and(...conditions))
       .orderBy(asc(patients.fullName))
 
     return rows.map(mapPatient)

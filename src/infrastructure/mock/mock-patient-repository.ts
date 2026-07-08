@@ -4,8 +4,13 @@ import type { PatientListItem, PatientListPageQuery, PatientListPageResult, Pati
 export class MockPatientRepository implements PatientRepository {
   constructor(private readonly patients: Patient[]) {}
 
-  async listByOrganization(organizationId: string): Promise<Patient[]> {
-    return this.patients.filter((patient) => patient.organizationId === organizationId && !patient.deletedAt)
+  async listByOrganization(organizationId: string, search = ''): Promise<Patient[]> {
+    const trimmedSearch = search.trim().toLowerCase()
+
+    return this.patients.filter((patient) =>
+      patient.organizationId === organizationId &&
+      !patient.deletedAt &&
+      (!trimmedSearch || patient.fullName.toLowerCase().includes(trimmedSearch)))
   }
 
   async listPage(input: PatientListPageQuery): Promise<PatientListPageResult> {

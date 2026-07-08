@@ -10,7 +10,7 @@ export interface UpdateServiceInput {
 }
 
 export interface ServiceRepository {
-  listByOrganization(organizationId: string): Promise<MedicalService[]>
+  listByOrganization(organizationId: string, search?: string): Promise<MedicalService[]>
   findById(id: string): Promise<MedicalService | null>
   create(service: MedicalService): Promise<MedicalService>
   update(input: UpdateServiceInput): Promise<MedicalService>

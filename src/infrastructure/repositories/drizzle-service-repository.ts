@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm'
+import { and, asc, eq, ilike } from 'drizzle-orm'
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { MedicalService } from '../../domain/entities/medical-service'
 import type { ServiceRepository, UpdateServiceInput } from '../../domain/repositories/service-repository'
@@ -46,11 +46,18 @@ const isForeignKeyDeleteRestriction = (error: unknown): boolean => {
 export class DrizzleServiceRepository implements ServiceRepository {
   constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
 
-  async listByOrganization(organizationId: string): Promise<MedicalService[]> {
+  async listByOrganization(organizationId: string, search = ''): Promise<MedicalService[]> {
+    const conditions = [eq(services.organizationId, organizationId)]
+    const trimmedSearch = search.trim()
+
+    if (trimmedSearch) {
+      conditions.push(ilike(services.name, `%${trimmedSearch}%`))
+    }
+
     const rows = await this.db
       .select()
       .from(services)
-      .where(eq(services.organizationId, organizationId))
+      .where(and(...conditions))
       .orderBy(asc(services.name))
 
     return rows.map(mapService)

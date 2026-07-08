@@ -26,6 +26,10 @@ export const appointmentAvailableSlotsQuerySchema = z.object({
   excludeAppointmentId: z.string().uuid('ID de cita invalido.').optional(),
 })
 
+export const appointmentDirectoryQuerySchema = z.object({
+  search: z.string().trim().max(120).optional().default(''),
+})
+
 export const appointmentListQuerySchema = z.object({
   search: z.string().trim().max(120).optional().default(''),
   filter: z.enum([

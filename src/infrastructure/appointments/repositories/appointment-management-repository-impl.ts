@@ -1,5 +1,6 @@
 import type {
   AppointmentAvailableSlotsQuery,
+  AppointmentDirectoryQuery,
   AppointmentListQuery,
   AppointmentListResult,
   AppointmentDetailResult,
@@ -27,12 +28,12 @@ export class AppointmentManagementRepositoryImpl implements AppointmentManagemen
     return this.remoteDataSource.listAppointments(query)
   }
 
-  listPatients(): Promise<AppointmentPatientListResult> {
-    return this.remoteDataSource.listPatients()
+  listPatients(query?: AppointmentDirectoryQuery): Promise<AppointmentPatientListResult> {
+    return this.remoteDataSource.listPatients(query)
   }
 
-  listServices(): Promise<AppointmentServiceListResult> {
-    return this.remoteDataSource.listServices()
+  listServices(query?: AppointmentDirectoryQuery): Promise<AppointmentServiceListResult> {
+    return this.remoteDataSource.listServices(query)
   }
 
   listTodayAppointments(): Promise<TodayAppointmentListResult> {

@@ -1,5 +1,6 @@
 import type {
   AppointmentAvailableSlotsQuery,
+  AppointmentDirectoryQuery,
   AppointmentListQuery,
   AppointmentListResult,
   AppointmentDetailResult,
@@ -31,12 +32,20 @@ export class HttpAppointmentRemoteDataSource implements AppointmentRemoteDataSou
     })
   }
 
-  async listPatients(): Promise<AppointmentPatientListResult> {
-    return $fetch<AppointmentPatientListResult>('/api/appointments/patients' as string)
+  async listPatients(query?: AppointmentDirectoryQuery): Promise<AppointmentPatientListResult> {
+    return $fetch<AppointmentPatientListResult>('/api/appointments/patients' as string, {
+      query: {
+        search: query?.search ?? '',
+      },
+    })
   }
 
-  async listServices(): Promise<AppointmentServiceListResult> {
-    return $fetch<AppointmentServiceListResult>('/api/services' as string)
+  async listServices(query?: AppointmentDirectoryQuery): Promise<AppointmentServiceListResult> {
+    return $fetch<AppointmentServiceListResult>('/api/services' as string, {
+      query: {
+        search: query?.search ?? '',
+      },
+    })
   }
 
   async listTodayAppointments(): Promise<TodayAppointmentListResult> {

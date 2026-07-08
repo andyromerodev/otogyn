@@ -24,7 +24,7 @@ export interface PatientListPageResult {
 }
 
 export interface PatientRepository {
-  listByOrganization(organizationId: string): Promise<Patient[]>
+  listByOrganization(organizationId: string, search?: string): Promise<Patient[]>
   listPage(input: PatientListPageQuery): Promise<PatientListPageResult>
   findById(id: string): Promise<Patient | null>
   /**
