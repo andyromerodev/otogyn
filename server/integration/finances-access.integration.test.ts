@@ -267,6 +267,24 @@ describe('finances access and scoping (integration, HTTP real)', () => {
   afterAll(async () => {
     const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
     await sql`
+      DELETE FROM appointments
+      WHERE organization_id IN (
+        SELECT id FROM organizations WHERE slug IN ('otogyn', ${OTHER_ORG_SLUG})
+      )
+    `
+    await sql`
+      DELETE FROM patients
+      WHERE organization_id IN (
+        SELECT id FROM organizations WHERE slug IN ('otogyn', ${OTHER_ORG_SLUG})
+      )
+    `
+    await sql`
+      DELETE FROM services
+      WHERE organization_id IN (
+        SELECT id FROM organizations WHERE slug IN ('otogyn', ${OTHER_ORG_SLUG})
+      )
+    `
+    await sql`
       DELETE FROM expenses
       WHERE organization_id IN (
         SELECT id FROM organizations WHERE slug IN ('otogyn', ${OTHER_ORG_SLUG})
@@ -557,4 +575,187 @@ describe('finances access and scoping (integration, HTTP real)', () => {
       await sql.end()
     }
   })
+
+  it('enriquece GET /api/appointments con estado de pago y respeta scoping por organización', async () => {
+    const sql = postgres(process.env.TEST_DATABASE_URL!, { prepare: false })
+    const suffix = crypto.randomUUID().slice(0, 8)
+
+    const serviceRows = await sql<{ id: string }[]>`
+      INSERT INTO services (
+        organization_id,
+        name,
+        description,
+        default_duration_minutes,
+        price,
+        is_active
+      )
+      VALUES (
+        ${adminOrganizationId},
+        ${`Consulta listado ${suffix}`},
+        null,
+        30,
+        550,
+        true
+      )
+      RETURNING id
+    `
+    const serviceId = serviceRows[0]?.id ?? null
+
+    const patientRows = await sql<{ id: string }[]>`
+      INSERT INTO patients (
+        organization_id,
+        full_name,
+        phone,
+        email,
+        is_urgent
+      )
+      VALUES (
+        ${adminOrganizationId},
+        ${`Paciente listado ${suffix}`},
+        ${`555-list-${suffix}`},
+        ${`paciente-listado-${suffix}@otogyn.test`},
+        false
+      )
+      RETURNING id
+    `
+    const patientId = patientRows[0]?.id ?? null
+
+    if (!serviceId || !patientId) {
+      await sql.end()
+      throw new Error('No se pudieron crear el servicio o el paciente para la prueba del listado de citas.')
+    }
+
+    const appointmentRows = await sql<{ id: string }[]>`
+      INSERT INTO appointments (
+        organization_id,
+        patient_id,
+        service_id,
+        professional_id,
+        start_at,
+        end_at,
+        status,
+        is_urgent,
+        reason,
+        notes,
+        created_by,
+        updated_by
+      )
+      VALUES (
+        ${adminOrganizationId},
+        ${patientId},
+        ${serviceId},
+        null,
+        ${new Date('2026-09-08T18:00:00.000Z')},
+        ${new Date('2026-09-08T18:30:00.000Z')},
+        'scheduled',
+        false,
+        'Consulta para listado',
+        null,
+        ${adminUserId},
+        null
+      )
+      RETURNING id
+    `
+    const appointmentId = appointmentRows[0]?.id ?? null
+
+    if (!appointmentId) {
+      await sql.end()
+      throw new Error('No se pudo crear la cita para la prueba del listado.')
+    }
+
+    try {
+      await sql`
+        INSERT INTO payments (
+          organization_id,
+          patient_id,
+          appointment_id,
+          amount,
+          method,
+          concept,
+          paid_at,
+          notes,
+          created_by
+        )
+        VALUES (
+          (SELECT id FROM organizations WHERE slug = ${OTHER_ORG_SLUG}),
+          ${patientId},
+          ${appointmentId},
+          999,
+          'transferencia',
+          'Pago fuera de scope',
+          ${new Date('2026-07-06T19:00:00.000Z')},
+          null,
+          ${adminUserId}
+        )
+      `
+
+      const listBeforeResponse = await fetch('/api/appointments?search=Consulta%20para%20listado', {
+        headers: { cookie: adminCookie },
+      })
+      expect(listBeforeResponse.status).toBe(200)
+
+      const listBeforeBody = await listBeforeResponse.json() as {
+        items: Array<{
+          id: string
+          paymentStatus: 'paid' | 'pending'
+          linkedPayment: null | { id: string }
+        }>
+      }
+
+      const itemBefore = listBeforeBody.items.find((item) => item.id === appointmentId)
+      expect(itemBefore).toMatchObject({
+        id: appointmentId,
+        paymentStatus: 'pending',
+        linkedPayment: null,
+      })
+
+      await sql`DELETE FROM payments WHERE appointment_id = ${appointmentId}`
+
+      const paymentResponse = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify({
+          patientId,
+          appointmentId,
+          amount: 550,
+          method: 'efectivo',
+          concept: `Consulta listado ${suffix}`,
+          paidAt: '2026-07-06T20:00:00.000Z',
+          notes: null,
+        }),
+      })
+      expect(paymentResponse.status).toBe(200)
+      const paymentBody = await paymentResponse.json() as { id: string }
+
+      const listAfterResponse = await fetch('/api/appointments?search=Consulta%20para%20listado', {
+        headers: { cookie: adminCookie },
+      })
+      expect(listAfterResponse.status).toBe(200)
+
+      const listAfterBody = await listAfterResponse.json() as {
+        items: Array<{
+          id: string
+          paymentStatus: 'paid' | 'pending'
+          linkedPayment: null | { id: string; amount: number; method: string; paidAt: string }
+        }>
+      }
+
+      const itemAfter = listAfterBody.items.find((item) => item.id === appointmentId)
+      expect(itemAfter).toMatchObject({
+        id: appointmentId,
+        paymentStatus: 'paid',
+        linkedPayment: {
+          id: paymentBody.id,
+          amount: 550,
+          method: 'efectivo',
+        },
+      })
+    } finally {
+      await sql`DELETE FROM payments WHERE appointment_id = ${appointmentId}`
+      await sql`DELETE FROM appointments WHERE id = ${appointmentId}`
+      await sql`DELETE FROM patients WHERE id = ${patientId}`
+      await sql`DELETE FROM services WHERE id = ${serviceId}`
+      await sql.end()
+    }
+  }, 90_000)
 })

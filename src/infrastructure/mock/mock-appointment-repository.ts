@@ -37,6 +37,8 @@ export class MockAppointmentRepository implements AppointmentRepository {
         ...appointment,
         patientName: appointment.patientId,
         serviceName: appointment.serviceId,
+        paymentStatus: 'pending',
+        linkedPayment: null,
       })),
       total,
       allTotal: allItems.length,

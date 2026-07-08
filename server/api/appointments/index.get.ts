@@ -1,12 +1,12 @@
 import { getQuery } from 'h3'
 import { toAppTimeLabel } from '../../../src/application/utils/date/local-date'
 import { appointmentListQuerySchema } from '../../../src/presentation/validators/appointment'
-import type { TodayAppointmentViewModel } from '../../../src/presentation/view-models/dashboard'
+import type { AppointmentListItemViewModel } from '../../../src/presentation/view-models/appointments/appointment-list'
 import { requireAuthorizedUser } from '../../utils/authorization'
 import { handleApiError } from '../../utils/handle-api-error'
 import { serverServiceLocator } from '../../utils/server-service-locator'
 
-const statusLabels: Record<TodayAppointmentViewModel['status'], string> = {
+const statusLabels: Record<AppointmentListItemViewModel['status'], string> = {
   scheduled: 'Programada',
   confirmed: 'Confirmada',
   checked_in: 'En sala',
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       ...result,
-      items: result.items.map((item): TodayAppointmentViewModel => ({
+      items: result.items.map((item): AppointmentListItemViewModel => ({
         id: item.id,
         patientId: item.patientId,
         serviceId: item.serviceId,
@@ -45,6 +45,13 @@ export default defineEventHandler(async (event) => {
         isUrgent: item.isUrgent,
         reason: item.reason,
         notes: item.notes,
+        paymentStatus: item.paymentStatus,
+        linkedPayment: item.linkedPayment
+          ? {
+              ...item.linkedPayment,
+              paidAt: item.linkedPayment.paidAt.toISOString(),
+            }
+          : null,
       })),
     }
   } catch (error) {

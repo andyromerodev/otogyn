@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, gt, gte, ilike, inArray, lt, ne, or } from '
 import type { Appointment } from '../../domain/entities/appointment'
 import type {
   AppointmentListItem,
+  AppointmentLinkedPayment,
   AppointmentListPageQuery,
   AppointmentListPageResult,
   AppointmentRepository,
@@ -11,7 +12,7 @@ import { activeAppointmentStatuses } from '../../domain/value-objects/appointmen
 import { getAppDayBounds } from '../../application/utils/date/local-date'
 import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
-import { appointments, patients, services } from '../database/schema'
+import { appointments, patients, payments, services } from '../database/schema'
 
 const mapAppointment = (row: typeof appointments.$inferSelect): Appointment => ({
   id: row.id,
@@ -37,10 +38,23 @@ const mapAppointmentListItem = (row: {
   appointment: typeof appointments.$inferSelect
   patientName: string | null
   serviceName: string | null
+  linkedPaymentId: string | null
+  linkedPaymentAmount: string | null
+  linkedPaymentMethod: typeof payments.$inferSelect.method | null
+  linkedPaymentPaidAt: Date | null
 }): AppointmentListItem => ({
   ...mapAppointment(row.appointment),
   patientName: row.patientName ?? 'Paciente desconocido',
   serviceName: row.serviceName ?? 'Servicio desconocido',
+  paymentStatus: row.linkedPaymentId ? 'paid' : 'pending',
+  linkedPayment: row.linkedPaymentId
+    ? {
+        id: row.linkedPaymentId,
+        amount: Number(row.linkedPaymentAmount ?? '0'),
+        method: row.linkedPaymentMethod!,
+        paidAt: row.linkedPaymentPaidAt!,
+      } satisfies AppointmentLinkedPayment
+    : null,
 })
 
 export class DrizzleAppointmentRepository implements AppointmentRepository {
@@ -106,10 +120,21 @@ export class DrizzleAppointmentRepository implements AppointmentRepository {
         appointment: appointments,
         patientName: patients.fullName,
         serviceName: services.name,
+        linkedPaymentId: payments.id,
+        linkedPaymentAmount: payments.amount,
+        linkedPaymentMethod: payments.method,
+        linkedPaymentPaidAt: payments.paidAt,
       })
       .from(appointments)
       .innerJoin(patients, eq(appointments.patientId, patients.id))
       .innerJoin(services, eq(appointments.serviceId, services.id))
+      .leftJoin(
+        payments,
+        and(
+          eq(payments.appointmentId, appointments.id),
+          eq(payments.organizationId, appointments.organizationId),
+        ),
+      )
       .where(filteredWhere)
       .orderBy(desc(appointments.startAt))
       .limit(pageSize)

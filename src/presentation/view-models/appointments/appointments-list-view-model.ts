@@ -3,14 +3,14 @@ import type {
   AppointmentListFilter,
   AppointmentSessionContextDto,
 } from '../../../application/dto/appointment-management'
-import type { TodayAppointmentViewModel } from '../dashboard'
+import type { AppointmentListItemViewModel } from './appointment-list'
 import { normalizeApiError } from './appointment-view-model.types'
 import type { AppointmentsListViewModelDependencies } from './appointments-list-view-model.module'
 
 export type { AppointmentsListViewModelDependencies } from './appointments-list-view-model.module'
 
 export const createAppointmentsListViewModel = (dependencies: AppointmentsListViewModelDependencies) => {
-  const appointments = ref<TodayAppointmentViewModel[]>([])
+  const appointments = ref<AppointmentListItemViewModel[]>([])
   const sessionContext = ref<AppointmentSessionContextDto | null>(null)
   const loading = ref(false)
   const errorMessage = ref<string | null>(null)

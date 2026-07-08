@@ -17,6 +17,8 @@ const makeAppointment = (id = 'appointment_1') => ({
   isUrgent: false,
   reason: null,
   notes: null,
+  paymentStatus: 'pending' as const,
+  linkedPayment: null,
 })
 
 const makeResult = (overrides: Partial<AppointmentListResult> = {}): AppointmentListResult => ({

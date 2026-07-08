@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { TodayAppointmentViewModel } from '~~/src/presentation/view-models/dashboard'
+import {
+  resolveAppointmentPaymentBadge,
+  type AppointmentListItemViewModel,
+} from '~~/src/presentation/view-models/appointments/appointment-list'
 
 const props = defineProps<{
-  appointment: TodayAppointmentViewModel
+  appointment: AppointmentListItemViewModel
 }>()
 
 const router = useRouter()
@@ -53,6 +56,8 @@ const statusBadge = computed(() => {
   return { label: props.appointment.statusLabel, tone: 'soft' as const }
 })
 
+const paymentBadge = computed(() => resolveAppointmentPaymentBadge(props.appointment))
+
 const openAppointmentDetail = () => {
   void router.push(`/appointments/${props.appointment.id}`)
 }
@@ -87,6 +92,9 @@ const openAppointmentDetail = () => {
         <span class="appointment-status-badge" :class="`appointment-status-badge-${statusBadge.tone}`">
           <span class="appointment-status-dot" aria-hidden="true" />
           {{ statusBadge.label }}
+        </span>
+        <span class="appointment-payment-badge" :class="`appointment-payment-badge-${paymentBadge.tone}`">
+          {{ paymentBadge.label }}
         </span>
         <span v-if="appointment.isUrgent" class="appointment-urgent-mark">
           Urgente
@@ -233,6 +241,7 @@ const openAppointmentDetail = () => {
 }
 
 .appointment-status-badge,
+.appointment-payment-badge,
 .appointment-urgent-mark,
 .appointment-consultation-action {
   display: inline-flex;
@@ -242,6 +251,14 @@ const openAppointmentDetail = () => {
 
 .appointment-status-badge {
   gap: 0.38rem;
+  min-height: 2rem;
+  padding: 0.36rem 0.78rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.appointment-payment-badge {
   min-height: 2rem;
   padding: 0.36rem 0.78rem;
   border-radius: 999px;
@@ -280,6 +297,16 @@ const openAppointmentDetail = () => {
 .appointment-status-badge-soft {
   background: #edf6f5;
   color: #447274;
+}
+
+.appointment-payment-badge-success {
+  background: #eaf8ee;
+  color: #166534;
+}
+
+.appointment-payment-badge-pending {
+  background: #fff4df;
+  color: #b86111;
 }
 
 .appointment-urgent-mark {

@@ -1,4 +1,14 @@
 import type { Appointment } from '../entities/appointment'
+import type { PaymentMethod } from '../entities/payment'
+
+export type AppointmentPaymentStatus = 'paid' | 'pending'
+
+export interface AppointmentLinkedPayment {
+  id: string
+  amount: number
+  method: PaymentMethod
+  paidAt: Date
+}
 
 export interface AppointmentListPageQuery {
   organizationId: string
@@ -12,6 +22,8 @@ export interface AppointmentListPageQuery {
 export interface AppointmentListItem extends Appointment {
   patientName: string
   serviceName: string
+  paymentStatus: AppointmentPaymentStatus
+  linkedPayment: AppointmentLinkedPayment | null
 }
 
 export interface AppointmentListPageResult {
