@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lte } from 'drizzle-orm'
+import { and, countDistinct, desc, eq, gte, ilike, lte, or } from 'drizzle-orm'
 import type { Payment } from '../../domain/entities/payment'
 import type {
   PaymentByAppointmentQuery,
@@ -84,16 +84,42 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       conditions.push(lte(payments.paidAt, query.paidAtTo))
     }
 
+    const searchTerm = query.search?.trim()
     const filteredWhere = and(...conditions)
-    const totalRows = await this.db
-      .select({ value: count() })
-      .from(payments)
-      .where(filteredWhere)
 
+    const countQuery = this.db
+      .select({ value: countDistinct(payments.id) })
+      .from(payments)
+      .leftJoin(patients, eq(payments.patientId, patients.id))
+      .where(
+        searchTerm
+          ? and(
+              filteredWhere,
+              or(
+                ilike(patients.fullName, `%${searchTerm}%`),
+                ilike(payments.concept, `%${searchTerm}%`),
+                ilike(payments.notes, `%${searchTerm}%`),
+              ),
+            )
+          : filteredWhere,
+      )
+
+    const totalRows = await countQuery
     const total = totalRows[0]?.value ?? 0
     const totalPages = Math.max(1, Math.ceil(total / pageSize))
     const page = Math.min(Math.max(query.page, 1), totalPages)
     const offset = (page - 1) * pageSize
+
+    const dataWhere = searchTerm
+      ? and(
+          filteredWhere,
+          or(
+            ilike(patients.fullName, `%${searchTerm}%`),
+            ilike(payments.concept, `%${searchTerm}%`),
+            ilike(payments.notes, `%${searchTerm}%`),
+          ),
+        )
+      : filteredWhere
 
     const rows = await this.db
       .select({
@@ -102,7 +128,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
       })
       .from(payments)
       .leftJoin(patients, eq(payments.patientId, patients.id))
-      .where(filteredWhere)
+      .where(dataWhere)
       .orderBy(desc(payments.paidAt))
       .limit(pageSize)
       .offset(offset)

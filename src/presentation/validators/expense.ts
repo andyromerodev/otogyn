@@ -16,6 +16,7 @@ export const expenseListQuerySchema = z.object({
   expenseDateTo: z.coerce.date().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   pageSize: z.coerce.number().int().min(1).max(50).optional().default(10),
+  search: z.string().trim().max(120).optional(),
 })
 
 export const expenseCategorySchema = z.object({

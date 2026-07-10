@@ -30,4 +30,5 @@ export interface PaymentListQueryInput {
   paidAtTo?: Date
   page?: number
   pageSize?: number
+  search?: string
 }

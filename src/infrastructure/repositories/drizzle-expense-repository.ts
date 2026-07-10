@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lte } from 'drizzle-orm'
+import { and, count, desc, eq, gte, ilike, lte, or } from 'drizzle-orm'
 import type { Expense } from '../../domain/entities/expense'
 import type {
   ExpenseListItem,
@@ -59,6 +59,13 @@ export class DrizzleExpenseRepository implements ExpenseRepository {
 
     if (query.expenseDateTo) {
       conditions.push(lte(expenses.expenseDate, query.expenseDateTo))
+    }
+
+    if (query.search?.trim()) {
+      const s = query.search.trim()
+      conditions.push(
+        or(ilike(expenses.description, `%${s}%`), ilike(expenses.notes, `%${s}%`))!,
+      )
     }
 
     const filteredWhere = and(...conditions)

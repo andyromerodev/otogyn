@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { ExpenseListItem } from '~~/src/domain/repositories/expense-repository'
 import type { ExpenseCategory } from '~~/src/domain/entities/expense-category'
 import type { ExpensesListViewModelDependencies } from './expenses-list-view-model.module'
@@ -35,6 +35,16 @@ export const createExpensesListViewModel = (deps: ExpensesListViewModelDependenc
   const pageSize = ref(Math.max(deps.initialPageSize ?? 10, 1))
   const total = ref(0)
   const totalPages = ref(1)
+  const searchTerm = ref('')
+
+  let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+  watch(searchTerm, () => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = setTimeout(() => {
+      page.value = 1
+      void loadExpenses()
+    }, 250)
+  })
 
   const loadCategories = async () => {
     try {
@@ -53,6 +63,7 @@ export const createExpensesListViewModel = (deps: ExpensesListViewModelDependenc
         categoryId: categoryFilter.value ?? undefined,
         page: page.value,
         pageSize: pageSize.value,
+        search: searchTerm.value.trim() || undefined,
       })
 
       expenses.value = result.items
@@ -126,6 +137,7 @@ export const createExpensesListViewModel = (deps: ExpensesListViewModelDependenc
     emptyStateMessage,
     categoryChips,
     exportHref,
+    searchTerm,
     loadAll,
     loadExpenses,
     selectCategory,

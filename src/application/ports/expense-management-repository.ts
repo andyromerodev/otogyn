@@ -7,6 +7,7 @@ export interface ListExpensesClientInput {
   expenseDateTo?: string
   page?: number
   pageSize?: number
+  search?: string
 }
 
 export interface CreateExpenseClientInput {

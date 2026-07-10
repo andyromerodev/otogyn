@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { PaymentMethod } from '~~/src/domain/entities/payment'
 import type { PaymentListItem } from '~~/src/domain/repositories/payment-repository'
 import type { PaymentsListViewModelDependencies } from './payments-list-view-model.module'
@@ -46,6 +46,16 @@ export const createPaymentsListViewModel = (deps: PaymentsListViewModelDependenc
   const pageSize = ref(Math.max(deps.initialPageSize ?? 10, 1))
   const total = ref(0)
   const totalPages = ref(1)
+  const searchTerm = ref('')
+
+  let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+  watch(searchTerm, () => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = setTimeout(() => {
+      page.value = 1
+      void loadPayments()
+    }, 250)
+  })
 
   const loadPayments = async () => {
     loading.value = true
@@ -56,6 +66,7 @@ export const createPaymentsListViewModel = (deps: PaymentsListViewModelDependenc
         method: methodFilter.value ?? undefined,
         page: page.value,
         pageSize: pageSize.value,
+        search: searchTerm.value.trim() || undefined,
       })
 
       payments.value = result.items
@@ -124,6 +135,7 @@ export const createPaymentsListViewModel = (deps: PaymentsListViewModelDependenc
     emptyStateMessage,
     methodChips,
     exportHref,
+    searchTerm,
     loadPayments,
     selectMethod,
     goToPage,

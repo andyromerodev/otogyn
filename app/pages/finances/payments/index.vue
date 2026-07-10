@@ -29,6 +29,17 @@ const viewModel = usePaymentsViewModel()
       </div>
     </div>
 
+    <div class="payments-search">
+      <UIcon name="i-heroicons-magnifying-glass-20-solid" class="payments-search-icon" />
+      <input
+        v-model="viewModel.searchTerm.value"
+        type="search"
+        placeholder="Buscar por paciente, concepto o nota…"
+        class="payments-search-input"
+        aria-label="Buscar pagos"
+      />
+    </div>
+
     <div class="payments-chips">
       <button
         v-for="chip in viewModel.methodChips.value"
@@ -178,6 +189,40 @@ const viewModel = usePaymentsViewModel()
   color: #1f5f63;
   font-size: 0.94rem;
   font-weight: 700;
+}
+
+.payments-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.payments-search-icon {
+  position: absolute;
+  left: 1rem;
+  color: #7ca0a2;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.payments-search-input {
+  width: 100%;
+  border: 1.5px solid #bddfdf;
+  border-radius: 999px;
+  padding: 0.85rem 1.2rem 0.85rem 2.75rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #132b2d;
+  font-size: 0.97rem;
+  outline: none;
+}
+
+.payments-search-input:focus {
+  border-color: #2a7371;
+  box-shadow: 0 0 0 3px rgba(42, 115, 113, 0.12);
+}
+
+.payments-search-input::placeholder {
+  color: #7ca0a2;
 }
 
 .payments-chips {

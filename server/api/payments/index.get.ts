@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
       paidAtTo: query.paidAtTo,
       page: query.page,
       pageSize: query.pageSize,
+      search: query.search,
     })
   } catch (error) {
     handleApiError(error)

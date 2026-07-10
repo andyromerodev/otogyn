@@ -20,6 +20,7 @@ export class ListPaymentsUseCase {
       method: input.method,
       paidAtFrom: input.paidAtFrom,
       paidAtTo: input.paidAtTo,
+      search: input.search,
     })
   }
 }

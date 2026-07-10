@@ -31,6 +31,17 @@ const viewModel = useExpensesViewModel()
       </div>
     </div>
 
+    <div class="expenses-search">
+      <UIcon name="i-heroicons-magnifying-glass-20-solid" class="expenses-search-icon" />
+      <input
+        v-model="viewModel.searchTerm.value"
+        type="search"
+        placeholder="Buscar por descripción o nota…"
+        class="expenses-search-input"
+        aria-label="Buscar gastos"
+      />
+    </div>
+
     <div class="expenses-chips">
       <button
         v-for="chip in viewModel.categoryChips.value"
@@ -197,6 +208,40 @@ const viewModel = useExpensesViewModel()
   width: 3.5rem;
   height: 3.5rem;
   font-size: 1.75rem;
+}
+
+.expenses-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.expenses-search-icon {
+  position: absolute;
+  left: 1rem;
+  color: #7ca0a2;
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.expenses-search-input {
+  width: 100%;
+  border: 1.5px solid #bddfdf;
+  border-radius: 999px;
+  padding: 0.85rem 1.2rem 0.85rem 2.75rem;
+  background: rgba(255, 255, 255, 0.96);
+  color: #132b2d;
+  font-size: 0.97rem;
+  outline: none;
+}
+
+.expenses-search-input:focus {
+  border-color: #2a7371;
+  box-shadow: 0 0 0 3px rgba(42, 115, 113, 0.12);
+}
+
+.expenses-search-input::placeholder {
+  color: #7ca0a2;
 }
 
 .expenses-chips {

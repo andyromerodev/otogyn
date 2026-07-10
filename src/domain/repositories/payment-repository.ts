@@ -8,6 +8,7 @@ export interface PaymentListPageQuery {
   method?: PaymentMethod
   paidAtFrom?: Date
   paidAtTo?: Date
+  search?: string
 }
 
 export interface PaymentListItem extends Payment {

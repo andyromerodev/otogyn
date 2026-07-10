@@ -19,6 +19,7 @@ export class ListExpensesUseCase {
       categoryId: input.categoryId,
       expenseDateFrom: input.expenseDateFrom,
       expenseDateTo: input.expenseDateTo,
+      search: input.search,
     })
   }
 }

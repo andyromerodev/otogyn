@@ -21,4 +21,5 @@ export const paymentListQuerySchema = z.object({
   paidAtTo: z.coerce.date().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   pageSize: z.coerce.number().int().min(1).max(50).optional().default(10),
+  search: z.string().trim().max(120).optional(),
 })

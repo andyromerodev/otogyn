@@ -21,6 +21,7 @@ export interface ExpenseListQueryInput {
   expenseDateTo?: Date
   page?: number
   pageSize?: number
+  search?: string
 }
 
 export interface ExpenseCategoryMutationInput {

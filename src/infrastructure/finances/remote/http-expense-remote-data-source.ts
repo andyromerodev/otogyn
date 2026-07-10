@@ -22,6 +22,7 @@ export class HttpExpenseRemoteDataSource implements ExpenseManagementRepository 
           expenseDateTo: input.expenseDateTo,
           page: input.page ?? 1,
           pageSize: input.pageSize ?? 10,
+          search: input.search,
         },
       })) as ExpenseListPageResult
     }
@@ -33,6 +34,7 @@ export class HttpExpenseRemoteDataSource implements ExpenseManagementRepository 
         expenseDateTo: input.expenseDateTo,
         page: input.page ?? 1,
         pageSize: input.pageSize ?? 10,
+        search: input.search,
       },
     })
   }

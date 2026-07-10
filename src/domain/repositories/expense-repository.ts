@@ -7,6 +7,7 @@ export interface ExpenseListPageQuery {
   categoryId?: string
   expenseDateFrom?: Date
   expenseDateTo?: Date
+  search?: string
 }
 
 export interface ExpenseListItem extends Expense {

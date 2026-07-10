@@ -21,6 +21,7 @@ export class HttpPaymentRemoteDataSource implements PaymentManagementRepository 
           paidAtTo: input.paidAtTo,
           page: input.page ?? 1,
           pageSize: input.pageSize ?? 10,
+          search: input.search,
         },
       })) as PaymentListPageResult
     }
@@ -33,6 +34,7 @@ export class HttpPaymentRemoteDataSource implements PaymentManagementRepository 
         paidAtTo: input.paidAtTo,
         page: input.page ?? 1,
         pageSize: input.pageSize ?? 10,
+        search: input.search,
       },
     })
   }

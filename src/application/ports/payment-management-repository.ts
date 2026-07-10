@@ -8,6 +8,7 @@ export interface ListPaymentsClientInput {
   paidAtTo?: string
   page?: number
   pageSize?: number
+  search?: string
 }
 
 export interface CreatePaymentClientInput {
