@@ -38,6 +38,12 @@ const links = computed(() => [
           icon: 'i-heroicons-banknotes',
         },
         {
+          label: 'Estadísticas',
+          description: 'Indicadores de citas: completadas, cancelaciones y tendencias.',
+          to: '/statistics',
+          icon: 'i-heroicons-chart-bar',
+        },
+        {
           label: 'Disponibilidad',
           description: 'Horarios de atencion y bloqueos.',
           to: '/availability',

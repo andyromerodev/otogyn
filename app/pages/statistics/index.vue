@@ -75,7 +75,7 @@ const kpiColors: Record<string, string> = {
 
     <template v-else-if="viewModel.stats.value">
       <!-- KPI cards -->
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
         <article
           v-for="kpi in kpis"
           :key="kpi.label"

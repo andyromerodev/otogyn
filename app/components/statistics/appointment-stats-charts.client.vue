@@ -115,19 +115,19 @@ const serviceData = computed(() => ({
 const doughnutOptions: ChartOptions<'doughnut'> = {
   responsive: true,
   maintainAspectRatio: false,
-  cutout: '62%',
+  cutout: '60%',
   plugins: {
     legend: {
       position: 'bottom',
       labels: {
         usePointStyle: true,
-        boxWidth: 10,
-        padding: 12,
-        font: { size: 11 },
+        boxWidth: 9,
+        padding: 10,
+        font: { size: 10 },
         generateLabels: (chart) => {
           const data = chart.data
           return (data.labels as string[]).map((label, i) => ({
-            text: label.length > 28 ? label.slice(0, 28) + '…' : label,
+            text: label.length > 22 ? label.slice(0, 22) + '…' : label,
             fillStyle: (data.datasets[0]?.backgroundColor as string[])?.[i] ?? '#999',
             hidden: false,
             index: i,
@@ -238,15 +238,9 @@ const weekdayOptions: ChartOptions<'bar'> = {
   grid-template-columns: 1fr 1fr;
 }
 
-@media (max-width: 768px) {
-  .stats-charts-bottom {
-    grid-template-columns: 1fr;
-  }
-}
-
 .stats-chart-card {
   display: grid;
-  gap: 1rem;
+  gap: 0.875rem;
   padding: 1.25rem;
   overflow: hidden;
   min-width: 0;
@@ -254,13 +248,13 @@ const weekdayOptions: ChartOptions<'bar'> = {
 
 .stats-chart-copy {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .stats-chart-eyebrow {
   margin: 0;
   color: #0f766e;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -269,23 +263,37 @@ const weekdayOptions: ChartOptions<'bar'> = {
 .stats-chart-title {
   margin: 0;
   color: #132b2d;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .stats-chart-canvas {
   min-width: 0;
-  height: 320px;
+  height: 300px;
   overflow: hidden;
 }
 
 .stats-chart-canvas-sm {
-  height: 260px;
+  height: 280px;
 }
 
-@media (max-width: 640px) {
-  .stats-chart-canvas {
+/* tablet */
+@media (max-width: 900px) {
+  .stats-charts-bottom {
+    grid-template-columns: 1fr;
+  }
+  .stats-chart-canvas-sm {
     height: 260px;
+  }
+}
+
+/* mobile */
+@media (max-width: 540px) {
+  .stats-chart-card {
+    padding: 1rem;
+  }
+  .stats-chart-canvas {
+    height: 240px;
   }
   .stats-chart-canvas-sm {
     height: 220px;
