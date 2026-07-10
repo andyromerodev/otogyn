@@ -4,10 +4,13 @@ import { createAvailabilityViewModel } from '~~/src/presentation/view-models/ava
 export const useAvailabilityViewModel = async () => {
   const viewModel = createAvailabilityViewModel({
     listAvailabilityUseCase: availabilityServiceLocator.listAvailabilityUseCase,
+    listUpcomingBlockedSlotsUseCase: availabilityServiceLocator.listUpcomingBlockedSlotsUseCase,
     createAvailabilityUseCase: availabilityServiceLocator.createAvailabilityUseCase,
+    createBulkAvailabilityUseCase: availabilityServiceLocator.createBulkAvailabilityUseCase,
     updateAvailabilityUseCase: availabilityServiceLocator.updateAvailabilityUseCase,
     toggleAvailabilityActiveUseCase: availabilityServiceLocator.toggleAvailabilityActiveUseCase,
     createBlockedSlotUseCase: availabilityServiceLocator.createBlockedSlotUseCase,
+    createBulkBlockedSlotsUseCase: availabilityServiceLocator.createBulkBlockedSlotsUseCase,
     deleteBlockedSlotUseCase: availabilityServiceLocator.deleteBlockedSlotUseCase,
     getSessionContext: {
       execute: () => $fetch<{ role: 'admin_doctor' | 'assistant' }>('/api/auth/session-context'),

@@ -5,15 +5,13 @@ import { serverServiceLocator } from '../../utils/server-service-locator'
 export default defineEventHandler(async (event) => {
   try {
     const session = await requireAuthorizedUser(event, 'availability:read')
-    const today = new Date()
 
     const [availability, blockedSlots] = await Promise.all([
       serverServiceLocator.availability.listAvailabilityUseCase.execute({
         organizationId: session.organizationId,
       }),
-      serverServiceLocator.availability.listBlockedSlotsUseCase.execute({
+      serverServiceLocator.availability.listUpcomingBlockedSlotsUseCase.execute({
         organizationId: session.organizationId,
-        day: today,
       }),
     ])
 

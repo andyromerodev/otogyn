@@ -1,5 +1,5 @@
 import { computed, reactive, ref } from 'vue'
-import { formatLocalDate, parseAppDateTime } from '../../../application/utils/date/local-date'
+import { formatLocalDate } from '../../../application/utils/date/local-date'
 import type { BlockedTimeSlot } from '../../../domain/entities/blocked-time-slot'
 import type { DoctorAvailability } from '../../../domain/entities/doctor-availability'
 import type { AvailabilityViewModelDependencies } from './availability-view-model.module'
@@ -7,77 +7,54 @@ import type { AvailabilityViewModelDependencies } from './availability-view-mode
 export type { AvailabilityViewModelPort, AvailabilityViewModelDependencies } from './availability-view-model.module'
 
 const createInitialForm = () => ({
-  weekday: 1,
+  weekdays: [1] as number[],
   startTime: '09:00',
   endTime: '18:00',
   isActive: true,
 })
 
 const createBlockForm = () => ({
-  date: formatLocalDate(new Date()),
+  startDate: formatLocalDate(new Date()),
+  endDate: formatLocalDate(new Date()),
   startTime: '13:00',
   endTime: '14:00',
   reason: '',
 })
 
-const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado']
+const weekdays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
-// Factory del ViewModel — equivale al constructor de AvailabilityViewModel : ViewModel()
 export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelDependencies) => {
-  // Como StateFlow<List<DoctorAvailability>> — lista de franjas horarias registradas
   const availabilities = ref<DoctorAvailability[]>([])
-
-  // Como StateFlow<List<BlockedTimeSlot>> — slots bloqueados (vacaciones, ausencias, etc.)
   const blockedSlots = ref<BlockedTimeSlot[]>([])
-
-  // Como StateFlow<'admin_doctor' | 'assistant'> — rol del usuario autenticado
   const sessionRole = ref<'admin_doctor' | 'assistant'>('assistant')
-
-  // Como StateFlow<Boolean> — carga inicial de disponibilidades
   const loading = ref(false)
-
-  // Como StateFlow<Boolean> — operación de guardado (crear/editar horario o bloqueo) en curso
   const pending = ref(false)
-
-  // Como StateFlow<String?> — id del horario cuyo toggle está en curso; null si ninguno
   const togglingId = ref<string | null>(null)
-
-  // Como StateFlow<String?> — id del slot bloqueado que se está eliminando; null si ninguno
   const deletingSlotId = ref<string | null>(null)
-
-  // Como StateFlow<String?> — id del horario en modo edición; null si se está creando uno nuevo
   const editingId = ref<string | null>(null)
-
-  // Como StateFlow<String?> — mensaje de error, expuesto read-only a la UI
   const errorMessage = ref<string | null>(null)
-
-  // Como StateFlow<String?> — mensaje de éxito tras una operación
   const successMessage = ref<string | null>(null)
 
-  // Como MutableStateFlow<AvailabilityFormState> — estado del formulario de horario
   const form = reactive(createInitialForm())
-
-  // Como MutableStateFlow<BlockFormState> — estado del formulario de bloqueo de slot
   const blockForm = reactive(createBlockForm())
 
-  // Como derivedStateOf { } — permiso calculado desde el rol del usuario
   const canManageAvailability = computed(() => sessionRole.value === 'admin_doctor')
   const weekdaysList = weekdays
 
-  // Equivale a fun loadAvailability() — carga paralela de disponibilidades y contexto de sesión
   const loadAvailability = async () => {
     loading.value = true
     errorMessage.value = null
 
     try {
-      const [avail, session] = await Promise.all([
+      const [avail, slots, session] = await Promise.all([
         dependencies.listAvailabilityUseCase.execute(),
+        dependencies.listUpcomingBlockedSlotsUseCase.execute(),
         dependencies.getSessionContext.execute(),
       ])
 
       availabilities.value = avail
+      blockedSlots.value = slots
       sessionRole.value = session.role
-      blockedSlots.value = []
     } catch (error) {
       errorMessage.value =
         error && typeof error === 'object' && 'statusMessage' in error && typeof error.statusMessage === 'string'
@@ -90,7 +67,7 @@ export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelD
 
   const startEditingAvailability = (avail: DoctorAvailability) => {
     editingId.value = avail.id
-    form.weekday = avail.weekday
+    form.weekdays = [avail.weekday]
     form.startTime = avail.startTime
     form.endTime = avail.endTime
     form.isActive = avail.isActive
@@ -103,8 +80,21 @@ export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelD
     Object.assign(form, createInitialForm())
   }
 
-  // Equivale a fun onSubmitAvailability() — crea o edita un horario según editingId
+  const toggleWeekday = (day: number) => {
+    const idx = form.weekdays.indexOf(day)
+    if (idx === -1) {
+      form.weekdays = [...form.weekdays, day].sort((a, b) => a - b)
+    } else {
+      form.weekdays = form.weekdays.filter((d) => d !== day)
+    }
+  }
+
   const submitAvailability = async () => {
+    if (form.weekdays.length === 0) {
+      errorMessage.value = 'Selecciona al menos un día de la semana.'
+      return
+    }
+
     pending.value = true
     errorMessage.value = null
     successMessage.value = null
@@ -113,24 +103,23 @@ export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelD
       if (editingId.value) {
         await dependencies.updateAvailabilityUseCase.execute({
           id: editingId.value,
-          weekday: form.weekday,
+          weekday: form.weekdays[0],
           startTime: form.startTime,
           endTime: form.endTime,
           isActive: form.isActive,
         })
-
         cancelEditingAvailability()
         successMessage.value = 'Horario actualizado correctamente.'
       } else {
-        await dependencies.createAvailabilityUseCase.execute({
-          weekday: form.weekday,
+        const count = form.weekdays.length
+        await dependencies.createBulkAvailabilityUseCase.execute({
+          weekdays: form.weekdays,
           startTime: form.startTime,
           endTime: form.endTime,
           isActive: form.isActive,
         })
-
         Object.assign(form, createInitialForm())
-        successMessage.value = 'Horario registrado correctamente.'
+        successMessage.value = count > 1 ? 'Horarios registrados correctamente.' : 'Horario registrado correctamente.'
       }
 
       await loadAvailability()
@@ -173,17 +162,15 @@ export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelD
     successMessage.value = null
 
     try {
-      const date = blockForm.date
-      const startsAt = parseAppDateTime(`${date}T${blockForm.startTime}:00`).toISOString()
-      const endsAt = parseAppDateTime(`${date}T${blockForm.endTime}:00`).toISOString()
-
-      await dependencies.createBlockedSlotUseCase.execute({
-        startsAt,
-        endsAt,
+      await dependencies.createBulkBlockedSlotsUseCase.execute({
+        startDate: blockForm.startDate,
+        endDate: blockForm.endDate || blockForm.startDate,
+        startTime: blockForm.startTime,
+        endTime: blockForm.endTime,
         reason: blockForm.reason.trim() || null,
       })
 
-      Object.assign(blockForm, { ...createBlockForm(), date: blockForm.date })
+      Object.assign(blockForm, { ...createBlockForm(), startDate: blockForm.startDate, endDate: blockForm.startDate })
       successMessage.value = 'Bloqueo registrado correctamente.'
       await loadAvailability()
     } catch (error) {
@@ -237,6 +224,7 @@ export const createAvailabilityViewModel = (dependencies: AvailabilityViewModelD
     loadAvailability,
     startEditingAvailability,
     cancelEditingAvailability,
+    toggleWeekday,
     submitAvailability,
     toggleAvailabilityActive,
     submitBlockedSlot,

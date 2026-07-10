@@ -22,6 +22,9 @@ import { ListAssistantsUseCase } from '../../src/application/use-cases/list-assi
 import { ListAppointmentsUseCase } from '../../src/application/use-cases/list-appointments'
 import { ListAvailabilityUseCase } from '../../src/application/use-cases/availability/list-availability'
 import { ListBlockedSlotsUseCase } from '../../src/application/use-cases/availability/list-blocked-slots'
+import { ListUpcomingBlockedSlotsUseCase } from '../../src/application/use-cases/availability/list-upcoming-blocked-slots'
+import { CreateBulkBlockedSlotsUseCase } from '../../src/application/use-cases/availability/create-bulk-blocked-slots'
+import { CreateBulkAvailabilityUseCase } from '../../src/application/use-cases/availability/create-bulk-availability'
 import { ListPatientsUseCase } from '../../src/application/use-cases/list-patients'
 import { ListServicesUseCase } from '../../src/application/use-cases/list-services'
 import { ReactivateAssistantUseCase } from '../../src/application/use-cases/reactivate-assistant'
@@ -125,10 +128,13 @@ export const serverServiceLocator = {
   availability: {
     listAvailabilityUseCase: new ListAvailabilityUseCase(availabilityRepository),
     listBlockedSlotsUseCase: new ListBlockedSlotsUseCase(availabilityRepository),
+    listUpcomingBlockedSlotsUseCase: new ListUpcomingBlockedSlotsUseCase(availabilityRepository),
     createAvailabilityUseCase: new CreateAvailabilityUseCase(availabilityRepository),
+    createBulkAvailabilityUseCase: new CreateBulkAvailabilityUseCase(availabilityRepository),
     updateAvailabilityUseCase: new UpdateAvailabilityUseCase(availabilityRepository),
     toggleAvailabilityActiveUseCase: new ToggleAvailabilityActiveUseCase(availabilityRepository),
     createBlockedSlotUseCase: new CreateBlockedSlotUseCase(availabilityRepository),
+    createBulkBlockedSlotsUseCase: new CreateBulkBlockedSlotsUseCase(availabilityRepository),
     deleteBlockedSlotUseCase: new DeleteBlockedSlotUseCase(availabilityRepository),
   },
   assistants: {

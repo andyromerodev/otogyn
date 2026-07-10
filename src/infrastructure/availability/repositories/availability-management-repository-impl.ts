@@ -2,8 +2,10 @@ import type { BlockedTimeSlot } from '../../../domain/entities/blocked-time-slot
 import type { DoctorAvailability } from '../../../domain/entities/doctor-availability'
 import type { AvailabilityManagementRepository } from '../../../application/ports/availability-management-repository'
 import type {
+  AvailabilityBulkMutationInput,
   AvailabilityMutationInput,
   AvailabilityUpdateInput,
+  BlockedSlotBulkMutationInput,
   BlockedSlotMutationInput,
 } from '../../../application/dto/availability-management'
 import type { AvailabilityRemoteDataSource } from '../remote/availability-remote-data-source'
@@ -22,8 +24,17 @@ export class AvailabilityManagementRepositoryImpl implements AvailabilityManagem
     return result.blockedSlots
   }
 
+  async listUpcomingBlockedSlots(): Promise<BlockedTimeSlot[]> {
+    const result = await this.remoteDataSource.listWeeklyAvailability()
+    return result.blockedSlots
+  }
+
   async createAvailability(input: AvailabilityMutationInput): Promise<DoctorAvailability> {
     return this.remoteDataSource.createAvailability(input)
+  }
+
+  async createBulkAvailability(input: AvailabilityBulkMutationInput): Promise<DoctorAvailability[]> {
+    return this.remoteDataSource.createBulkAvailability(input)
   }
 
   async updateAvailability(input: AvailabilityUpdateInput): Promise<DoctorAvailability> {
@@ -36,6 +47,10 @@ export class AvailabilityManagementRepositoryImpl implements AvailabilityManagem
 
   async createBlockedSlot(input: BlockedSlotMutationInput): Promise<BlockedTimeSlot> {
     return this.remoteDataSource.createBlockedSlot(input)
+  }
+
+  async createBulkBlockedSlots(input: BlockedSlotBulkMutationInput): Promise<BlockedTimeSlot[]> {
+    return this.remoteDataSource.createBulkBlockedSlots(input)
   }
 
   async deleteBlockedSlot(id: string): Promise<void> {

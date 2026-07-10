@@ -22,5 +22,20 @@ export interface BlockedSlotMutationInput {
   reason?: string | null
 }
 
+export interface BlockedSlotBulkMutationInput {
+  startDate: string
+  endDate: string
+  startTime: string
+  endTime: string
+  reason?: string | null
+}
+
+export interface AvailabilityBulkMutationInput {
+  weekdays: number[]
+  startTime: string
+  endTime: string
+  isActive: boolean
+}
+
 export type AvailabilityListResult = DoctorAvailability[]
 export type BlockedSlotListResult = BlockedTimeSlot[]

@@ -7,8 +7,13 @@ export class HttpAvailabilityRemoteDataSource implements AvailabilityRemoteDataS
   }
 
   async createAvailability(input: any) {
-     
+
     return $fetch('/api/availability' as any, { method: 'POST', body: input } as any) as any
+  }
+
+  async createBulkAvailability(input: any) {
+
+    return $fetch('/api/availability/bulk' as any, { method: 'POST', body: input } as any) as any
   }
 
   async updateAvailability(input: any) {
@@ -28,8 +33,13 @@ export class HttpAvailabilityRemoteDataSource implements AvailabilityRemoteDataS
   }
 
   async createBlockedSlot(input: any) {
-     
+
     return $fetch('/api/availability/blocked' as any, { method: 'POST', body: input } as any) as any
+  }
+
+  async createBulkBlockedSlots(input: any) {
+
+    return $fetch('/api/availability/blocked/bulk' as any, { method: 'POST', body: input } as any) as any
   }
 
   async deleteBlockedSlot(id: string) {

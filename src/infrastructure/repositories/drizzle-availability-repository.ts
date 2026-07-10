@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, lt } from 'drizzle-orm'
+import { and, asc, eq, gt, gte, lt } from 'drizzle-orm'
 import type {
   AvailabilityRepository,
   CreateBlockedSlotInput,
@@ -103,6 +103,24 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
     return rows.map(mapBlockedSlot)
   }
 
+  async listUpcomingBlockedSlots(organizationId: string, limit = 100): Promise<BlockedTimeSlot[]> {
+    const now = new Date()
+
+    const rows = await this.db
+      .select()
+      .from(blockedTimeSlots)
+      .where(
+        and(
+          eq(blockedTimeSlots.organizationId, organizationId),
+          gte(blockedTimeSlots.endsAt, now),
+        ),
+      )
+      .orderBy(asc(blockedTimeSlots.startsAt))
+      .limit(limit)
+
+    return rows.map(mapBlockedSlot)
+  }
+
   async saveAvailability(input: SaveAvailabilityInput): Promise<DoctorAvailability> {
     const id = crypto.randomUUID()
     const now = new Date()
@@ -131,6 +149,43 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
       .returning()
 
     return mapAvailability(rows[0]!)
+  }
+
+  async saveBulkAvailability(inputs: SaveAvailabilityInput[]): Promise<DoctorAvailability[]> {
+    return this.db.transaction(async (tx) => {
+      const results: DoctorAvailability[] = []
+      const now = new Date()
+
+      for (const input of inputs) {
+        const id = crypto.randomUUID()
+        const rows = await tx
+          .insert(doctorAvailability)
+          .values({
+            id,
+            organizationId: input.organizationId,
+            weekday: input.weekday,
+            startTime: input.startTime,
+            endTime: input.endTime,
+            isActive: input.isActive,
+            createdAt: now,
+            updatedAt: now,
+          })
+          .onConflictDoUpdate({
+            target: [doctorAvailability.organizationId, doctorAvailability.weekday],
+            set: {
+              startTime: input.startTime,
+              endTime: input.endTime,
+              isActive: input.isActive,
+              updatedAt: now,
+            },
+          })
+          .returning()
+
+        results.push(mapAvailability(rows[0]!))
+      }
+
+      return results
+    })
   }
 
   async updateAvailability(id: string, input: UpdateAvailabilityInput): Promise<DoctorAvailability> {
@@ -206,6 +261,29 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
       .returning()
 
     return mapBlockedSlot(rows[0]!)
+  }
+
+  async createBulkBlockedSlots(inputs: CreateBlockedSlotInput[]): Promise<BlockedTimeSlot[]> {
+    return this.db.transaction(async (tx) => {
+      const now = new Date()
+      const values = inputs.map((input) => {
+        if (input.startsAt.getTime() >= input.endsAt.getTime()) {
+          throw new BusinessRuleError('Blocked slot start must be before end.')
+        }
+        return {
+          id: crypto.randomUUID(),
+          organizationId: input.organizationId,
+          startsAt: input.startsAt,
+          endsAt: input.endsAt,
+          reason: input.reason ?? null,
+          createdAt: now,
+          updatedAt: now,
+        }
+      })
+
+      const rows = await tx.insert(blockedTimeSlots).values(values).returning()
+      return rows.map(mapBlockedSlot)
+    })
   }
 
   async deleteBlockedSlot(id: string): Promise<void> {

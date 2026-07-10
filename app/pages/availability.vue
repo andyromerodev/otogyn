@@ -7,6 +7,17 @@ definePageMeta({
 })
 
 const viewModel = await useAvailabilityViewModel()
+
+const weekdayShort = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+
+function formatBlockDate(iso: string) {
+  return new Date(iso).toLocaleDateString('es-PE', {
+    timeZone: 'America/Lima',
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+}
 </script>
 
 <template>
@@ -14,7 +25,7 @@ const viewModel = await useAvailabilityViewModel()
     <SharedSectionHeader
       eyebrow="Disponibilidad"
       title="Horarios y bloqueos"
-      description="Gestiona los horarios de atencion semanal y bloqueos horarios para la organizacion."
+      description="Gestiona los horarios de atención semanal y bloqueos horarios para la organización."
     />
 
     <p v-if="viewModel.errorMessage.value" class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
@@ -29,29 +40,35 @@ const viewModel = await useAvailabilityViewModel()
         v-if="viewModel.canManageAvailability.value"
         class="surface-card space-y-4 rounded-[28px] p-5"
       >
+        <!-- Schedule form -->
         <div class="space-y-1">
           <p class="text-lg font-semibold text-slate-900">
             {{ viewModel.editingId.value ? 'Editar horario' : 'Nuevo horario' }}
           </p>
-          <p class="text-sm text-slate-500">Configura dia, hora inicio, hora fin y estado activo.</p>
+          <p class="text-sm text-slate-500">Configura días, hora inicio, hora fin y estado activo.</p>
         </div>
 
         <form class="space-y-4" @submit.prevent="viewModel.submitAvailability">
-          <label class="block space-y-1.5">
-            <span class="text-sm font-semibold text-slate-700">Dia de la semana</span>
-            <select
-              v-model.number="viewModel.form.weekday"
-              class="w-full rounded-2xl border border-teal-100 bg-white/90 px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
-            >
-              <option
-                v-for="(label, index) in viewModel.weekdaysList"
-                :key="index"
-                :value="index"
+          <!-- Weekday checkboxes -->
+          <div class="space-y-1.5">
+            <span class="text-sm font-semibold text-slate-700">Días de la semana</span>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="(label, idx) in weekdayShort"
+                :key="idx"
+                type="button"
+                class="rounded-full border px-3 py-1.5 text-xs font-semibold transition"
+                :class="viewModel.form.weekdays.includes(idx)
+                  ? 'border-teal-500 bg-teal-600 text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:bg-teal-50'"
+                :disabled="!!viewModel.editingId.value"
+                @click="viewModel.toggleWeekday(idx)"
               >
                 {{ label }}
-              </option>
-            </select>
-          </label>
+              </button>
+            </div>
+            <p v-if="viewModel.editingId.value" class="text-xs text-slate-400">Editar cambia solo este día.</p>
+          </div>
 
           <div class="grid gap-4 md:grid-cols-2">
             <label class="block space-y-1.5">
@@ -102,21 +119,35 @@ const viewModel = await useAvailabilityViewModel()
 
         <hr class="border-teal-100">
 
+        <!-- Block form -->
         <div class="space-y-1">
           <p class="text-lg font-semibold text-slate-900">Bloquear horario</p>
-          <p class="text-sm text-slate-500">Crea un bloqueo para un dia y rango horario especifico.</p>
+          <p class="text-sm text-slate-500">Crea un bloqueo para un rango de fechas y horario.</p>
         </div>
 
         <form class="space-y-4" @submit.prevent="viewModel.submitBlockedSlot">
-          <label class="block space-y-1.5">
-            <span class="text-sm font-semibold text-slate-700">Fecha</span>
-            <input
-              v-model="viewModel.blockForm.date"
-              type="date"
-              required
-              class="w-full rounded-2xl border border-teal-100 bg-white/90 px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
-            >
-          </label>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block space-y-1.5">
+              <span class="text-sm font-semibold text-slate-700">Fecha inicio</span>
+              <input
+                v-model="viewModel.blockForm.startDate"
+                type="date"
+                required
+                class="w-full rounded-2xl border border-teal-100 bg-white/90 px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+              >
+            </label>
+
+            <label class="block space-y-1.5">
+              <span class="text-sm font-semibold text-slate-700">Fecha fin</span>
+              <input
+                v-model="viewModel.blockForm.endDate"
+                type="date"
+                :min="viewModel.blockForm.startDate"
+                required
+                class="w-full rounded-2xl border border-teal-100 bg-white/90 px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+              >
+            </label>
+          </div>
 
           <div class="grid gap-4 md:grid-cols-2">
             <label class="block space-y-1.5">
@@ -145,7 +176,7 @@ const viewModel = await useAvailabilityViewModel()
             <input
               v-model="viewModel.blockForm.reason"
               type="text"
-              placeholder="Almuerzo, reunion, feriado..."
+              placeholder="Almuerzo, reunión, feriado..."
               class="w-full rounded-2xl border border-teal-100 bg-white/90 px-4 py-3 text-slate-900 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             >
           </label>
@@ -161,6 +192,7 @@ const viewModel = await useAvailabilityViewModel()
       </article>
 
       <section class="space-y-4">
+        <!-- Weekly schedule cards -->
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))]">
           <article
             v-for="avail in viewModel.availabilities.value"
@@ -205,12 +237,17 @@ const viewModel = await useAvailabilityViewModel()
             v-if="!viewModel.availabilities.value.length"
             class="surface-card rounded-[28px] p-5 text-sm text-slate-500 sm:col-span-full"
           >
-            Aun no hay horarios configurados para esta organizacion.
+            Aún no hay horarios configurados para esta organización.
           </article>
         </div>
 
-        <article v-if="viewModel.blockedSlots.value.length" class="surface-card space-y-3 rounded-[28px] p-5">
-          <p class="text-base font-semibold text-slate-900">Bloqueos del dia</p>
+        <!-- Upcoming blocked slots -->
+        <article class="surface-card space-y-3 rounded-[28px] p-5">
+          <p class="text-base font-semibold text-slate-900">Próximos bloqueos</p>
+
+          <p v-if="!viewModel.blockedSlots.value.length" class="text-sm text-slate-400">
+            No hay bloqueos futuros registrados.
+          </p>
 
           <div
             v-for="slot in viewModel.blockedSlots.value"
@@ -218,12 +255,13 @@ const viewModel = await useAvailabilityViewModel()
             class="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-teal-100 bg-white/80 p-4"
           >
             <div class="space-y-1">
-              <p class="text-sm font-semibold text-slate-900">
+              <p class="text-sm font-semibold text-slate-700">{{ formatBlockDate(slot.startsAt.toString()) }}</p>
+              <p class="text-sm text-slate-500">
                 {{ toAppTimeLabel(new Date(slot.startsAt)) }}
                 –
                 {{ toAppTimeLabel(new Date(slot.endsAt)) }}
               </p>
-              <p v-if="slot.reason" class="text-sm text-slate-500">{{ slot.reason }}</p>
+              <p v-if="slot.reason" class="text-xs text-slate-400">{{ slot.reason }}</p>
             </div>
 
             <button
