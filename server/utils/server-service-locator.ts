@@ -1,4 +1,5 @@
 import { CancelAppointmentUseCase } from '../../src/application/use-cases/cancel-appointment'
+import { GetAppointmentStatsUseCase } from '../../src/application/use-cases/get-appointment-stats'
 import { GetCalendarDayUseCase } from '../../src/application/use-cases/calendar/get-calendar-day'
 import { GetCalendarMonthUseCase } from '../../src/application/use-cases/calendar/get-calendar-month'
 import { GetCalendarWeekUseCase } from '../../src/application/use-cases/calendar/get-calendar-week'
@@ -166,6 +167,7 @@ export const serverServiceLocator = {
     ),
     cancelAppointmentUseCase: new CancelAppointmentUseCase(appointmentRepository),
     changeAppointmentStatusUseCase,
+    getAppointmentStatsUseCase: new GetAppointmentStatsUseCase(appointmentRepository),
     getAppointmentAvailableSlotsUseCase: new GetAppointmentAvailableSlotsUseCase(
       appointmentRepository,
       availabilityRepository,

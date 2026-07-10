@@ -28,6 +28,7 @@ const navigation = computed(() => [
   ...(sessionContext.value?.role === 'admin_doctor'
     ? [
         { label: 'Finanzas', to: '/finances' },
+        { label: 'Estadísticas', to: '/statistics' },
         { label: 'Disponibilidad', to: '/availability' },
         { label: 'Ajustes', to: '/settings' },
       ]

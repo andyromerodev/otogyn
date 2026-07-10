@@ -1,5 +1,11 @@
 import type { Appointment } from '../entities/appointment'
 import type { PaymentMethod } from '../entities/payment'
+import type { AppointmentStatsDto, AppointmentStatsRange } from '../../application/dto/appointment-stats'
+
+export interface AppointmentStatsQuery {
+  organizationId: string
+  range: AppointmentStatsRange
+}
 
 export type AppointmentPaymentStatus = 'paid' | 'pending'
 
@@ -48,4 +54,5 @@ export interface AppointmentRepository {
   ): Promise<Appointment[]>
   save(appointment: Appointment): Promise<Appointment>
   saveWithLock(appointment: Appointment): Promise<Appointment>
+  getStats(input: AppointmentStatsQuery): Promise<AppointmentStatsDto>
 }
