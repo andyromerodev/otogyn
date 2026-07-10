@@ -1,7 +1,13 @@
-import type { PublicBookingInput, PublicBookingResult, PublicServiceDto, PublicSlotDto } from '../dto/public-booking'
+import type { PublicBookingInput, PublicBookingResult, PublicServiceListResult, PublicSlotDto } from '../dto/public-booking'
+
+export interface GetPublicServicesInput {
+  search?: string
+  page?: number
+  pageSize?: number
+}
 
 export interface BookingRepository {
-  getPublicServices(): Promise<PublicServiceDto[]>
+  getPublicServices(input?: GetPublicServicesInput): Promise<PublicServiceListResult>
   getPublicSlots(serviceId: string, date: string): Promise<PublicSlotDto[]>
   createPublicBooking(input: PublicBookingInput): Promise<PublicBookingResult>
 }

@@ -1,12 +1,12 @@
-import type { PublicBookingInput, PublicBookingResult, PublicServiceDto, PublicSlotDto } from '../../../application/dto/public-booking'
-import type { BookingRepository } from '../../../application/ports/booking-repository'
+import type { PublicBookingInput, PublicBookingResult, PublicServiceListResult, PublicSlotDto } from '../../../application/dto/public-booking'
+import type { BookingRepository, GetPublicServicesInput } from '../../../application/ports/booking-repository'
 import type { BookingRemoteDataSource } from '../remote/booking-remote-data-source'
 
 export class BookingRepositoryImpl implements BookingRepository {
   constructor(private readonly remoteDataSource: BookingRemoteDataSource) {}
 
-  getPublicServices(): Promise<PublicServiceDto[]> {
-    return this.remoteDataSource.getPublicServices()
+  getPublicServices(input?: GetPublicServicesInput): Promise<PublicServiceListResult> {
+    return this.remoteDataSource.getPublicServices(input)
   }
 
   getPublicSlots(serviceId: string, date: string): Promise<PublicSlotDto[]> {

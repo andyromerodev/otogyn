@@ -1,7 +1,7 @@
-import { and, asc, eq, ilike } from 'drizzle-orm'
+import { and, asc, count, eq, ilike } from 'drizzle-orm'
 import { BusinessRuleError } from '../../domain/errors/business-rule-error'
 import type { MedicalService } from '../../domain/entities/medical-service'
-import type { ServiceRepository, UpdateServiceInput } from '../../domain/repositories/service-repository'
+import type { ServiceListPublicPageQuery, ServiceListPublicPageResult, ServiceRepository, UpdateServiceInput } from '../../domain/repositories/service-repository'
 import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { services } from '../database/schema'
@@ -61,6 +61,36 @@ export class DrizzleServiceRepository implements ServiceRepository {
       .orderBy(asc(services.name))
 
     return rows.map(mapService)
+  }
+
+  async listPublicServicesPaged(query: ServiceListPublicPageQuery): Promise<ServiceListPublicPageResult> {
+    const pageSize = Math.min(Math.max(query.pageSize, 1), 50)
+    const conditions = [
+      eq(services.organizationId, query.organizationId),
+      eq(services.isActive, true),
+    ]
+
+    if (query.search?.trim()) {
+      conditions.push(ilike(services.name, `%${query.search.trim()}%`))
+    }
+
+    const where = and(...conditions)
+
+    const totalRows = await this.db.select({ value: count() }).from(services).where(where)
+    const total = totalRows[0]?.value ?? 0
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    const page = Math.min(Math.max(query.page, 1), totalPages)
+    const offset = (page - 1) * pageSize
+
+    const rows = await this.db
+      .select()
+      .from(services)
+      .where(where)
+      .orderBy(asc(services.name))
+      .limit(pageSize)
+      .offset(offset)
+
+    return { items: rows.map(mapService), total }
   }
 
   async findById(id: string): Promise<MedicalService | null> {

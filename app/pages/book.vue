@@ -23,6 +23,19 @@ const screen = await useBookingScreen()
         <p class="text-sm text-slate-500">Selecciona el tipo de consulta que necesitas.</p>
       </div>
 
+      <!-- search -->
+      <div class="relative flex items-center">
+        <svg class="absolute left-3.5 h-4 w-4 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+        </svg>
+        <input
+          v-model="screen.serviceSearch.value"
+          type="search"
+          placeholder="Buscar servicio…"
+          class="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+        />
+      </div>
+
       <div
         v-if="screen.loading.value"
         class="rounded-2xl border border-slate-100 bg-white py-12 text-center text-sm text-slate-400"
@@ -34,7 +47,7 @@ const screen = await useBookingScreen()
         v-else-if="!screen.services.value.length"
         class="rounded-2xl border border-dashed border-slate-200 py-12 text-center text-sm text-slate-400"
       >
-        No hay servicios disponibles en este momento.
+        {{ screen.serviceSearch.value ? 'No se encontraron servicios con esa búsqueda.' : 'No hay servicios disponibles en este momento.' }}
       </div>
 
       <div v-else class="space-y-2">
@@ -56,6 +69,27 @@ const screen = await useBookingScreen()
               </p>
             </div>
           </div>
+        </button>
+      </div>
+
+      <!-- pagination -->
+      <div v-if="screen.serviceTotalPages.value > 1" class="flex items-center justify-center gap-2">
+        <button
+          class="rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+          :disabled="screen.servicePage.value <= 1"
+          @click="screen.goToServicePage(screen.servicePage.value - 1)"
+        >
+          ← Anterior
+        </button>
+        <span class="text-sm text-slate-500">
+          {{ screen.servicePage.value }} / {{ screen.serviceTotalPages.value }}
+        </span>
+        <button
+          class="rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+          :disabled="screen.servicePage.value >= screen.serviceTotalPages.value"
+          @click="screen.goToServicePage(screen.servicePage.value + 1)"
+        >
+          Siguiente →
         </button>
       </div>
     </template>

@@ -1,4 +1,5 @@
-import type { PublicBookingInput, PublicBookingResult, PublicServiceDto, PublicSlotDto } from '../../../application/dto/public-booking'
+import type { PublicBookingInput, PublicBookingResult, PublicServiceListResult, PublicSlotDto } from '../../../application/dto/public-booking'
+import type { GetPublicServicesInput } from '../../../application/ports/booking-repository'
 import type { BookingRemoteDataSource } from './booking-remote-data-source'
 
 async function getPublicSecurityToken(action: 'booking'): Promise<string> {
@@ -10,8 +11,14 @@ async function getPublicSecurityToken(action: 'booking'): Promise<string> {
 }
 
 export class HttpBookingRemoteDataSource implements BookingRemoteDataSource {
-  getPublicServices(): Promise<PublicServiceDto[]> {
-    return $fetch<PublicServiceDto[]>('/api/public/services' as string)
+  getPublicServices(input?: GetPublicServicesInput): Promise<PublicServiceListResult> {
+    return $fetch<PublicServiceListResult>('/api/public/services' as string, {
+      query: {
+        search: input?.search,
+        page: input?.page,
+        pageSize: input?.pageSize,
+      },
+    })
   }
 
   getPublicSlots(serviceId: string, date: string): Promise<PublicSlotDto[]> {

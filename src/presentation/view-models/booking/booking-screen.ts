@@ -1,4 +1,4 @@
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import type { PublicBookingResult, PublicServiceDto, PublicSlotDto } from '../../../application/dto/public-booking'
 import { APP_TIME_ZONE, formatLocalDate, parseLocalDate, toAppTimeLabel } from '../../../application/utils/date/local-date'
 import type { GetPublicServicesFrontendUseCase } from '../../../application/use-cases/booking/frontend/get-public-services'
@@ -17,9 +17,15 @@ function todayString(): string {
   return formatLocalDate(new Date())
 }
 
+const SERVICE_PAGE_SIZE = 12
+
 export function createBookingScreen(deps: BookingScreenDependencies) {
   const step = ref<BookingStep>(1)
   const services = ref<PublicServiceDto[]>([])
+  const serviceSearch = ref('')
+  const servicePage = ref(1)
+  const serviceTotal = ref(0)
+  const serviceTotalPages = ref(1)
   const selectedService = ref<PublicServiceDto | null>(null)
   const selectedDate = ref(todayString())
   const slots = ref<PublicSlotDto[]>([])
@@ -28,6 +34,15 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
   const loading = ref(false)
   const slotsLoading = ref(false)
   const errorMessage = ref('')
+
+  let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+  watch(serviceSearch, () => {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = setTimeout(() => {
+      servicePage.value = 1
+      void loadServices()
+    }, 250)
+  })
 
   const form = reactive({
     name: '',
@@ -41,12 +56,26 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
     loading.value = true
     errorMessage.value = ''
     try {
-      services.value = await deps.getPublicServicesUseCase.execute()
+      const result = await deps.getPublicServicesUseCase.execute({
+        search: serviceSearch.value.trim() || undefined,
+        page: servicePage.value,
+        pageSize: SERVICE_PAGE_SIZE,
+      })
+      services.value = result.items
+      serviceTotal.value = result.total
+      serviceTotalPages.value = result.totalPages
+      servicePage.value = result.page
     } catch {
       errorMessage.value = 'No se pudieron cargar los servicios. Intente de nuevo.'
     } finally {
       loading.value = false
     }
+  }
+
+  async function goToServicePage(page: number) {
+    if (page < 1 || page > serviceTotalPages.value || page === servicePage.value) return
+    servicePage.value = page
+    await loadServices()
   }
 
   async function loadSlots() {
@@ -115,6 +144,8 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
     slots.value = []
     bookingResult.value = null
     errorMessage.value = ''
+    serviceSearch.value = ''
+    servicePage.value = 1
     form.name = ''
     form.phone = ''
     form.email = ''
@@ -140,6 +171,10 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
   return {
     step,
     services,
+    serviceSearch,
+    servicePage,
+    serviceTotal,
+    serviceTotalPages,
     selectedService,
     selectedDate,
     slots,
@@ -154,6 +189,7 @@ export function createBookingScreen(deps: BookingScreenDependencies) {
     selectService,
     selectSlot,
     goBack,
+    goToServicePage,
     submitBooking,
     reset,
     formatTime,

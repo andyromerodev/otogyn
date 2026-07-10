@@ -6,6 +6,21 @@ export interface PublicServiceDto {
   price: number | null
 }
 
+export interface PublicServiceListInput {
+  organizationId: string
+  search?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface PublicServiceListResult {
+  items: PublicServiceDto[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 export interface PublicSlotDto {
   startsAt: string
   endsAt: string
