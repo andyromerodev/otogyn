@@ -46,7 +46,7 @@ const statusBadge = computed(() => {
   }
 
   if (status === 'cancelled') {
-    return { label: 'Cancelada', tone: 'neutral' as const }
+    return { label: 'Cancelada', tone: 'danger' as const }
   }
 
   if (status === 'no_show') {

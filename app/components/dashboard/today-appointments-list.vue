@@ -11,7 +11,7 @@ const statusTone: Record<TodayAppointmentViewModel['status'], 'primary' | 'warni
   checked_in: 'warning',
   in_progress: 'warning',
   completed: 'success',
-  cancelled: 'neutral',
+  cancelled: 'error',
   no_show: 'error',
 }
 </script>
