@@ -33,4 +33,6 @@ export type ServerAuthorizationAction =
   | 'consultations:write'
   | 'finances:read'
   | 'finances:write'
-
+  | 'inventory:read'
+  | 'inventory:operate'
+  | 'inventory:manage'

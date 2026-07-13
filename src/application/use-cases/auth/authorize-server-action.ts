@@ -27,6 +27,9 @@ const permissionMatrix: Record<ServerSessionContextDto['role'], ServerAuthorizat
     'consultations:write',
     'finances:read',
     'finances:write',
+    'inventory:read',
+    'inventory:operate',
+    'inventory:manage',
   ],
   assistant: [
     'session:read',
@@ -45,6 +48,8 @@ const permissionMatrix: Record<ServerSessionContextDto['role'], ServerAuthorizat
     'calendar:read',
     'consultations:read',
     'consultations:write',
+    'inventory:read',
+    'inventory:operate',
   ],
 }
 
@@ -70,4 +75,3 @@ export class AuthorizeServerActionUseCase {
     return session
   }
 }
-

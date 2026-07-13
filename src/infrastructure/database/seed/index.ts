@@ -23,6 +23,11 @@ import {
   doctorAvailability,
   expenseCategories,
   expenses,
+  inventoryItems,
+  inventoryLots,
+  inventorySuppliers,
+  inventoryTransactionAllocations,
+  inventoryTransactions,
   organizationMembers,
   organizations,
   patients,
@@ -170,6 +175,14 @@ async function main() {
     }
 
     await db.delete(appointments).where(eq(appointments.organizationId, orgId))
+    const inventoryTransactionIds = (await db.select({ id: inventoryTransactions.id }).from(inventoryTransactions).where(eq(inventoryTransactions.organizationId, orgId))).map((row) => row.id)
+    if (inventoryTransactionIds.length) {
+      await db.delete(inventoryTransactionAllocations).where(inArray(inventoryTransactionAllocations.transactionId, inventoryTransactionIds))
+    }
+    await db.delete(inventoryTransactions).where(eq(inventoryTransactions.organizationId, orgId))
+    await db.delete(inventoryLots).where(eq(inventoryLots.organizationId, orgId))
+    await db.delete(inventorySuppliers).where(eq(inventorySuppliers.organizationId, orgId))
+    await db.delete(inventoryItems).where(eq(inventoryItems.organizationId, orgId))
     await db.delete(preEvaluationForms).where(eq(preEvaluationForms.organizationId, orgId))
     await db.delete(expenses).where(eq(expenses.organizationId, orgId))
     await db.delete(blockedTimeSlots).where(eq(blockedTimeSlots.organizationId, orgId))
@@ -333,8 +346,7 @@ async function main() {
   const statusHistoryRows = []
   const appointmentIdsWithPayment = new Set<string>()
 
-  let appointmentsGenerated = 0
-  for (let i = 0; i < APPOINTMENT_COUNT * 2 && appointmentsGenerated < APPOINTMENT_COUNT; i++) {
+  for (let i = 0; i < APPOINTMENT_COUNT * 2 && appointmentRows.length < APPOINTMENT_COUNT; i++) {
     const patient = faker.helpers.arrayElement(patientRows)
     const service = faker.helpers.arrayElement(serviceRows)
     const durationMinutes = service.defaultDurationMinutes
@@ -499,7 +511,52 @@ async function main() {
   }
   console.log(`✅  Inserted ${expenseRows.length} expenses.`)
 
-  // ─── 11. Pre-evaluation forms ─────────────────────────────────────────────────
+  // ─── 11. Inventory ──────────────────────────────────────────────────────────
+
+  const supplierRows = await db.insert(inventorySuppliers).values([
+    { organizationId: orgId, name: 'MedSupply Perú', contactName: 'Rosa Vega', phone: '999111222', email: 'ventas@example.test' },
+    { organizationId: orgId, name: 'Clínica Distribuciones', contactName: 'Luis Rojas', phone: '999333444' },
+  ]).returning()
+
+  const inventoryItemRows = await db.insert(inventoryItems).values([
+    { organizationId: orgId, name: 'Guantes de nitrilo M', sku: 'INS-GUA-NIT-M', unit: 'par', minimumStock: '20.000', expiryAlertDays: 60 },
+    { organizationId: orgId, name: 'Gasas estériles 10 × 10', sku: 'INS-GAS-1010', unit: 'unidad', minimumStock: '30.000', expiryAlertDays: 45 },
+    { organizationId: orgId, name: 'Solución salina 0.9%', sku: 'INS-SAL-100', unit: 'frasco', minimumStock: '8.000', expiryAlertDays: 90 },
+    { organizationId: orgId, name: 'Bajalenguas de madera', sku: 'INS-BAJ-MAD', unit: 'unidad', minimumStock: '25.000', expiryAlertDays: 30 },
+  ]).returning()
+
+  const inventoryLotRows = await db.insert(inventoryLots).values(inventoryItemRows.map((item, index) => ({
+    organizationId: orgId,
+    itemId: item.id,
+    supplierId: supplierRows[index % supplierRows.length]!.id,
+    lotNumber: `DEMO-${String(index + 1).padStart(3, '0')}`,
+    expiresOn: index === 2
+      ? addDays(now, -10).toISOString().slice(0, 10)
+      : addDays(now, index === 0 ? 35 : 180 + index * 30).toISOString().slice(0, 10),
+    receivedAt: addDays(now, -30),
+    unitCost: ['0.4500', '0.1800', '4.2500', '0.0900'][index],
+    currentQuantity: ['12.000', '90.000', '6.000', '50.000'][index],
+  }))).returning()
+
+  const inventoryTransactionRows = await db.insert(inventoryTransactions).values(inventoryItemRows.map((item, index) => ({
+    organizationId: orgId,
+    itemId: item.id,
+    type: 'entry' as const,
+    quantity: ['12.000', '90.000', '6.000', '50.000'][index]!,
+    reason: 'Stock demo inicial',
+    createdBy,
+    createdAt: addDays(now, -30),
+  }))).returning()
+
+  await db.insert(inventoryTransactionAllocations).values(inventoryTransactionRows.map((transaction, index) => ({
+    transactionId: transaction.id,
+    lotId: inventoryLotRows[index]!.id,
+    quantityDelta: transaction.quantity,
+  })))
+
+  console.log(`✅  Inserted ${inventoryItemRows.length} inventory items and demo lots.`)
+
+  // ─── 12. Pre-evaluation forms ─────────────────────────────────────────────────
 
   const mainReasonOptions = ['reflujo', 'gastritis', 'dolor abdominal', 'nauseas', 'control', 'otro']
   const associatedSymptomOptions = ['acidez', 'regurgitación', 'dolor pecho', 'disfagia', 'eructos']
@@ -567,6 +624,7 @@ async function main() {
   console.log(`    Appointments: ${appointmentRows.length}`)
   console.log(`    Payments:     ${paymentRows.length}`)
   console.log(`    Expenses:     ${expenseRows.length}`)
+  console.log(`    Inventory:    ${inventoryItemRows.length}`)
   console.log(`    Pre-evals:    ${preEvalRows.length}`)
 
   await conn.end()

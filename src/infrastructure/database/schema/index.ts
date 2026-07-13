@@ -1,5 +1,7 @@
 import {
   boolean,
+  check,
+  date,
   index,
   integer,
   jsonb,
@@ -13,6 +15,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 
 export const appointmentStatusEnum = pgEnum('appointment_status', [
   'scheduled',
@@ -508,5 +511,132 @@ export const expenses = pgTable(
   (table) => [
     index('expenses_org_date_idx').on(table.organizationId, table.expenseDate),
     index('expenses_category_idx').on(table.categoryId),
+  ],
+)
+
+export const inventoryTransactionTypeEnum = pgEnum('inventory_transaction_type', [
+  'entry',
+  'consumption',
+  'adjustment_in',
+  'adjustment_out',
+])
+
+export const inventoryItems = pgTable(
+  'inventory_items',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    name: varchar('name', { length: 180 }).notNull(),
+    sku: varchar('sku', { length: 80 }).notNull(),
+    barcode: varchar('barcode', { length: 120 }),
+    description: text('description'),
+    unit: varchar('unit', { length: 40 }).notNull(),
+    minimumStock: numeric('minimum_stock', { precision: 14, scale: 3 }).default('0').notNull(),
+    expiryAlertDays: integer('expiry_alert_days').default(30).notNull(),
+    isActive: boolean('is_active').default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('inventory_items_org_sku_idx').on(table.organizationId, table.sku),
+    index('inventory_items_org_active_idx').on(table.organizationId, table.isActive),
+    check('inventory_items_minimum_stock_check', sql`${table.minimumStock} >= 0`),
+    check('inventory_items_expiry_alert_days_check', sql`${table.expiryAlertDays} between 0 and 3650`),
+  ],
+)
+
+export const inventorySuppliers = pgTable(
+  'inventory_suppliers',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    name: varchar('name', { length: 180 }).notNull(),
+    contactName: varchar('contact_name', { length: 180 }),
+    phone: varchar('phone', { length: 40 }),
+    email: varchar('email', { length: 255 }),
+    notes: text('notes'),
+    isActive: boolean('is_active').default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('inventory_suppliers_org_name_idx').on(table.organizationId, table.name),
+    index('inventory_suppliers_org_active_idx').on(table.organizationId, table.isActive),
+  ],
+)
+
+export const inventoryLots = pgTable(
+  'inventory_lots',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    itemId: uuid('item_id')
+      .references(() => inventoryItems.id, { onDelete: 'restrict' })
+      .notNull(),
+    supplierId: uuid('supplier_id').references(() => inventorySuppliers.id, { onDelete: 'set null' }),
+    lotNumber: varchar('lot_number', { length: 120 }).notNull(),
+    expiresOn: date('expires_on'),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull(),
+    unitCost: numeric('unit_cost', { precision: 12, scale: 4 }),
+    currentQuantity: numeric('current_quantity', { precision: 14, scale: 3 }).default('0').notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('inventory_lots_org_item_number_idx').on(table.organizationId, table.itemId, table.lotNumber),
+    index('inventory_lots_org_expiry_idx').on(table.organizationId, table.expiresOn),
+    index('inventory_lots_item_quantity_idx').on(table.itemId, table.currentQuantity),
+    check('inventory_lots_current_quantity_check', sql`${table.currentQuantity} >= 0`),
+    check('inventory_lots_unit_cost_check', sql`${table.unitCost} is null or ${table.unitCost} >= 0`),
+  ],
+)
+
+export const inventoryTransactions = pgTable(
+  'inventory_transactions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    itemId: uuid('item_id')
+      .references(() => inventoryItems.id, { onDelete: 'restrict' })
+      .notNull(),
+    type: inventoryTransactionTypeEnum('type').notNull(),
+    quantity: numeric('quantity', { precision: 14, scale: 3 }).notNull(),
+    appointmentId: uuid('appointment_id').references(() => appointments.id, { onDelete: 'set null' }),
+    reason: varchar('reason', { length: 255 }),
+    notes: text('notes'),
+    createdBy: uuid('created_by')
+      .references(() => users.id, { onDelete: 'restrict' })
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('inventory_transactions_org_created_idx').on(table.organizationId, table.createdAt),
+    index('inventory_transactions_item_created_idx').on(table.itemId, table.createdAt),
+    index('inventory_transactions_appointment_idx').on(table.appointmentId),
+    check('inventory_transactions_quantity_check', sql`${table.quantity} > 0`),
+  ],
+)
+
+export const inventoryTransactionAllocations = pgTable(
+  'inventory_transaction_allocations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    transactionId: uuid('transaction_id')
+      .references(() => inventoryTransactions.id, { onDelete: 'cascade' })
+      .notNull(),
+    lotId: uuid('lot_id')
+      .references(() => inventoryLots.id, { onDelete: 'restrict' })
+      .notNull(),
+    quantityDelta: numeric('quantity_delta', { precision: 14, scale: 3 }).notNull(),
+  },
+  (table) => [
+    index('inventory_allocations_transaction_idx').on(table.transactionId),
+    index('inventory_allocations_lot_idx').on(table.lotId),
+    check('inventory_allocations_non_zero_check', sql`${table.quantityDelta} <> 0`),
   ],
 )

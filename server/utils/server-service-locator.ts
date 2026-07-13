@@ -77,6 +77,20 @@ import { DrizzlePaymentRepository } from '../../src/infrastructure/repositories/
 import { DrizzleExpenseRepository } from '../../src/infrastructure/repositories/drizzle-expense-repository'
 import { DrizzleExpenseCategoryRepository } from '../../src/infrastructure/repositories/drizzle-expense-category-repository'
 import { DrizzleFinanceReportRepository } from '../../src/infrastructure/repositories/drizzle-finance-report-repository'
+import { DrizzleInventoryRepository } from '../../src/infrastructure/repositories/drizzle-inventory-repository'
+import {
+  CreateInventoryItemUseCase,
+  CreateInventorySupplierUseCase,
+  GetInventoryItemLotsUseCase,
+  GetInventoryItemUseCase,
+  GetInventorySummaryUseCase,
+  ListInventoryItemsUseCase,
+  ListInventoryMovementsUseCase,
+  ListInventorySuppliersUseCase,
+  RecordInventoryMovementUseCase,
+  UpdateInventoryItemUseCase,
+  UpdateInventorySupplierUseCase,
+} from '../../src/application/use-cases/inventory/inventory-use-cases'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
 
@@ -92,6 +106,7 @@ const paymentRepository = new DrizzlePaymentRepository()
 const expenseRepository = new DrizzleExpenseRepository()
 const expenseCategoryRepository = new DrizzleExpenseCategoryRepository()
 const financeReportRepository = new DrizzleFinanceReportRepository()
+const inventoryRepository = new DrizzleInventoryRepository()
 const attachmentStorage = new NetlifyBlobsAttachmentStorage()
 const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
 const notificationService = new ResendNotificationService()
@@ -245,6 +260,19 @@ export const serverServiceLocator = {
     listExpenseCategoriesUseCase: new ListExpenseCategoriesUseCase(expenseCategoryRepository),
     createExpenseCategoryUseCase: new CreateExpenseCategoryUseCase(expenseCategoryRepository),
     updateExpenseCategoryUseCase: new UpdateExpenseCategoryUseCase(expenseCategoryRepository),
+  },
+  inventory: {
+    listItemsUseCase: new ListInventoryItemsUseCase(inventoryRepository),
+    getItemUseCase: new GetInventoryItemUseCase(inventoryRepository),
+    createItemUseCase: new CreateInventoryItemUseCase(inventoryRepository),
+    updateItemUseCase: new UpdateInventoryItemUseCase(inventoryRepository),
+    getLotsUseCase: new GetInventoryItemLotsUseCase(inventoryRepository),
+    listMovementsUseCase: new ListInventoryMovementsUseCase(inventoryRepository),
+    recordMovementUseCase: new RecordInventoryMovementUseCase(inventoryRepository),
+    getSummaryUseCase: new GetInventorySummaryUseCase(inventoryRepository),
+    listSuppliersUseCase: new ListInventorySuppliersUseCase(inventoryRepository),
+    createSupplierUseCase: new CreateInventorySupplierUseCase(inventoryRepository),
+    updateSupplierUseCase: new UpdateInventorySupplierUseCase(inventoryRepository),
   },
   calendar: {
     getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),
