@@ -25,6 +25,7 @@ const navigation = computed(() => [
   { label: 'Citas', to: '/appointments' },
   { label: 'Calendario', to: '/calendar' },
   { label: 'Servicios', to: '/services' },
+  { label: 'Inventario', to: '/inventory' },
   ...(sessionContext.value?.role === 'admin_doctor'
     ? [
         { label: 'Finanzas', to: '/finances' },

@@ -1,0 +1,16 @@
+.inventory-form-page { display:grid;gap:1.2rem;max-width:64rem }
+.inventory-back { display:inline-flex;width:fit-content;min-height:2.75rem;align-items:center;gap:.45rem;color:#286c68;font-weight:800 }
+.inventory-form-page header p { margin:0;color:#347974;font-size:.78rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase }
+.inventory-form-page header h1 { margin:.25rem 0;color:#15383a;font-size:2.65rem;letter-spacing:-.05em }
+.inventory-form-page header span { color:#718f91 }
+.inventory-form-panel { display:grid;gap:1rem;border:1px solid #bedbd8;border-radius:1.55rem;padding:1.2rem;background:rgba(255,255,255,.86);box-shadow:0 16px 38px rgba(22,79,75,.07) }
+.inventory-form-panel form { display:grid;gap:1rem }
+.inventory-form-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem }
+.inventory-form-panel label { display:grid;gap:.42rem;color:#315b5c;font-size:.87rem;font-weight:800 }
+.inventory-form-panel input,.inventory-form-panel textarea,.inventory-form-panel select { width:100%;min-height:2.9rem;border:1px solid #c9dfdc;border-radius:1rem;padding:.75rem .9rem;background:#f9fdfc;color:#173b3d;outline:0 }
+.inventory-form-panel textarea { resize:vertical }
+.inventory-form-panel input:focus-visible,.inventory-form-panel textarea:focus-visible,.inventory-form-panel select:focus-visible { border-color:#2b8b84;box-shadow:0 0 0 3px rgba(43,139,132,.14) }
+.inventory-input-suffix { display:flex;align-items:center;border:1px solid #c9dfdc;border-radius:1rem;background:#f9fdfc;overflow:hidden }.inventory-input-suffix input { border:0 }.inventory-input-suffix em { padding-right:.9rem;color:#719092;font-style:normal;font-weight:700 }
+.inventory-form-actions { display:flex;align-items:center;justify-content:flex-end;gap:.7rem;padding-top:.25rem }.inventory-form-actions a,.inventory-form-actions button { display:inline-flex;min-height:2.85rem;align-items:center;justify-content:center;border:0;border-radius:999px;padding:.75rem 1.05rem;font-weight:850 }.inventory-form-actions a { border:1px solid #c4ddda;color:#456d6d }.inventory-form-actions button { background:#176f6b;color:#f6fffd }.inventory-form-actions button:disabled { cursor:wait;opacity:.65 }
+.inventory-form-error { margin:0;border-radius:1rem;padding:.85rem 1rem;background:#ffeded;color:#a53238;font-weight:700 }
+@media (max-width:640px) { .inventory-form-page { padding-bottom:6rem }.inventory-form-page header h1 { font-size:2.2rem }.inventory-form-grid { grid-template-columns:1fr }.inventory-form-actions { align-items:stretch;flex-direction:column-reverse }.inventory-form-actions>* { width:100% } }

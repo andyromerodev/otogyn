@@ -37,6 +37,10 @@ export const resolveRouteLoadingVariant = (path: string): RouteLoadingVariant =>
     return 'services'
   }
 
+  if (path.startsWith('/inventory')) {
+    return 'services'
+  }
+
   if (path.startsWith('/availability')) {
     return 'availability'
   }

@@ -29,6 +29,12 @@ const links = computed(() => [
     to: '/pre-evaluacion-forms',
     icon: 'i-heroicons-clipboard-document-check',
   },
+  {
+    label: 'Inventario',
+    description: 'Insumos, lotes, stock y vencimientos.',
+    to: '/inventory',
+    icon: 'i-heroicons-archive-box',
+  },
   ...(sessionContext.value?.role === 'admin_doctor'
     ? [
         {
