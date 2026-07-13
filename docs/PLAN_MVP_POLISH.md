@@ -2,7 +2,7 @@
 
 ## Contexto
 
-Webapp médica multi-tenant (Nuxt 3 + Vue 3 + Nuxt UI v4 / Tailwind v4 CSS-first + Drizzle/PostgreSQL en Neon, desplegada en Netlify: https://otogyn.netlify.app). Andy pidió pulir 8 requisitos de UX/funcionalidad antes de seguir. Gestor de paquetes: **pnpm** (nunca npm).
+Webapp médica multi-tenant (Nuxt 3 + Vue 3 + Nuxt UI v4 / Tailwind v4 CSS-first + Drizzle/PostgreSQL en Neon, desplegada en Netlify). Andy pidió pulir 8 requisitos de UX/funcionalidad antes de seguir. Gestor de paquetes: **pnpm** (nunca npm).
 
 **Arquitectura (clean, respetarla en cada feature):**
 `app/pages/*` → `app/composables/*` → `src/presentation/view-models/*` (factory MVVM) → `src/application/use-cases/*` vía service-locators en `src/infrastructure/<feature>/service-locator` → repos Drizzle en `src/infrastructure/repositories/*`. Endpoints Nitro en `server/api/**` con validadores Zod en `src/presentation/validators/*` y `requireAuthorizedUser(event, '<perm>')` (endpoints públicos usan `enforcePublicRateLimit` de `server/utils/public-security.ts`).
@@ -86,7 +86,7 @@ Verificar: crear horario L-M-V de una vez → 3 filas; bloqueo de 3 días → 3 
 
 ## R7. Seed masivo de datos
 
-**⚠️ DECISIÓN DEL USUARIO: el seed corre contra la BD de producción/Neon (la misma de otogyn.netlify.app), datos fake mezclados con lo que exista.** Aún así: el flag `--reset` solo debe borrar datos de la organización demo del seed, jamás tocar otras organizaciones ni users ajenos.
+**⚠️ DECISIÓN DEL USUARIO: el seed corre contra la BD de producción/Neon vinculada al sitio desplegado, con datos fake mezclados con lo que exista.** Aún así: el flag `--reset` solo debe borrar datos de la organización demo del seed, jamás tocar otras organizaciones ni users ajenos.
 
 1. `pnpm add -D @faker-js/faker`.
 2. Reescribir `src/infrastructure/database/seed/index.ts` (script `pnpm db:seed` — hoy solo imprime JSON de `src/infrastructure/mock/demo-data`, no inserta). Usar el mismo cliente Drizzle de la app con `DATABASE_URL`.
