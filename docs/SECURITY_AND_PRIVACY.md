@@ -21,11 +21,13 @@
 
 - Gestiona asistentes, servicios, disponibilidad y configuraciones criticas.
 - Puede editar citas completadas.
+- Administra insumos, proveedores y ajustes criticos de inventario.
 
 ### assistant
 
 - Puede crear y modificar pacientes y citas.
 - No puede gestionar asistentes ni configuraciones criticas.
+- Puede leer inventario y registrar entradas o consumos, pero no ajustes administrativos.
 
 ### patient_future
 
@@ -101,5 +103,10 @@ Fuente de verdad: `src/application/use-cases/auth/authorize-server-action.ts`
 | `availability:read`  | ✅ | ✅ | `GET /api/availability` |
 | `availability:write` | ✅ | ❌ | `POST /api/availability`, `PATCH /api/availability/:id`, `POST .../toggle`, `POST .../blocked`, `DELETE .../blocked/:id` |
 | `calendar:read`    | ✅ | ✅ | `GET /api/calendar/day`, `GET /api/calendar/week` |
+| `inventory:read`   | ✅ | ✅ | `GET /api/inventory/*` |
+| `inventory:operate`| ✅ | ✅ | `POST /api/inventory/movements` para entradas y consumos |
+| `inventory:manage` | ✅ | ❌ | Catálogo, proveedores y ajustes de inventario |
+
+Los movimientos de inventario solo guardan ids tecnicos y notas administrativas breves. El historial no serializa datos clinicos ni payloads de pacientes en logs.
 
 Los endpoints `/api/public/*` no requieren sesion ni rol (flujo de reserva publica).

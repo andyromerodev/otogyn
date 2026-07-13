@@ -26,6 +26,7 @@ Crear una web app ligera y mantenible para que una otorrinolaringologa y su asis
 - Disponibilidad base de la doctora y bloqueos horarios.
 - Reserva publica controlada con datos minimos.
 - Autenticacion base y permisos por rol.
+- Inventario de insumos por lotes, movimientos y vencimientos.
 
 ## Fuera de alcance
 
@@ -88,6 +89,7 @@ Crear una web app ligera y mantenible para que una otorrinolaringologa y su asis
 - `E12` Testing
 - `E13` UI/UX responsive
 - `E14` Deploy
+- `E15` Inventario de insumos
 
 ## Reglas de negocio base
 
@@ -114,3 +116,4 @@ Crear una web app ligera y mantenible para que una otorrinolaringologa y su asis
 5. Citas y disponibilidad.
 6. Reserva publica.
 7. Hardening, pruebas y deploy.
+8. Inventario avanzado de insumos y abastecimiento.

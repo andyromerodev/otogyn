@@ -131,6 +131,20 @@ Convencion sugerida de nombre visible:
 - Labels: `epic`, `docs`, `backend`
 - Estimacion: S
 
+### E15. Inventario de insumos ✅ IMPLEMENTADO
+
+- Catalogo de insumos y proveedores por organizacion.
+- Lotes con costo, vencimiento y saldo transaccional no negativo.
+- Entradas, consumos FEFO, ajustes administrativos y kardex por lote.
+- Alertas por stock minimo y vencimiento configurable por insumo.
+- Doctora con gestion completa; asistente con lectura, entradas y consumos.
+- UI responsive en `/inventory`, detalle, movimientos y proveedores.
+- Endpoints protegidos bajo `/api/inventory/*` y migracion Drizzle `0012_lying_ultimatum.sql`.
+- Pruebas unitarias de FEFO/ViewModels e integracion PostgreSQL preparadas.
+- Prioridad: media
+- Labels: `inventory`, `backend`, `database`, `ui`
+- Estimacion: L
+
 ## Orden recomendado
 
 1. E1 Arquitectura base
@@ -185,6 +199,7 @@ Convencion sugerida de nombre visible:
 - E13: loading global ya fue ajustado para desktop y mobile con estados visuales sin bloquear la navegacion fija.
 - E14: deploy productivo en Netlify ya validado con dominio principal operativo y flujo CLI/documentacion actualizados.
 - E14: corregidos bloqueadores reales de release: `pnpm` workspace root local, secrets scanning por `PNPM_FLAGS`/`AUTH_URL`, y `500` SSR de Better Auth en `/login`.
+- E15: inventario avanzado implementado con insumos, proveedores, lotes, movimientos FEFO, alertas y permisos diferenciados.
 - Existe `pnpm docs:update` para regenerar el inventario tecnico consumido por otros agentes.
 
 ## Issues propuestos
@@ -203,6 +218,7 @@ Convencion sugerida de nombre visible:
 12. Aumentar cobertura de pruebas criticas.
 13. Pulir experiencia responsive y estados de UI.
 14. Preparar deploy, backups y checklist productivo.
+15. Implementar inventario avanzado de insumos.
 
 ## Sincronizacion con GitHub
 

@@ -24,6 +24,11 @@ El modelo parte de una sola organizacion, pero todas las entidades operativas ma
 - `blocked_time_slots`
 - `appointment_status_history`
 - `audit_logs`
+- `inventory_items`
+- `inventory_suppliers`
+- `inventory_lots`
+- `inventory_transactions`
+- `inventory_transaction_allocations`
 
 ### Atención clínica
 
@@ -78,6 +83,26 @@ El modelo parte de una sola organizacion, pero todas las entidades operativas ma
 - `updated_at`
 - `cancelled_at`
 
+### inventory_items
+
+- `id`, `organization_id`
+- `name`, `sku`, `barcode`, `description`
+- `unit`, `minimum_stock`, `expiry_alert_days`, `is_active`
+- `created_at`, `updated_at`
+
+### inventory_lots
+
+- `id`, `organization_id`, `item_id`, `supplier_id`
+- `lot_number`, `expires_on`, `received_at`, `unit_cost`
+- `current_quantity` como saldo materializado protegido contra valores negativos
+
+### inventory_transactions
+
+- `id`, `organization_id`, `item_id`, `type`, `quantity`
+- `appointment_id` opcional para consumos vinculados a una atencion
+- `reason`, `notes`, `created_by`, `created_at`
+- Las asignaciones por lote viven en `inventory_transaction_allocations` y forman el kardex auditable.
+
 ## Relaciones
 
 - `profiles.user_id -> users.id`
@@ -112,6 +137,9 @@ El modelo parte de una sola organizacion, pero todas las entidades operativas ma
 - `appointments(organization_id, status, start_at)`
 - `appointment_status_history(appointment_id, created_at)`
 - `organization_members(organization_id, role)`
+- `inventory_items(organization_id, sku)` unico
+- `inventory_lots(organization_id, expires_on)`
+- `inventory_transactions(organization_id, created_at)`
 
 ## Estados de cita
 
