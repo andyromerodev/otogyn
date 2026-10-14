@@ -10,14 +10,29 @@ export interface PreEvaluationForm {
   patientId: string | null
 
   fullName: string
-  age: number | null
-  city: string | null
+  birthDate: string | null
+  residenceCityCountry: string | null
   phone: string
   email: string | null
 
+  // Motivo de consulta
+  complaintDescription: string | null
+  symptomDurationText: string | null
+  medicalHistory: string | null
+
+  // Documentacion medica
+  previousTreatmentsAndExams: string | null
+  attachmentKeys: string[]
+
+  // Confirmacion y consentimiento
+  understandsVirtualConditions: boolean
+  consentPrivacyPolicy: boolean
+
+  // Campos heredados/retrocompatibles
+  age: number | null
+  city: string | null
   mainReasons: string[]
   mainReasonOtherText: string | null
-  complaintDescription: string | null
 
   symptomDuration: PreEvalSymptomDuration | null
   symptomPattern: PreEvalSymptomPattern | null

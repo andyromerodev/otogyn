@@ -15,11 +15,21 @@ function makeForm(overrides: Partial<PreEvaluationForm> = {}): PreEvaluationForm
     fullName: 'Maria Torres',
     age: null,
     city: null,
+    birthDate: '1992-04-15',
+    residenceCityCountry: 'Lima, Peru',
     phone: '987654321',
     email: 'maria@example.com',
+    complaintDescription: 'Molestias en la garganta',
+    symptomDurationText: '3 semanas',
+    medicalHistory: 'Rinitis alergica',
+    previousTreatmentsAndExams: null,
+    attachmentKeys: [],
+    understandsVirtualConditions: true,
+    consentPrivacyPolicy: true,
+    age: null,
+    city: null,
     mainReasons: [],
     mainReasonOtherText: null,
-    complaintDescription: null,
     symptomDuration: null,
     symptomPattern: null,
     associatedSymptoms: [],
@@ -29,7 +39,6 @@ function makeForm(overrides: Partial<PreEvaluationForm> = {}): PreEvaluationForm
     priorMedicationUsed: null,
     treatmentImprovement: null,
     priorExams: [],
-    attachmentKeys: [],
     alertSigns: [],
     consultationExpectations: [],
     consentInfoTruthful: true,
@@ -42,7 +51,7 @@ function makeForm(overrides: Partial<PreEvaluationForm> = {}): PreEvaluationForm
 }
 
 describe('CreatePatientFromPreEvaluationFormUseCase', () => {
-  it('creates a patient from the form contact info and links it back', async () => {
+  it('creates a patient from the form contact info and links it back with birthDate and notes', async () => {
     const formRepo = new MockPreEvaluationFormRepository([makeForm()])
     const patientRepo = new MockPatientRepository([])
     const useCase = new CreatePatientFromPreEvaluationFormUseCase(formRepo, patientRepo)
@@ -52,6 +61,8 @@ describe('CreatePatientFromPreEvaluationFormUseCase', () => {
     expect(result.patient.fullName).toBe('Maria Torres')
     expect(result.patient.phone).toBe('987654321')
     expect(result.patient.email).toBe('maria@example.com')
+    expect(result.patient.birthDate).toBe('1992-04-15')
+    expect(result.patient.administrativeNotes).toBe('Antecedentes del formulario: Rinitis alergica')
     expect(result.form.patientId).toBe(result.patient.id)
     expect(result.form.status).toBe('reviewed')
   })

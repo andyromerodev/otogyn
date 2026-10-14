@@ -33,34 +33,48 @@ export class CreatePreEvaluationFormUseCase {
       patientId: matchedPatient?.id ?? null,
 
       fullName: input.form.fullName.trim(),
-      age: input.form.age ?? null,
-      city: input.form.city ?? null,
+      birthDate: input.form.birthDate?.trim() || null,
+      residenceCityCountry: input.form.residenceCityCountry?.trim() || null,
       phone,
       email,
 
-      mainReasons: input.form.mainReasons,
+      // Motivo de consulta
+      complaintDescription: input.form.complaintDescription?.trim() || null,
+      symptomDurationText: input.form.symptomDurationText?.trim() || null,
+      medicalHistory: input.form.medicalHistory?.trim() || null,
+
+      // Documentacion medica
+      previousTreatmentsAndExams: input.form.previousTreatmentsAndExams?.trim() || null,
+      attachmentKeys: input.form.attachmentKeys ?? [],
+
+      // Confirmacion y consentimiento
+      understandsVirtualConditions: input.form.understandsVirtualConditions ?? true,
+      consentPrivacyPolicy: input.form.consentPrivacyPolicy ?? true,
+
+      // Campos heredados/retrocompatibles
+      age: input.form.age ?? null,
+      city: input.form.city ?? null,
+      mainReasons: input.form.mainReasons ?? [],
       mainReasonOtherText: input.form.mainReasonOtherText ?? null,
-      complaintDescription: input.form.complaintDescription ?? null,
 
       symptomDuration: input.form.symptomDuration ?? null,
       symptomPattern: input.form.symptomPattern ?? null,
 
-      associatedSymptoms: input.form.associatedSymptoms,
-      aggravatingFactors: input.form.aggravatingFactors,
+      associatedSymptoms: input.form.associatedSymptoms ?? [],
+      aggravatingFactors: input.form.aggravatingFactors ?? [],
 
       hasPriorRefluxDiagnosis: input.form.hasPriorRefluxDiagnosis ?? null,
       hasPriorTreatment: input.form.hasPriorTreatment ?? null,
       priorMedicationUsed: input.form.priorMedicationUsed ?? null,
       treatmentImprovement: input.form.treatmentImprovement ?? null,
 
-      priorExams: input.form.priorExams,
-      attachmentKeys: input.form.attachmentKeys ?? [],
+      priorExams: input.form.priorExams ?? [],
 
-      alertSigns: input.form.alertSigns,
-      consultationExpectations: input.form.consultationExpectations,
+      alertSigns: input.form.alertSigns ?? [],
+      consultationExpectations: input.form.consultationExpectations ?? [],
 
-      consentInfoTruthful: input.form.consentInfoTruthful,
-      consentUnderstandsNotConsultation: input.form.consentUnderstandsNotConsultation,
+      consentInfoTruthful: input.form.consentInfoTruthful ?? true,
+      consentUnderstandsNotConsultation: input.form.consentUnderstandsNotConsultation ?? true,
 
       status: 'pending_review',
 

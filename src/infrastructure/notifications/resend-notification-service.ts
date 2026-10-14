@@ -42,10 +42,11 @@ export class ResendNotificationService implements NotificationService {
           <p>Se recibio un nuevo formulario de pre-evaluacion.</p>
           <ul>
             <li><strong>Nombre:</strong> ${escapeHtml(form.fullName)}</li>
-            <li><strong>Telefono:</strong> ${escapeHtml(form.phone)}</li>
+            <li><strong>WhatsApp:</strong> ${escapeHtml(form.phone)}</li>
             <li><strong>Email:</strong> ${form.email ? escapeHtml(form.email) : '(no proporcionado)'}</li>
-            <li><strong>Ciudad:</strong> ${form.city ? escapeHtml(form.city) : '(no proporcionada)'}</li>
-            <li><strong>Motivos principales:</strong> ${escapeHtml(form.mainReasons.join(', ') || '(ninguno)')}</li>
+            <li><strong>Ciudad / Pais:</strong> ${form.residenceCityCountry ? escapeHtml(form.residenceCityCountry) : (form.city ? escapeHtml(form.city) : '(no proporcionada)')}</li>
+            <li><strong>Motivo de consulta:</strong> ${form.complaintDescription ? escapeHtml(form.complaintDescription) : '(no especificado)'}</li>
+            <li><strong>Comprende atencion virtual:</strong> ${form.understandsVirtualConditions ? 'Si' : 'No'}</li>
             <li><strong>Paciente existente vinculado:</strong> ${matchedPatient ? 'Si' : 'No'}</li>
           </ul>
         `,

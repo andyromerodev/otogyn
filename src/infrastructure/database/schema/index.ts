@@ -295,14 +295,29 @@ export const preEvaluationForms = pgTable(
     patientId: uuid('patient_id').references(() => patients.id, { onDelete: 'set null' }),
 
     fullName: varchar('full_name', { length: 180 }).notNull(),
-    age: integer('age'),
-    city: varchar('city', { length: 120 }),
+    birthDate: timestamp('birth_date', { mode: 'date' }),
+    residenceCityCountry: varchar('residence_city_country', { length: 255 }),
     phone: varchar('phone', { length: 40 }).notNull(),
     email: varchar('email', { length: 255 }),
 
+    // Motivo de consulta
+    complaintDescription: text('complaint_description'),
+    symptomDurationText: varchar('symptom_duration_text', { length: 255 }),
+    medicalHistory: text('medical_history'),
+
+    // Documentacion medica
+    previousTreatmentsAndExams: text('previous_treatments_and_exams'),
+    attachmentKeys: jsonb('attachment_keys').$type<string[]>().notNull().default([]),
+
+    // Confirmacion y consentimiento
+    understandsVirtualConditions: boolean('understands_virtual_conditions').default(true).notNull(),
+    consentPrivacyPolicy: boolean('consent_privacy_policy').default(false).notNull(),
+
+    // Campos anteriores preservados para retrocompatibilidad
+    age: integer('age'),
+    city: varchar('city', { length: 120 }),
     mainReasons: jsonb('main_reasons').$type<string[]>().notNull().default([]),
     mainReasonOtherText: text('main_reason_other_text'),
-    complaintDescription: text('complaint_description'),
 
     symptomDuration: preEvalSymptomDurationEnum('symptom_duration'),
     symptomPattern: preEvalSymptomPatternEnum('symptom_pattern'),
@@ -316,14 +331,13 @@ export const preEvaluationForms = pgTable(
     treatmentImprovement: preEvalImprovementEnum('treatment_improvement'),
 
     priorExams: jsonb('prior_exams').$type<string[]>().notNull().default([]),
-    attachmentKeys: jsonb('attachment_keys').$type<string[]>().notNull().default([]),
 
     alertSigns: jsonb('alert_signs').$type<string[]>().notNull().default([]),
     consultationExpectations: jsonb('consultation_expectations').$type<string[]>().notNull().default([]),
 
-    consentInfoTruthful: boolean('consent_info_truthful').default(false).notNull(),
+    consentInfoTruthful: boolean('consent_info_truthful').default(true).notNull(),
     consentUnderstandsNotConsultation: boolean('consent_understands_not_consultation')
-      .default(false)
+      .default(true)
       .notNull(),
 
     status: preEvalStatusEnum('status').default('pending_review').notNull(),
