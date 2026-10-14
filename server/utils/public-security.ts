@@ -121,6 +121,7 @@ export function createPublicSecurityToken(action: PublicSecurityAction): string 
 
 export function validatePublicSecurityToken(token: string | null | undefined, action: PublicSecurityAction): void {
   if (!token) {
+    console.warn('[validatePublicSecurityToken] Missing token')
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid public form request.',
@@ -129,6 +130,7 @@ export function validatePublicSecurityToken(token: string | null | undefined, ac
 
   const parts = token.split('.')
   if (parts.length !== TOKEN_PARTS) {
+    console.warn('[validatePublicSecurityToken] Invalid parts count', parts.length)
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid public form request.',
@@ -145,6 +147,7 @@ export function validatePublicSecurityToken(token: string | null | undefined, ac
     tokenAge > TOKEN_TTL_MS ||
     tokenAge < -TOKEN_FUTURE_SKEW_MS
   ) {
+    console.warn('[validatePublicSecurityToken] Token age/action mismatch', { tokenAction, action, tokenAge })
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid public form request.',
@@ -159,6 +162,7 @@ export function validatePublicSecurityToken(token: string | null | undefined, ac
     signatureBuffer.length !== expectedBuffer.length ||
     !timingSafeEqual(signatureBuffer, expectedBuffer)
   ) {
+    console.warn('[validatePublicSecurityToken] Signature mismatch')
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid public form request.',
@@ -168,6 +172,7 @@ export function validatePublicSecurityToken(token: string | null | undefined, ac
 
 export function validatePublicHoneypot(value: unknown): void {
   if (typeof value === 'string' && value.trim().length > 0) {
+    console.warn('[validatePublicHoneypot] Honeypot filled with:', value)
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid public form request.',

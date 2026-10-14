@@ -24,16 +24,23 @@ function onFileInputChange(event: Event) {
     <label class="preeval-file-upload-dropzone">
       <input
         type="file"
-        accept="image/jpeg,image/png"
+        accept="image/jpeg,image/png,application/pdf"
         multiple
         @change="onFileInputChange"
       >
-      <span>Toca para adjuntar imagenes (JPG o PNG, hasta 8MB cada una)</span>
+      <span>Toca para adjuntar archivos (PDF, JPG o PNG, hasta 8MB cada uno)</span>
     </label>
 
     <ul v-if="attachments.length > 0" class="preeval-file-upload-list">
-      <li v-for="attachment in attachments" :key="attachment.previewUrl" class="preeval-file-upload-item">
-        <img :src="attachment.previewUrl" :alt="attachment.fileName" class="preeval-file-upload-thumb">
+      <li v-for="attachment in attachments" :key="attachment.fileName + (attachment.key ?? '')" class="preeval-file-upload-item">
+        <div v-if="attachment.isPdf" class="preeval-file-upload-pdf-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="preeval-pdf-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-6 4h4" />
+          </svg>
+          <span class="preeval-pdf-label">PDF</span>
+        </div>
+        <img v-else :src="attachment.previewUrl" :alt="attachment.fileName" class="preeval-file-upload-thumb">
         <div class="preeval-file-upload-info">
           <span class="preeval-file-upload-name">{{ attachment.fileName }}</span>
           <span v-if="attachment.uploading" class="preeval-file-upload-status">Subiendo...</span>
@@ -98,6 +105,33 @@ function onFileInputChange(event: Event) {
   border-radius: 0.6rem;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+.preeval-file-upload-pdf-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.6rem;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #dc2626;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 0.1rem;
+}
+
+.preeval-pdf-svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.preeval-pdf-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
 }
 
 .preeval-file-upload-info {

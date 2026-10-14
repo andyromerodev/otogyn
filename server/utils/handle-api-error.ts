@@ -2,6 +2,7 @@ import { ZodError } from 'zod'
 import { BusinessRuleError } from '../../src/domain/errors/business-rule-error'
 
 export const handleApiError = (error: unknown) => {
+  console.error('[handleApiError]', error)
   if (
     error &&
     typeof error === 'object' &&

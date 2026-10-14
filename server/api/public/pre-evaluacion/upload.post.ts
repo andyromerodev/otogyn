@@ -5,7 +5,7 @@ import { serverServiceLocator } from '../../../utils/server-service-locator'
 
 const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024
 
-const detectImageContentType = (data: Buffer): string | null => {
+const detectFileContentType = (data: Buffer): string | null => {
   if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
     return 'image/jpeg'
   }
@@ -18,6 +18,16 @@ const detectImageContentType = (data: Buffer): string | null => {
     data[3] === 0x47
   ) {
     return 'image/png'
+  }
+
+  if (
+    data.length >= 4 &&
+    data[0] === 0x25 &&
+    data[1] === 0x50 &&
+    data[2] === 0x44 &&
+    data[3] === 0x46
+  ) {
+    return 'application/pdf'
   }
 
   return null
@@ -41,9 +51,9 @@ export default defineEventHandler(async (event) => {
       throw new BusinessRuleError('El archivo excede el tamano maximo permitido (8MB).')
     }
 
-    const contentType = detectImageContentType(filePart.data)
+    const contentType = detectFileContentType(filePart.data)
     if (!contentType) {
-      throw new BusinessRuleError('Solo se permiten imagenes JPG o PNG.')
+      throw new BusinessRuleError('Solo se permiten archivos PDF, JPG o PNG.')
     }
 
     return await serverServiceLocator.preEvaluationForms.uploadPreEvaluationAttachmentUseCase.execute(
