@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PreEvaluationFormListItem from '../../components/pre-evaluation-forms/pre-evaluation-form-list-item.vue'
+import SharedConfirmDialog from '../../components/shared/confirm-dialog.vue'
 import { usePreEvaluationFormsListViewModel } from '../../composables/pre-evaluation-forms/use-pre-evaluation-forms-list-view-model'
 
 definePageMeta({
@@ -43,6 +44,10 @@ const viewModel = usePreEvaluationFormsListViewModel()
     </div>
 
     <ClientOnly>
+      <p v-if="viewModel.successMessage.value" class="preeval-list-message preeval-list-message-success">
+        {{ viewModel.successMessage.value }}
+      </p>
+
       <p v-if="viewModel.errorMessage.value" class="preeval-list-message preeval-list-message-error">
         {{ viewModel.errorMessage.value }}
       </p>
@@ -57,6 +62,7 @@ const viewModel = usePreEvaluationFormsListViewModel()
             v-for="form in viewModel.forms.value"
             :key="form.id"
             :form="form"
+            @delete="viewModel.openDeleteConfirm"
           />
         </div>
 
@@ -102,6 +108,17 @@ const viewModel = usePreEvaluationFormsListViewModel()
           @update:page="viewModel.goToPage"
         />
       </div>
+
+      <SharedConfirmDialog
+        v-model="viewModel.isConfirmDeleteOpen.value"
+        title="¿Eliminar paciente de pre-evaluación?"
+        :message="`¿Estás seguro de que deseas eliminar la pre-evaluación de ${viewModel.formToDelete.value?.fullName ?? 'este paciente'}? Esta acción no se puede deshacer.`"
+        confirm-label="Eliminar"
+        cancel-label="Cancelar"
+        :pending="viewModel.isDeleting.value"
+        @confirm="viewModel.confirmDelete"
+        @cancel="viewModel.closeDeleteConfirm"
+      />
     </ClientOnly>
   </div>
 </template>
@@ -201,6 +218,11 @@ const viewModel = usePreEvaluationFormsListViewModel()
   color: #b91c1c;
 }
 
+.preeval-list-message-success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
 .preeval-list-card {
   overflow: hidden;
   border-radius: 1.9rem;
@@ -209,7 +231,7 @@ const viewModel = usePreEvaluationFormsListViewModel()
   box-shadow: 0 16px 38px rgba(20, 82, 76, 0.08);
 }
 
-.preeval-list > :deep(.preeval-row-link:not(:last-child)) {
+.preeval-list > :deep(.preeval-card:not(:last-child)) {
   border-bottom: 1px solid #d4ebe8;
 }
 
@@ -262,6 +284,10 @@ const viewModel = usePreEvaluationFormsListViewModel()
 }
 
 @media (max-width: 640px) {
+  .preeval-list-card {
+    border-radius: 1.4rem;
+  }
+
   .preeval-list-title {
     font-size: 2.35rem;
   }

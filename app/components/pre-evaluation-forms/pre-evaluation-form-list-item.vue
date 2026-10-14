@@ -5,6 +5,10 @@ const props = defineProps<{
   form: PreEvaluationForm
 }>()
 
+const emit = defineEmits<{
+  delete: [form: PreEvaluationForm]
+}>()
+
 const initials = computed(() => {
   const words = props.form.fullName.trim().split(/\s+/).filter(Boolean)
 
@@ -38,65 +42,77 @@ const formattedDate = computed(() =>
 </script>
 
 <template>
-  <NuxtLink :to="`/pre-evaluacion-forms/${form.id}`" class="preeval-row-link">
-    <article class="preeval-row">
-      <div class="preeval-row-content">
-        <div class="preeval-row-main">
-          <span class="preeval-avatar">{{ initials }}</span>
+  <div class="preeval-card">
+    <NuxtLink :to="`/pre-evaluacion-forms/${form.id}`" class="preeval-card-link">
+      <span class="preeval-avatar">{{ initials }}</span>
 
-          <div class="preeval-copy">
-            <p class="preeval-name">{{ form.fullName }}</p>
-            <p class="preeval-subtitle">{{ form.phone }} · {{ formattedDate }}</p>
-          </div>
-        </div>
+      <div class="preeval-info">
+        <p class="preeval-name">{{ form.fullName }}</p>
+        <p class="preeval-subtitle">{{ form.phone }} · {{ formattedDate }}</p>
 
-        <div class="preeval-row-side">
+        <!-- Badge for mobile view (stacked below phone/date) -->
+        <div class="preeval-mobile-badge">
           <span
             class="preeval-status"
-            :class="{ 'preeval-status-pending': form.status === 'pending_review', 'preeval-status-reviewed': form.status === 'reviewed' }"
+            :class="{
+              'preeval-status-pending': form.status === 'pending_review',
+              'preeval-status-reviewed': form.status === 'reviewed',
+            }"
           >
             {{ statusLabel }}
           </span>
-          <UIcon name="i-heroicons-chevron-right-20-solid" class="preeval-chevron" />
         </div>
       </div>
-    </article>
-  </NuxtLink>
+
+      <!-- Badge and chevron for desktop view -->
+      <div class="preeval-desktop-side">
+        <span
+          class="preeval-status"
+          :class="{
+            'preeval-status-pending': form.status === 'pending_review',
+            'preeval-status-reviewed': form.status === 'reviewed',
+          }"
+        >
+          {{ statusLabel }}
+        </span>
+        <UIcon name="i-heroicons-chevron-right-20-solid" class="preeval-chevron" />
+      </div>
+    </NuxtLink>
+
+    <div class="preeval-action">
+      <button
+        type="button"
+        class="preeval-delete-btn"
+        title="Eliminar paciente"
+        aria-label="Eliminar paciente"
+        @click="emit('delete', form)"
+      >
+        <UIcon name="i-heroicons-trash-20-solid" class="preeval-delete-icon" />
+      </button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.preeval-row-link {
-  display: block;
-  color: inherit;
+.preeval-card {
+  display: flex;
+  align-items: center;
+  transition: background-color 160ms ease;
 }
 
-.preeval-row {
-  padding: 1.25rem 1.2rem;
-  transition:
-    background-color 160ms ease,
-    transform 160ms ease;
-}
-
-.preeval-row-link:hover .preeval-row {
+.preeval-card:hover {
   background: rgba(245, 251, 250, 0.88);
 }
 
-.preeval-row-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.preeval-row-main,
-.preeval-row-side {
-  display: flex;
-  align-items: center;
-}
-
-.preeval-row-main {
+.preeval-card-link {
+  flex: 1;
   min-width: 0;
-  gap: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  padding: 1.25rem 1.2rem;
+  color: inherit;
+  text-decoration: none;
 }
 
 .preeval-avatar {
@@ -114,7 +130,8 @@ const formattedDate = computed(() =>
   letter-spacing: -0.04em;
 }
 
-.preeval-copy {
+.preeval-info {
+  flex: 1;
   min-width: 0;
 }
 
@@ -123,7 +140,8 @@ const formattedDate = computed(() =>
   color: #111827;
   font-size: 1.18rem;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.25;
+  word-break: break-word;
 }
 
 .preeval-subtitle {
@@ -133,9 +151,15 @@ const formattedDate = computed(() =>
   line-height: 1.35;
 }
 
-.preeval-row-side {
+.preeval-desktop-side {
   flex: 0 0 auto;
-  gap: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.preeval-mobile-badge {
+  display: none;
 }
 
 .preeval-status {
@@ -166,28 +190,87 @@ const formattedDate = computed(() =>
   font-size: 1.35rem;
 }
 
+.preeval-action {
+  flex: 0 0 auto;
+  padding-right: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.preeval-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.preeval-delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.preeval-delete-icon {
+  font-size: 1.3rem;
+}
+
 @media (max-width: 640px) {
-  .preeval-row {
-    padding: 1.1rem 1rem;
+  .preeval-card-link {
+    gap: 0.85rem;
+    padding: 1rem 0.5rem 1rem 0.9rem;
   }
 
   .preeval-avatar {
-    width: 3.8rem;
-    height: 3.8rem;
-    font-size: 1.25rem;
+    width: 2.9rem;
+    height: 2.9rem;
+    font-size: 1.05rem;
   }
 
   .preeval-name {
-    font-size: 1rem;
+    font-size: 1.05rem;
+    line-height: 1.25;
   }
 
   .preeval-subtitle {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
   }
 
-  .preeval-row-side {
-    align-self: stretch;
-    flex-direction: column;
+  .preeval-desktop-side {
+    display: none;
+  }
+
+  .preeval-mobile-badge {
+    display: flex;
+    align-items: center;
+    margin-top: 0.35rem;
+  }
+
+  .preeval-mobile-badge .preeval-status {
+    min-width: auto;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .preeval-action {
+    padding-right: 0.75rem;
+  }
+
+  .preeval-delete-btn {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .preeval-delete-icon {
+    font-size: 1.2rem;
   }
 }
 </style>

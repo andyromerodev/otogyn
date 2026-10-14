@@ -30,3 +30,6 @@ backups
 
 # Local Netlify folder
 .netlify
+
+# Agent tooling cache
+.atl
