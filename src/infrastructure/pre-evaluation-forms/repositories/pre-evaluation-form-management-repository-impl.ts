@@ -28,4 +28,8 @@ export class PreEvaluationFormManagementRepositoryImpl implements PreEvaluationF
   createPatientFromForm(input: CreatePatientFromFormInput): Promise<CreatePatientFromFormResult> {
     return this.remoteDataSource.createPatientFromForm(input)
   }
+
+  deleteForm(id: string): Promise<void> {
+    return this.remoteDataSource.deleteForm(id)
+  }
 }

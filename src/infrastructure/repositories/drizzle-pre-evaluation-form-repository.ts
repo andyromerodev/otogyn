@@ -10,6 +10,11 @@ import type { DrizzleClient } from '../database/drizzle/client'
 import { getDrizzleClient } from '../database/drizzle/client'
 import { preEvaluationForms } from '../database/schema'
 
+const toBirthDate = (birthDate: string | null) => {
+  if (!birthDate) return null
+  return new Date(`${birthDate}T00:00:00.000Z`)
+}
+
 const mapPreEvaluationForm = (
   row: typeof preEvaluationForms.$inferSelect,
 ): PreEvaluationForm => ({
@@ -18,14 +23,25 @@ const mapPreEvaluationForm = (
   patientId: row.patientId,
 
   fullName: row.fullName,
-  age: row.age,
-  city: row.city,
+  birthDate: row.birthDate ? row.birthDate.toISOString().slice(0, 10) : null,
+  residenceCityCountry: row.residenceCityCountry,
   phone: row.phone,
   email: row.email,
 
+  complaintDescription: row.complaintDescription,
+  symptomDurationText: row.symptomDurationText,
+  medicalHistory: row.medicalHistory,
+
+  previousTreatmentsAndExams: row.previousTreatmentsAndExams,
+  attachmentKeys: row.attachmentKeys,
+
+  understandsVirtualConditions: row.understandsVirtualConditions,
+  consentPrivacyPolicy: row.consentPrivacyPolicy,
+
+  age: row.age,
+  city: row.city,
   mainReasons: row.mainReasons,
   mainReasonOtherText: row.mainReasonOtherText,
-  complaintDescription: row.complaintDescription,
 
   symptomDuration: row.symptomDuration,
   symptomPattern: row.symptomPattern,
@@ -39,7 +55,6 @@ const mapPreEvaluationForm = (
   treatmentImprovement: row.treatmentImprovement,
 
   priorExams: row.priorExams,
-  attachmentKeys: row.attachmentKeys,
 
   alertSigns: row.alertSigns,
   consultationExpectations: row.consultationExpectations,
@@ -65,14 +80,25 @@ export class DrizzlePreEvaluationFormRepository implements PreEvaluationFormRepo
         patientId: form.patientId,
 
         fullName: form.fullName,
-        age: form.age,
-        city: form.city,
+        birthDate: toBirthDate(form.birthDate),
+        residenceCityCountry: form.residenceCityCountry,
         phone: form.phone,
         email: form.email,
 
+        complaintDescription: form.complaintDescription,
+        symptomDurationText: form.symptomDurationText,
+        medicalHistory: form.medicalHistory,
+
+        previousTreatmentsAndExams: form.previousTreatmentsAndExams,
+        attachmentKeys: form.attachmentKeys,
+
+        understandsVirtualConditions: form.understandsVirtualConditions,
+        consentPrivacyPolicy: form.consentPrivacyPolicy,
+
+        age: form.age,
+        city: form.city,
         mainReasons: form.mainReasons,
         mainReasonOtherText: form.mainReasonOtherText,
-        complaintDescription: form.complaintDescription,
 
         symptomDuration: form.symptomDuration,
         symptomPattern: form.symptomPattern,
@@ -86,7 +112,6 @@ export class DrizzlePreEvaluationFormRepository implements PreEvaluationFormRepo
         treatmentImprovement: form.treatmentImprovement,
 
         priorExams: form.priorExams,
-        attachmentKeys: form.attachmentKeys,
 
         alertSigns: form.alertSigns,
         consultationExpectations: form.consultationExpectations,
@@ -188,5 +213,21 @@ export class DrizzlePreEvaluationFormRepository implements PreEvaluationFormRepo
     }
 
     return mapPreEvaluationForm(row[0])
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    const deleted = await this.db
+      .delete(preEvaluationForms)
+      .where(
+        and(
+          eq(preEvaluationForms.id, id),
+          eq(preEvaluationForms.organizationId, organizationId),
+        ),
+      )
+      .returning({ id: preEvaluationForms.id })
+
+    if (!deleted.length) {
+      throw new BusinessRuleError('Pre-evaluation form not found.')
+    }
   }
 }

@@ -63,4 +63,16 @@ export class MockPreEvaluationFormRepository implements PreEvaluationFormReposit
     this.forms[index] = form
     return form
   }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    const index = this.forms.findIndex(
+      (item) => item.id === id && item.organizationId === organizationId,
+    )
+
+    if (index === -1) {
+      throw new BusinessRuleError('Pre-evaluation form not found.')
+    }
+
+    this.forms.splice(index, 1)
+  }
 }

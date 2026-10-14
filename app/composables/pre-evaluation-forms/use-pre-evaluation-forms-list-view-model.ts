@@ -15,6 +15,7 @@ export const usePreEvaluationFormsListViewModel = () => {
 
   const viewModel = createPreEvaluationFormsListViewModel({
     listPreEvaluationFormsUseCase: preEvaluationFormServiceLocator.listPreEvaluationFormsUseCase,
+    deletePreEvaluationFormUseCase: preEvaluationFormServiceLocator.deletePreEvaluationFormUseCase,
     initialSearch: search,
     initialFilter: filter,
     initialPage: Number.isNaN(page) ? 1 : page,

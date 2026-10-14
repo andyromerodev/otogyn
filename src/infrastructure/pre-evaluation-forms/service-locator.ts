@@ -4,6 +4,7 @@ import { ListPreEvaluationFormsFrontendUseCase } from '../../application/use-cas
 import { GetPreEvaluationFormDetailFrontendUseCase } from '../../application/use-cases/pre-evaluation-forms/frontend/get-pre-evaluation-form-detail'
 import { LinkPreEvaluationFormToPatientFrontendUseCase } from '../../application/use-cases/pre-evaluation-forms/frontend/link-pre-evaluation-form-to-patient'
 import { CreatePatientFromPreEvaluationFormFrontendUseCase } from '../../application/use-cases/pre-evaluation-forms/frontend/create-patient-from-pre-evaluation-form'
+import { DeletePreEvaluationFormFrontendUseCase } from '../../application/use-cases/pre-evaluation-forms/frontend/delete-pre-evaluation-form'
 import { HttpPreEvaluationFormRemoteDataSource } from './remote/http-pre-evaluation-form-remote-data-source'
 import { PreEvaluationFormRepositoryImpl } from './repositories/pre-evaluation-form-repository-impl'
 import { HttpPreEvaluationFormManagementRemoteDataSource } from './remote/http-pre-evaluation-form-management-remote-data-source'
@@ -36,6 +37,9 @@ export const preEvaluationFormServiceLocator = {
     preEvaluationFormManagementRepository,
   ),
   createPatientFromPreEvaluationFormUseCase: new CreatePatientFromPreEvaluationFormFrontendUseCase(
+    preEvaluationFormManagementRepository,
+  ),
+  deletePreEvaluationFormUseCase: new DeletePreEvaluationFormFrontendUseCase(
     preEvaluationFormManagementRepository,
   ),
 }

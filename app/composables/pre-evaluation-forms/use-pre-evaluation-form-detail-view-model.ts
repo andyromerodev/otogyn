@@ -11,6 +11,7 @@ export const usePreEvaluationFormDetailViewModel = async (formId: string) => {
       preEvaluationFormServiceLocator.createPatientFromPreEvaluationFormUseCase,
     listPatientsUseCase: patientServiceLocator.listPatientsUseCase,
     getPatientDetailUseCase: patientServiceLocator.getPatientDetailUseCase,
+    deletePreEvaluationFormUseCase: preEvaluationFormServiceLocator.deletePreEvaluationFormUseCase,
   })
 
   await viewModel.loadForm()

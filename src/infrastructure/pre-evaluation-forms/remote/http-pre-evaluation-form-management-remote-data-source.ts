@@ -66,4 +66,18 @@ export class HttpPreEvaluationFormManagementRemoteDataSource
       method: 'POST',
     })
   }
+
+  async deleteForm(id: string): Promise<void> {
+    if (import.meta.server) {
+      const requestFetch = useRequestFetch() as (request: string, options?: Record<string, unknown>) => Promise<unknown>
+      await requestFetch(`/api/pre-evaluation-forms/${id}`, {
+        method: 'DELETE',
+      })
+      return
+    }
+
+    await $fetch(`/api/pre-evaluation-forms/${id}`, {
+      method: 'DELETE',
+    })
+  }
 }

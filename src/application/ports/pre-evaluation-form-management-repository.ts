@@ -13,4 +13,5 @@ export interface PreEvaluationFormManagementRepository {
   getFormDetail(input: PreEvaluationFormDetailInput): Promise<PreEvaluationForm>
   linkFormToPatient(input: LinkPreEvaluationFormInput): Promise<PreEvaluationForm>
   createPatientFromForm(input: CreatePatientFromFormInput): Promise<CreatePatientFromFormResult>
+  deleteForm(id: string): Promise<void>
 }

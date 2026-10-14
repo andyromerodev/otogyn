@@ -17,4 +17,5 @@ export interface PreEvaluationFormDetailViewModelDependencies {
   }
   listPatientsUseCase: { execute(input: ListPatientsInput): Promise<PatientListResult> }
   getPatientDetailUseCase: { execute(input: PatientDetailInput): Promise<Patient> }
+  deletePreEvaluationFormUseCase?: { execute(id: string): Promise<void> }
 }

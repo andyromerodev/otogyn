@@ -45,6 +45,7 @@ import { ListPreEvaluationFormsUseCase } from '../../src/application/use-cases/p
 import { GetPreEvaluationFormDetailUseCase } from '../../src/application/use-cases/pre-evaluation-forms/get-pre-evaluation-form-detail'
 import { LinkPreEvaluationFormToPatientUseCase } from '../../src/application/use-cases/pre-evaluation-forms/link-pre-evaluation-form-to-patient'
 import { CreatePatientFromPreEvaluationFormUseCase } from '../../src/application/use-cases/pre-evaluation-forms/create-patient-from-pre-evaluation-form'
+import { DeletePreEvaluationFormUseCase } from '../../src/application/use-cases/pre-evaluation-forms/delete-pre-evaluation-form'
 import { StartConsultationUseCase } from '../../src/application/use-cases/consultations/start-consultation'
 import { UpdateConsultationUseCase } from '../../src/application/use-cases/consultations/update-consultation'
 import { CompleteConsultationUseCase } from '../../src/application/use-cases/consultations/complete-consultation'
@@ -225,6 +226,9 @@ export const serverServiceLocator = {
     createPatientFromPreEvaluationFormUseCase: new CreatePatientFromPreEvaluationFormUseCase(
       preEvaluationFormRepository,
       patientRepository,
+    ),
+    deletePreEvaluationFormUseCase: new DeletePreEvaluationFormUseCase(
+      preEvaluationFormRepository,
     ),
     attachmentStorage,
   },

@@ -24,4 +24,5 @@ export interface PreEvaluationFormRepository {
   listPage(query: PreEvaluationFormListPageQuery): Promise<PreEvaluationFormListPageResult>
   findById(id: string, organizationId: string): Promise<PreEvaluationForm | null>
   update(form: PreEvaluationForm): Promise<PreEvaluationForm>
+  delete(id: string, organizationId: string): Promise<void>
 }

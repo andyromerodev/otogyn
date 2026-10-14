@@ -98,10 +98,51 @@ export const createPreEvaluationFormsListViewModel = (
     }, 250)
   })
 
+  const isConfirmDeleteOpen = ref(false)
+  const formToDelete = ref<PreEvaluationForm | null>(null)
+  const isDeleting = ref(false)
+  const successMessage = ref<string | null>(null)
+
+  const openDeleteConfirm = (form: PreEvaluationForm) => {
+    formToDelete.value = form
+    isConfirmDeleteOpen.value = true
+    errorMessage.value = null
+    successMessage.value = null
+  }
+
+  const closeDeleteConfirm = () => {
+    if (isDeleting.value) return
+    isConfirmDeleteOpen.value = false
+    formToDelete.value = null
+  }
+
+  const confirmDelete = async () => {
+    if (!formToDelete.value || !dependencies.deletePreEvaluationFormUseCase) return
+
+    isDeleting.value = true
+    errorMessage.value = null
+    successMessage.value = null
+
+    try {
+      const patientName = formToDelete.value.fullName
+      await dependencies.deletePreEvaluationFormUseCase.execute(formToDelete.value.id)
+      isConfirmDeleteOpen.value = false
+      formToDelete.value = null
+      successMessage.value = `Se eliminó el registro de pre-evaluación de ${patientName}.`
+      await loadForms()
+    } catch (error) {
+      console.error('[pre-evaluation-forms][delete] failed', error)
+      errorMessage.value = 'No se pudo eliminar el formulario de pre-evaluación.'
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
   return {
     forms,
     loading,
     errorMessage,
+    successMessage,
     searchTerm,
     selectedFilter,
     page,
@@ -114,6 +155,12 @@ export const createPreEvaluationFormsListViewModel = (
     emptyStateMessage,
     filterChips,
     totalLabel,
+    isConfirmDeleteOpen,
+    formToDelete,
+    isDeleting,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    confirmDelete,
     loadForms,
     selectFilter,
     goToPage,

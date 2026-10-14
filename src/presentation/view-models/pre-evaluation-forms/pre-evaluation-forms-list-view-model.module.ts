@@ -6,6 +6,7 @@ import type { PreEvaluationFormListFilter } from '../../../domain/repositories/p
 
 export interface PreEvaluationFormsListViewModelDependencies {
   listPreEvaluationFormsUseCase: { execute(input: ListPreEvaluationFormsInput): Promise<PreEvaluationFormListResult> }
+  deletePreEvaluationFormUseCase?: { execute(id: string): Promise<void> }
   initialSearch?: string
   initialFilter?: PreEvaluationFormListFilter
   initialPage?: number

@@ -150,6 +150,37 @@ export const createPreEvaluationFormDetailViewModel = (
     }
   }
 
+  const isConfirmDeleteOpen = ref(false)
+  const isDeleting = ref(false)
+
+  const requestDeleteForm = () => {
+    actionErrorMessage.value = null
+    isConfirmDeleteOpen.value = true
+  }
+
+  const cancelDeleteForm = () => {
+    if (isDeleting.value) return
+    isConfirmDeleteOpen.value = false
+  }
+
+  const confirmDeleteForm = async (onSuccess?: () => void) => {
+    if (!dependencies.deletePreEvaluationFormUseCase) return
+    isDeleting.value = true
+    actionErrorMessage.value = null
+
+    try {
+      await dependencies.deletePreEvaluationFormUseCase.execute(dependencies.formId)
+      isConfirmDeleteOpen.value = false
+      if (onSuccess) {
+        onSuccess()
+      }
+    } catch (error) {
+      actionErrorMessage.value = resolveErrorMessage(error, 'No se pudo eliminar el formulario de pre-evaluación.')
+    } finally {
+      isDeleting.value = false
+    }
+  }
+
   return {
     form,
     loading,
@@ -163,6 +194,8 @@ export const createPreEvaluationFormDetailViewModel = (
     patientSearchResults,
     patientSearchLoading,
     isConfirmCreateOpen,
+    isConfirmDeleteOpen,
+    isDeleting,
     loadForm,
     openPicker,
     closePicker,
@@ -170,5 +203,8 @@ export const createPreEvaluationFormDetailViewModel = (
     requestCreatePatient,
     cancelCreatePatient,
     confirmCreatePatient,
+    requestDeleteForm,
+    cancelDeleteForm,
+    confirmDeleteForm,
   }
 }
