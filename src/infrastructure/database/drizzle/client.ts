@@ -42,10 +42,12 @@ const REQUEST_DB_KEY = 'drizzle'
 
 let dbInstance: DrizzleClient | null = null
 
+// Workers solo se conecta por Hyperdrive. No usa DATABASE_URL: abriria una conexion directa
+// y sin pool en cada request.
 const resolveRequestConnectionString = (scope: RequestScope): string | undefined => {
   const hyperdrive = scope.env.HYPERDRIVE as HyperdriveBinding | undefined
 
-  return hyperdrive?.connectionString || process.env.DATABASE_URL || undefined
+  return hyperdrive?.connectionString || undefined
 }
 
 // Workers: un cliente por request (Hyperdrive). No se guarda en module scope porque
@@ -60,7 +62,9 @@ const getRequestDrizzleClient = (scope: RequestScope): DrizzleClient => {
   const connectionString = resolveRequestConnectionString(scope)
 
   if (!connectionString) {
-    throw new Error('DATABASE_URL no esta configurado.')
+    throw new Error(
+      'HYPERDRIVE binding has no connectionString. Workers never falls back to DATABASE_URL.',
+    )
   }
 
   const { db, end } = createDrizzleClient(connectionString, { prepare: true, max: 5 })

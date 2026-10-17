@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { registerRequestScopeResolver, type RequestScope } from '../../runtime/request-scope'
-import { getDrizzleClient, type DrizzleClient } from './client'
+import { getDrizzleClient, hasDatabaseConnection, type DrizzleClient } from './client'
 
 // Cadena ficticia: postgres.js no abre conexion hasta la primera query.
 const FAKE_CONNECTION_STRING = 'postgres://test-user:test-password@localhost:5432/otogyn_test'
@@ -82,18 +82,25 @@ describe('getDrizzleClient', () => {
     expect(options.max).toBe(5)
   })
 
-  it('falls back to DATABASE_URL per request when Hyperdrive is not bound', () => {
+  it('throws on Workers when Hyperdrive is not bound, even if DATABASE_URL is set', () => {
     const scope = createFakeScope()
     registerRequestScopeResolver(() => scope)
 
-    expect(clientOptionsOf(getDrizzleClient()).prepare).toBe(true)
+    expect(() => getDrizzleClient()).toThrow('HYPERDRIVE binding has no connectionString')
+    expect(scope.cache.has('drizzle')).toBe(false)
   })
 
-  it('throws on Workers when neither Hyperdrive nor DATABASE_URL is available', () => {
-    const scope = createFakeScope()
-    registerRequestScopeResolver(() => scope)
-    delete process.env.DATABASE_URL
+  it('reports no connection on Workers without Hyperdrive, without throwing', () => {
+    registerRequestScopeResolver(() => createFakeScope())
 
-    expect(() => getDrizzleClient()).toThrow('DATABASE_URL no esta configurado.')
+    expect(hasDatabaseConnection()).toBe(false)
+  })
+
+  it('reports a connection on Workers when Hyperdrive is bound', () => {
+    registerRequestScopeResolver(() =>
+      createFakeScope({ HYPERDRIVE: { connectionString: FAKE_CONNECTION_STRING } }),
+    )
+
+    expect(hasDatabaseConnection()).toBe(true)
   })
 })
