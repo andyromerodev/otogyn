@@ -193,24 +193,39 @@ interface RateLimiterBinding {
 
 // Workers Rate Limiting (bindings PUBLIC_GET_LIMITER y PUBLIC_POST_LIMITER), antes del limitador
 // de base de datos. Mismas rutas y limites que netlify/edge-functions/*. Fuera de Workers no hace nada.
+// Si falta el binding o el limitador falla, avisa y el limitador de base de datos decide.
 export async function enforceWorkersRateLimit(
   event: Parameters<typeof getRequestIP>[0],
   method: string,
   pathname: string,
 ): Promise<void> {
-  const env = event.context.cloudflare?.env as Record<string, RateLimiterBinding | undefined> | undefined
-  const limiter =
-    method === 'GET' ? env?.PUBLIC_GET_LIMITER
-      : method === 'POST' ? env?.PUBLIC_POST_LIMITER
-        : undefined
-
-  if (!limiter) {
+  if (!event.context.cloudflare) {
     return
   }
 
-  const { success } = await limiter.limit({ key: `${getClientIp(event)}:${pathname}` })
+  const env = event.context.cloudflare.env as Record<string, RateLimiterBinding | undefined> | undefined
+  const bindingName =
+    method === 'GET' ? 'PUBLIC_GET_LIMITER'
+      : method === 'POST' ? 'PUBLIC_POST_LIMITER'
+        : undefined
+  const limiter = bindingName ? env?.[bindingName] : undefined
 
-  if (!success) {
+  if (!limiter) {
+    console.warn(`[enforceWorkersRateLimit] ${bindingName ?? method} binding is missing; using the database limiter.`)
+    return
+  }
+
+  const key = `${getClientIp(event)}:${pathname}`
+  let result: { success: boolean }
+
+  try {
+    result = await limiter.limit({ key })
+  } catch (error) {
+    console.warn('[enforceWorkersRateLimit] Workers rate limiter failed; using the database limiter.', error)
+    return
+  }
+
+  if (!result.success) {
     throw createError({
       statusCode: 429,
       statusMessage: 'Too many requests. Please try again later.',
