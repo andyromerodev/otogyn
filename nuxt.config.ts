@@ -155,9 +155,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     // Credenciales server-only de la API CIE-11 de la OMS.
-    whoIcdClientId: process.env.WHO_ICD_CLIENT_ID ?? '',
-    // En el build de Cloudflare el secreto llega en runtime (NUXT_WHO_ICD_CLIENT_SECRET) y no
-    // se compila en el bundle. Netlify conserva el comportamiento anterior.
+    // En el build de Cloudflare el ID y el secreto llegan en runtime (NUXT_WHO_ICD_CLIENT_ID y
+    // NUXT_WHO_ICD_CLIENT_SECRET) y no se compilan en el bundle. Netlify conserva el comportamiento anterior.
+    whoIcdClientId: isCloudflareBuild ? '' : (process.env.WHO_ICD_CLIENT_ID ?? ''),
     whoIcdClientSecret: isCloudflareBuild ? '' : (process.env.WHO_ICD_CLIENT_SECRET ?? ''),
     public: {
       authEnabled: Boolean(process.env.DATABASE_URL && process.env.AUTH_SECRET),
