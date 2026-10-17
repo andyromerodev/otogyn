@@ -26,6 +26,9 @@ const AUTH_CACHE_KEY = 'betterAuth'
 const createBetterAuth = () => {
   const db = getDrizzleClient()
   const isProduction = process.env.NODE_ENV === 'production'
+  // Interruptor para la prueba local. NODE_ENV no sirve: en el build de Cloudflare queda fijo
+  // como production. Produccion no define esta variable, asi que el registro sigue cerrado.
+  const allowSignUp = process.env.AUTH_ALLOW_SIGN_UP === 'true'
 
   return betterAuth({
     appName: 'OtoGyn',
@@ -45,7 +48,7 @@ const createBetterAuth = () => {
     emailAndPassword: {
       enabled: true,
       autoSignIn: true,
-      disableSignUp: isProduction,
+      disableSignUp: isProduction && !allowSignUp,
       minPasswordLength: 8,
       maxPasswordLength: 128,
     },
