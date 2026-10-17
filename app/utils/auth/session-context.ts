@@ -33,8 +33,10 @@ export const buildLoginRedirect = (path: string, reason?: 'deactivated') => ({
   },
 })
 
+// En el servidor, useRequestFetch pasa el contexto del request original (incluido el de
+// Cloudflare). Con $fetch global, la llamada interna no tiene Hyperdrive y responde 503.
 export const fetchSessionContext = (headers?: HeadersInit) =>
-  $fetch<AppSessionContext>('/api/auth/session-context', { headers })
+  useRequestFetch()<AppSessionContext>('/api/auth/session-context', { headers })
 
 export const resolveSessionContext = async (
   headers?: HeadersInit,
