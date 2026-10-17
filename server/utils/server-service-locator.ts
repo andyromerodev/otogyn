@@ -94,203 +94,301 @@ import {
 } from '../../src/application/use-cases/inventory/inventory-use-cases'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
+import type { AttachmentStoragePort } from '../../src/application/ports/attachment-storage'
+import { getRequestScope } from '../../src/infrastructure/runtime/request-scope'
 
-const patientRepository = new DrizzlePatientRepository()
-const serviceRepository = new DrizzleServiceRepository()
-const assistantRepository = new DrizzleAssistantRepository()
-const appointmentRepository = new DrizzleAppointmentRepository()
-const availabilityRepository = new DrizzleAvailabilityRepository()
-const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
-const consultationRepository = new DrizzleConsultationRepository()
-const treatmentTemplateRepository = new DrizzleTreatmentTemplateRepository()
-const paymentRepository = new DrizzlePaymentRepository()
-const expenseRepository = new DrizzleExpenseRepository()
-const expenseCategoryRepository = new DrizzleExpenseCategoryRepository()
-const financeReportRepository = new DrizzleFinanceReportRepository()
-const inventoryRepository = new DrizzleInventoryRepository()
-const attachmentStorage = new NetlifyBlobsAttachmentStorage()
-const consultationAttachmentStorage = new NetlifyBlobsAttachmentStorage('consultation-attachments')
-const notificationService = new ResendNotificationService()
+interface AttachmentStorages {
+  attachmentStorage: AttachmentStoragePort
+  consultationAttachmentStorage: AttachmentStoragePort
+}
 
-const scheduleAppointmentUseCase = new ScheduleAppointmentUseCase(
-  appointmentRepository,
-  patientRepository,
-  serviceRepository,
-  availabilityRepository,
-)
-const changeAppointmentStatusUseCase = new ChangeAppointmentStatusUseCase(appointmentRepository)
+const createServerServices = ({ attachmentStorage, consultationAttachmentStorage }: AttachmentStorages) => {
+  const patientRepository = new DrizzlePatientRepository()
+  const serviceRepository = new DrizzleServiceRepository()
+  const assistantRepository = new DrizzleAssistantRepository()
+  const appointmentRepository = new DrizzleAppointmentRepository()
+  const availabilityRepository = new DrizzleAvailabilityRepository()
+  const preEvaluationFormRepository = new DrizzlePreEvaluationFormRepository()
+  const consultationRepository = new DrizzleConsultationRepository()
+  const treatmentTemplateRepository = new DrizzleTreatmentTemplateRepository()
+  const paymentRepository = new DrizzlePaymentRepository()
+  const expenseRepository = new DrizzleExpenseRepository()
+  const expenseCategoryRepository = new DrizzleExpenseCategoryRepository()
+  const financeReportRepository = new DrizzleFinanceReportRepository()
+  const inventoryRepository = new DrizzleInventoryRepository()
+  const notificationService = new ResendNotificationService()
 
-export const serverServiceLocator = {
-  repositories: {
+  const scheduleAppointmentUseCase = new ScheduleAppointmentUseCase(
+    appointmentRepository,
     patientRepository,
     serviceRepository,
-    assistantRepository,
-    appointmentRepository,
     availabilityRepository,
-    consultationRepository,
-  },
-  patients: {
-    listPatientsUseCase: new ListPatientsUseCase(patientRepository),
-    getPatientDetailUseCase: new GetPatientDetailUseCase(patientRepository),
-    createPatientUseCase: new CreatePatientUseCase(patientRepository),
-    updatePatientUseCase: new UpdatePatientUseCase(patientRepository),
-  },
-  services: {
-    listServicesUseCase: new ListServicesUseCase(serviceRepository),
-    getServiceDetailUseCase: new GetServiceDetailUseCase(serviceRepository),
-    createServiceUseCase: new CreateServiceUseCase(serviceRepository),
-    updateServiceUseCase: new UpdateServiceUseCase(serviceRepository),
-    deleteServiceUseCase: new DeleteServiceUseCase(serviceRepository),
-  },
-  availability: {
-    listAvailabilityUseCase: new ListAvailabilityUseCase(availabilityRepository),
-    listBlockedSlotsUseCase: new ListBlockedSlotsUseCase(availabilityRepository),
-    listUpcomingBlockedSlotsUseCase: new ListUpcomingBlockedSlotsUseCase(availabilityRepository),
-    createAvailabilityUseCase: new CreateAvailabilityUseCase(availabilityRepository),
-    createBulkAvailabilityUseCase: new CreateBulkAvailabilityUseCase(availabilityRepository),
-    updateAvailabilityUseCase: new UpdateAvailabilityUseCase(availabilityRepository),
-    toggleAvailabilityActiveUseCase: new ToggleAvailabilityActiveUseCase(availabilityRepository),
-    createBlockedSlotUseCase: new CreateBlockedSlotUseCase(availabilityRepository),
-    createBulkBlockedSlotsUseCase: new CreateBulkBlockedSlotsUseCase(availabilityRepository),
-    deleteBlockedSlotUseCase: new DeleteBlockedSlotUseCase(availabilityRepository),
-  },
-  assistants: {
-    listAssistantsUseCase: new ListAssistantsUseCase(assistantRepository),
-    createAssistantUseCase: new CreateAssistantUseCase(assistantRepository),
-    updateAssistantUseCase: new UpdateAssistantUseCase(assistantRepository),
-    deactivateAssistantUseCase: new DeactivateAssistantUseCase(assistantRepository),
-    reactivateAssistantUseCase: new ReactivateAssistantUseCase(assistantRepository),
-    deleteAssistantUseCase: new DeleteAssistantUseCase(assistantRepository),
-  },
-  appointments: {
-    scheduleAppointmentUseCase,
-    listAppointmentsUseCase: new ListAppointmentsUseCase(appointmentRepository),
-    getAppointmentDetailUseCase: new GetAppointmentDetailUseCase(
-      appointmentRepository,
+  )
+  const changeAppointmentStatusUseCase = new ChangeAppointmentStatusUseCase(appointmentRepository)
+
+  return {
+    repositories: {
       patientRepository,
       serviceRepository,
-      paymentRepository,
-    ),
-    getTodayAppointmentsUseCase: new GetTodayAppointmentsUseCase(
-      appointmentRepository,
-      patientRepository,
-      serviceRepository,
-    ),
-    updateAppointmentUseCase: new UpdateAppointmentUseCase(
-      appointmentRepository,
-      serviceRepository,
-      scheduleAppointmentUseCase,
-    ),
-    cancelAppointmentUseCase: new CancelAppointmentUseCase(appointmentRepository),
-    changeAppointmentStatusUseCase,
-    getAppointmentStatsUseCase: new GetAppointmentStatsUseCase(appointmentRepository),
-    getAppointmentAvailableSlotsUseCase: new GetAppointmentAvailableSlotsUseCase(
+      assistantRepository,
       appointmentRepository,
       availabilityRepository,
-      serviceRepository,
-    ),
-  },
-  dashboard: {
-    getDashboardSummaryUseCase: new GetDashboardSummaryUseCase(appointmentRepository),
-  },
-  booking: {
-    getPublicServicesUseCase: new GetPublicServicesUseCase(serviceRepository),
-    getPublicSlotsUseCase: new GetPublicSlotsUseCase(
-      appointmentRepository,
-      availabilityRepository,
-      serviceRepository,
-    ),
-    createPublicBookingUseCase: new CreatePublicBookingUseCase(
-      patientRepository,
-      serviceRepository,
+      consultationRepository,
+    },
+    patients: {
+      listPatientsUseCase: new ListPatientsUseCase(patientRepository),
+      getPatientDetailUseCase: new GetPatientDetailUseCase(patientRepository),
+      createPatientUseCase: new CreatePatientUseCase(patientRepository),
+      updatePatientUseCase: new UpdatePatientUseCase(patientRepository),
+    },
+    services: {
+      listServicesUseCase: new ListServicesUseCase(serviceRepository),
+      getServiceDetailUseCase: new GetServiceDetailUseCase(serviceRepository),
+      createServiceUseCase: new CreateServiceUseCase(serviceRepository),
+      updateServiceUseCase: new UpdateServiceUseCase(serviceRepository),
+      deleteServiceUseCase: new DeleteServiceUseCase(serviceRepository),
+    },
+    availability: {
+      listAvailabilityUseCase: new ListAvailabilityUseCase(availabilityRepository),
+      listBlockedSlotsUseCase: new ListBlockedSlotsUseCase(availabilityRepository),
+      listUpcomingBlockedSlotsUseCase: new ListUpcomingBlockedSlotsUseCase(availabilityRepository),
+      createAvailabilityUseCase: new CreateAvailabilityUseCase(availabilityRepository),
+      createBulkAvailabilityUseCase: new CreateBulkAvailabilityUseCase(availabilityRepository),
+      updateAvailabilityUseCase: new UpdateAvailabilityUseCase(availabilityRepository),
+      toggleAvailabilityActiveUseCase: new ToggleAvailabilityActiveUseCase(availabilityRepository),
+      createBlockedSlotUseCase: new CreateBlockedSlotUseCase(availabilityRepository),
+      createBulkBlockedSlotsUseCase: new CreateBulkBlockedSlotsUseCase(availabilityRepository),
+      deleteBlockedSlotUseCase: new DeleteBlockedSlotUseCase(availabilityRepository),
+    },
+    assistants: {
+      listAssistantsUseCase: new ListAssistantsUseCase(assistantRepository),
+      createAssistantUseCase: new CreateAssistantUseCase(assistantRepository),
+      updateAssistantUseCase: new UpdateAssistantUseCase(assistantRepository),
+      deactivateAssistantUseCase: new DeactivateAssistantUseCase(assistantRepository),
+      reactivateAssistantUseCase: new ReactivateAssistantUseCase(assistantRepository),
+      deleteAssistantUseCase: new DeleteAssistantUseCase(assistantRepository),
+    },
+    appointments: {
       scheduleAppointmentUseCase,
-    ),
-  },
-  preEvaluationForms: {
-    createPreEvaluationFormUseCase: new CreatePreEvaluationFormUseCase(
-      patientRepository,
-      preEvaluationFormRepository,
-      notificationService,
-    ),
-    uploadPreEvaluationAttachmentUseCase: new UploadPreEvaluationAttachmentUseCase(
-      attachmentStorage,
-    ),
-    listPreEvaluationFormsUseCase: new ListPreEvaluationFormsUseCase(preEvaluationFormRepository),
-    getPreEvaluationFormDetailUseCase: new GetPreEvaluationFormDetailUseCase(
-      preEvaluationFormRepository,
-    ),
-    linkPreEvaluationFormToPatientUseCase: new LinkPreEvaluationFormToPatientUseCase(
-      preEvaluationFormRepository,
-      patientRepository,
-    ),
-    createPatientFromPreEvaluationFormUseCase: new CreatePatientFromPreEvaluationFormUseCase(
-      preEvaluationFormRepository,
-      patientRepository,
-    ),
-    deletePreEvaluationFormUseCase: new DeletePreEvaluationFormUseCase(
-      preEvaluationFormRepository,
-    ),
-    attachmentStorage,
-  },
-  consultations: {
-    startConsultationUseCase: new StartConsultationUseCase(
-      consultationRepository,
-      appointmentRepository,
-    ),
-    updateConsultationUseCase: new UpdateConsultationUseCase(consultationRepository),
-    completeConsultationUseCase: new CompleteConsultationUseCase(
-      consultationRepository,
+      listAppointmentsUseCase: new ListAppointmentsUseCase(appointmentRepository),
+      getAppointmentDetailUseCase: new GetAppointmentDetailUseCase(
+        appointmentRepository,
+        patientRepository,
+        serviceRepository,
+        paymentRepository,
+      ),
+      getTodayAppointmentsUseCase: new GetTodayAppointmentsUseCase(
+        appointmentRepository,
+        patientRepository,
+        serviceRepository,
+      ),
+      updateAppointmentUseCase: new UpdateAppointmentUseCase(
+        appointmentRepository,
+        serviceRepository,
+        scheduleAppointmentUseCase,
+      ),
+      cancelAppointmentUseCase: new CancelAppointmentUseCase(appointmentRepository),
       changeAppointmentStatusUseCase,
-    ),
-    getConsultationByAppointmentUseCase: new GetConsultationByAppointmentUseCase(
-      consultationRepository,
-    ),
-    listPatientConsultationsUseCase: new ListPatientConsultationsUseCase(consultationRepository),
-    listTreatmentTemplatesUseCase: new ListTreatmentTemplatesUseCase(treatmentTemplateRepository),
-    createTreatmentTemplateUseCase: new CreateTreatmentTemplateUseCase(treatmentTemplateRepository),
-    deleteTreatmentTemplateUseCase: new DeleteTreatmentTemplateUseCase(treatmentTemplateRepository),
-    attachmentStorage: consultationAttachmentStorage,
+      getAppointmentStatsUseCase: new GetAppointmentStatsUseCase(appointmentRepository),
+      getAppointmentAvailableSlotsUseCase: new GetAppointmentAvailableSlotsUseCase(
+        appointmentRepository,
+        availabilityRepository,
+        serviceRepository,
+      ),
+    },
+    dashboard: {
+      getDashboardSummaryUseCase: new GetDashboardSummaryUseCase(appointmentRepository),
+    },
+    booking: {
+      getPublicServicesUseCase: new GetPublicServicesUseCase(serviceRepository),
+      getPublicSlotsUseCase: new GetPublicSlotsUseCase(
+        appointmentRepository,
+        availabilityRepository,
+        serviceRepository,
+      ),
+      createPublicBookingUseCase: new CreatePublicBookingUseCase(
+        patientRepository,
+        serviceRepository,
+        scheduleAppointmentUseCase,
+      ),
+    },
+    preEvaluationForms: {
+      createPreEvaluationFormUseCase: new CreatePreEvaluationFormUseCase(
+        patientRepository,
+        preEvaluationFormRepository,
+        notificationService,
+      ),
+      uploadPreEvaluationAttachmentUseCase: new UploadPreEvaluationAttachmentUseCase(
+        attachmentStorage,
+      ),
+      listPreEvaluationFormsUseCase: new ListPreEvaluationFormsUseCase(preEvaluationFormRepository),
+      getPreEvaluationFormDetailUseCase: new GetPreEvaluationFormDetailUseCase(
+        preEvaluationFormRepository,
+      ),
+      linkPreEvaluationFormToPatientUseCase: new LinkPreEvaluationFormToPatientUseCase(
+        preEvaluationFormRepository,
+        patientRepository,
+      ),
+      createPatientFromPreEvaluationFormUseCase: new CreatePatientFromPreEvaluationFormUseCase(
+        preEvaluationFormRepository,
+        patientRepository,
+      ),
+      deletePreEvaluationFormUseCase: new DeletePreEvaluationFormUseCase(
+        preEvaluationFormRepository,
+      ),
+      attachmentStorage,
+    },
+    consultations: {
+      startConsultationUseCase: new StartConsultationUseCase(
+        consultationRepository,
+        appointmentRepository,
+      ),
+      updateConsultationUseCase: new UpdateConsultationUseCase(consultationRepository),
+      completeConsultationUseCase: new CompleteConsultationUseCase(
+        consultationRepository,
+        changeAppointmentStatusUseCase,
+      ),
+      getConsultationByAppointmentUseCase: new GetConsultationByAppointmentUseCase(
+        consultationRepository,
+      ),
+      listPatientConsultationsUseCase: new ListPatientConsultationsUseCase(consultationRepository),
+      listTreatmentTemplatesUseCase: new ListTreatmentTemplatesUseCase(treatmentTemplateRepository),
+      createTreatmentTemplateUseCase: new CreateTreatmentTemplateUseCase(treatmentTemplateRepository),
+      deleteTreatmentTemplateUseCase: new DeleteTreatmentTemplateUseCase(treatmentTemplateRepository),
+      attachmentStorage: consultationAttachmentStorage,
+    },
+    finances: {
+      getFinanceSummaryUseCase: new GetFinanceSummaryUseCase(financeReportRepository),
+      listPaymentsUseCase: new ListPaymentsUseCase(paymentRepository),
+      createPaymentUseCase: new CreatePaymentUseCase(paymentRepository),
+      updatePaymentUseCase: new UpdatePaymentUseCase(paymentRepository),
+      deletePaymentUseCase: new DeletePaymentUseCase(paymentRepository),
+      listExpensesUseCase: new ListExpensesUseCase(expenseRepository),
+      createExpenseUseCase: new CreateExpenseUseCase(expenseRepository, expenseCategoryRepository),
+      updateExpenseUseCase: new UpdateExpenseUseCase(expenseRepository, expenseCategoryRepository),
+      deleteExpenseUseCase: new DeleteExpenseUseCase(expenseRepository),
+      listExpenseCategoriesUseCase: new ListExpenseCategoriesUseCase(expenseCategoryRepository),
+      createExpenseCategoryUseCase: new CreateExpenseCategoryUseCase(expenseCategoryRepository),
+      updateExpenseCategoryUseCase: new UpdateExpenseCategoryUseCase(expenseCategoryRepository),
+    },
+    inventory: {
+      listItemsUseCase: new ListInventoryItemsUseCase(inventoryRepository),
+      getItemUseCase: new GetInventoryItemUseCase(inventoryRepository),
+      createItemUseCase: new CreateInventoryItemUseCase(inventoryRepository),
+      updateItemUseCase: new UpdateInventoryItemUseCase(inventoryRepository),
+      getLotsUseCase: new GetInventoryItemLotsUseCase(inventoryRepository),
+      listMovementsUseCase: new ListInventoryMovementsUseCase(inventoryRepository),
+      recordMovementUseCase: new RecordInventoryMovementUseCase(inventoryRepository),
+      getSummaryUseCase: new GetInventorySummaryUseCase(inventoryRepository),
+      listSuppliersUseCase: new ListInventorySuppliersUseCase(inventoryRepository),
+      createSupplierUseCase: new CreateInventorySupplierUseCase(inventoryRepository),
+      updateSupplierUseCase: new UpdateInventorySupplierUseCase(inventoryRepository),
+    },
+    calendar: {
+      getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),
+      getCalendarDayUseCase: new GetCalendarDayUseCase(
+        appointmentRepository,
+        availabilityRepository,
+        patientRepository,
+        serviceRepository,
+      ),
+      getCalendarWeekUseCase: new GetCalendarWeekUseCase(
+        appointmentRepository,
+        availabilityRepository,
+        patientRepository,
+        serviceRepository,
+      ),
+    },
+  }
+}
+
+type ServerServices = ReturnType<typeof createServerServices>
+
+const SERVICES_CACHE_KEY = 'serverServices'
+let nodeServices: ServerServices | null = null
+
+// Node: adjuntos en Netlify Blobs (con fallback a disco), como antes.
+const createNodeAttachmentStorages = (): AttachmentStorages => ({
+  attachmentStorage: new NetlifyBlobsAttachmentStorage(),
+  consultationAttachmentStorage: new NetlifyBlobsAttachmentStorage('consultation-attachments'),
+})
+
+// Workers: falla al usar adjuntos hasta tener el adaptador R2. Nunca cae a disco en silencio.
+const unavailableAttachmentStorage: AttachmentStoragePort = {
+  store: async () => {
+    throw new Error('Attachment storage is not configured on Cloudflare Workers.')
   },
-  finances: {
-    getFinanceSummaryUseCase: new GetFinanceSummaryUseCase(financeReportRepository),
-    listPaymentsUseCase: new ListPaymentsUseCase(paymentRepository),
-    createPaymentUseCase: new CreatePaymentUseCase(paymentRepository),
-    updatePaymentUseCase: new UpdatePaymentUseCase(paymentRepository),
-    deletePaymentUseCase: new DeletePaymentUseCase(paymentRepository),
-    listExpensesUseCase: new ListExpensesUseCase(expenseRepository),
-    createExpenseUseCase: new CreateExpenseUseCase(expenseRepository, expenseCategoryRepository),
-    updateExpenseUseCase: new UpdateExpenseUseCase(expenseRepository, expenseCategoryRepository),
-    deleteExpenseUseCase: new DeleteExpenseUseCase(expenseRepository),
-    listExpenseCategoriesUseCase: new ListExpenseCategoriesUseCase(expenseCategoryRepository),
-    createExpenseCategoryUseCase: new CreateExpenseCategoryUseCase(expenseCategoryRepository),
-    updateExpenseCategoryUseCase: new UpdateExpenseCategoryUseCase(expenseCategoryRepository),
+  get: async () => {
+    throw new Error('Attachment storage is not configured on Cloudflare Workers.')
   },
-  inventory: {
-    listItemsUseCase: new ListInventoryItemsUseCase(inventoryRepository),
-    getItemUseCase: new GetInventoryItemUseCase(inventoryRepository),
-    createItemUseCase: new CreateInventoryItemUseCase(inventoryRepository),
-    updateItemUseCase: new UpdateInventoryItemUseCase(inventoryRepository),
-    getLotsUseCase: new GetInventoryItemLotsUseCase(inventoryRepository),
-    listMovementsUseCase: new ListInventoryMovementsUseCase(inventoryRepository),
-    recordMovementUseCase: new RecordInventoryMovementUseCase(inventoryRepository),
-    getSummaryUseCase: new GetInventorySummaryUseCase(inventoryRepository),
-    listSuppliersUseCase: new ListInventorySuppliersUseCase(inventoryRepository),
-    createSupplierUseCase: new CreateInventorySupplierUseCase(inventoryRepository),
-    updateSupplierUseCase: new UpdateInventorySupplierUseCase(inventoryRepository),
+}
+
+const createWorkersAttachmentStorages = (): AttachmentStorages => ({
+  attachmentStorage: unavailableAttachmentStorage,
+  consultationAttachmentStorage: unavailableAttachmentStorage,
+})
+
+// Node: un contenedor singleton (igual que antes). Workers: un contenedor por request,
+// guardado en el ambito del request para que dos requests nunca compartan clientes.
+const resolveServerServices = (): ServerServices => {
+  const scope = getRequestScope()
+
+  if (!scope) {
+    nodeServices ??= createServerServices(createNodeAttachmentStorages())
+    return nodeServices
+  }
+
+  const cached = scope.cache.get(SERVICES_CACHE_KEY) as ServerServices | undefined
+
+  if (cached) {
+    return cached
+  }
+
+  const services = createServerServices(createWorkersAttachmentStorages())
+  scope.cache.set(SERVICES_CACHE_KEY, services)
+
+  return services
+}
+
+// Mismo objeto que antes: las rutas no cambian. Cada grupo se resuelve en el contenedor del request actual.
+export const serverServiceLocator = {
+  get repositories() {
+    return resolveServerServices().repositories
   },
-  calendar: {
-    getCalendarMonthUseCase: new GetCalendarMonthUseCase(appointmentRepository),
-    getCalendarDayUseCase: new GetCalendarDayUseCase(
-      appointmentRepository,
-      availabilityRepository,
-      patientRepository,
-      serviceRepository,
-    ),
-    getCalendarWeekUseCase: new GetCalendarWeekUseCase(
-      appointmentRepository,
-      availabilityRepository,
-      patientRepository,
-      serviceRepository,
-    ),
+  get patients() {
+    return resolveServerServices().patients
+  },
+  get services() {
+    return resolveServerServices().services
+  },
+  get availability() {
+    return resolveServerServices().availability
+  },
+  get assistants() {
+    return resolveServerServices().assistants
+  },
+  get appointments() {
+    return resolveServerServices().appointments
+  },
+  get dashboard() {
+    return resolveServerServices().dashboard
+  },
+  get booking() {
+    return resolveServerServices().booking
+  },
+  get preEvaluationForms() {
+    return resolveServerServices().preEvaluationForms
+  },
+  get consultations() {
+    return resolveServerServices().consultations
+  },
+  get finances() {
+    return resolveServerServices().finances
+  },
+  get inventory() {
+    return resolveServerServices().inventory
+  },
+  get calendar() {
+    return resolveServerServices().calendar
   },
 }
