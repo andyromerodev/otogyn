@@ -1,19 +1,39 @@
 {
   // Build de Workers: `pnpm build:cf` (NITRO_PRESET=cloudflare_module). Netlify sigue con `pnpm build`.
-  // Los ids marcados como REPLACE_* se completan en la Fase 0 (ver docs/MIGRATION_CLOUDFLARE_WORKERS.md).
+  // Sin --env, el despliegue es PRODUCCION. Pruebas: `wrangler deploy --env staging`.
   // No poner credenciales aqui: la conexion local de Hyperdrive va por variable de entorno.
   "name": "otogyn",
   "main": "./.output/server/index.mjs",
   "assets": { "directory": "./.output/public", "binding": "ASSETS" },
   "compatibility_date": "2026-10-17",
   "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
+  "workers_dev": false,
+  "routes": [{ "pattern": "otogyn.tamayoclinic.com", "custom_domain": true }],
   "observability": { "enabled": true },
   "vars": { "NODE_ENV": "production" },
-  "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "e4dd3ae8d39f4868b36e9e054240f973" }],
-  "r2_buckets": [{ "binding": "ATTACHMENTS", "bucket_name": "otogyn-attachments-staging" }],
+  "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "293955e571f742ffb67f12e2112605c4" }],
+  "r2_buckets": [{ "binding": "ATTACHMENTS", "bucket_name": "otogyn-attachments" }],
   "ratelimits": [
     { "name": "PUBLIC_GET_LIMITER", "namespace_id": "1001", "simple": { "limit": 45, "period": 60 } },
     { "name": "PUBLIC_POST_LIMITER", "namespace_id": "1002", "simple": { "limit": 6, "period": 60 } }
-  ]
+  ],
+  "env": {
+    "staging": {
+      "name": "otogyn-staging",
+      "main": "./.output/server/index.mjs",
+      "assets": { "directory": "./.output/public", "binding": "ASSETS" },
+      "compatibility_date": "2026-10-17",
+      "compatibility_flags": ["nodejs_compat"],
+      "workers_dev": true,
+      "routes": [],
+      "observability": { "enabled": true },
+      "vars": { "NODE_ENV": "production" },
+      "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "e4dd3ae8d39f4868b36e9e054240f973" }],
+      "r2_buckets": [{ "binding": "ATTACHMENTS", "bucket_name": "otogyn-attachments-staging" }],
+      "ratelimits": [
+        { "name": "PUBLIC_GET_LIMITER", "namespace_id": "1003", "simple": { "limit": 45, "period": 60 } },
+        { "name": "PUBLIC_POST_LIMITER", "namespace_id": "1004", "simple": { "limit": 6, "period": 60 } }
+      ]
+    }
+  }
 }
