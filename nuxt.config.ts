@@ -168,6 +168,8 @@ export default defineNuxtConfig({
   },
   ...(isCloudflareBuild
     ? {
+        // Contexto de request (useEvent) para elegir el cliente de base de datos por request.
+        experimental: { asyncContext: true },
         nitro: {
           alias: {
             '@react-email/render': fileURLToPath(
