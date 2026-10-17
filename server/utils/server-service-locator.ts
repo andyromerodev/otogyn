@@ -94,8 +94,9 @@ import {
 } from '../../src/application/use-cases/inventory/inventory-use-cases'
 import { NetlifyBlobsAttachmentStorage } from '../../src/infrastructure/storage/netlify-blobs-attachment-storage'
 import { ResendNotificationService } from '../../src/infrastructure/notifications/resend-notification-service'
+import { R2AttachmentStorage, type R2BucketLike } from '../../src/infrastructure/storage/r2-attachment-storage'
 import type { AttachmentStoragePort } from '../../src/application/ports/attachment-storage'
-import { getRequestScope } from '../../src/infrastructure/runtime/request-scope'
+import { getRequestScope, type RequestScope } from '../../src/infrastructure/runtime/request-scope'
 
 interface AttachmentStorages {
   attachmentStorage: AttachmentStoragePort
@@ -313,20 +314,32 @@ const createNodeAttachmentStorages = (): AttachmentStorages => ({
   consultationAttachmentStorage: new NetlifyBlobsAttachmentStorage('consultation-attachments'),
 })
 
-// Workers: falla al usar adjuntos hasta tener el adaptador R2. Nunca cae a disco en silencio.
-const unavailableAttachmentStorage: AttachmentStoragePort = {
+// Workers sin binding ATTACHMENTS: falla al usar adjuntos. Nunca cae a disco en silencio.
+const missingAttachmentStorage: AttachmentStoragePort = {
   store: async () => {
-    throw new Error('Attachment storage is not configured on Cloudflare Workers.')
+    throw new Error('R2 binding ATTACHMENTS is not configured.')
   },
   get: async () => {
-    throw new Error('Attachment storage is not configured on Cloudflare Workers.')
+    throw new Error('R2 binding ATTACHMENTS is not configured.')
   },
 }
 
-const createWorkersAttachmentStorages = (): AttachmentStorages => ({
-  attachmentStorage: unavailableAttachmentStorage,
-  consultationAttachmentStorage: unavailableAttachmentStorage,
-})
+// Workers: adjuntos en R2, solo si el binding existe.
+const createWorkersAttachmentStorages = (scope: RequestScope): AttachmentStorages => {
+  const bucket = scope.env.ATTACHMENTS as R2BucketLike | undefined
+
+  if (!bucket) {
+    return {
+      attachmentStorage: missingAttachmentStorage,
+      consultationAttachmentStorage: missingAttachmentStorage,
+    }
+  }
+
+  return {
+    attachmentStorage: new R2AttachmentStorage(bucket, 'pre-evaluation-attachments'),
+    consultationAttachmentStorage: new R2AttachmentStorage(bucket, 'consultation-attachments'),
+  }
+}
 
 // Node: un contenedor singleton (igual que antes). Workers: un contenedor por request,
 // guardado en el ambito del request para que dos requests nunca compartan clientes.
@@ -344,7 +357,7 @@ const resolveServerServices = (): ServerServices => {
     return cached
   }
 
-  const services = createServerServices(createWorkersAttachmentStorages())
+  const services = createServerServices(createWorkersAttachmentStorages(scope))
   scope.cache.set(SERVICES_CACHE_KEY, services)
 
   return services

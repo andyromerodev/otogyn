@@ -33,6 +33,14 @@ describe('serverServiceLocator', () => {
     )
   })
 
+  it('fails attachment access on Workers when the ATTACHMENTS binding is missing', async () => {
+    registerRequestScopeResolver(() => createFakeScope())
+
+    await expect(serverServiceLocator.preEvaluationForms.attachmentStorage.get('any.pdf')).rejects.toThrow(
+      'R2 binding ATTACHMENTS is not configured.',
+    )
+  })
+
   it('builds a new service container for each Workers request', () => {
     let activeScope = createFakeScope()
     registerRequestScopeResolver(() => activeScope)
