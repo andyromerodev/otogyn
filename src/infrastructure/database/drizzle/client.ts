@@ -16,6 +16,9 @@ export interface DrizzleConnection {
 export interface DrizzleConnectionOptions {
   prepare: boolean
   max?: number
+  // false evita la consulta de tipos de postgres.js al abrir cada conexion. Solo es seguro
+  // si el esquema no usa columnas array nativas.
+  fetchTypes?: boolean
 }
 
 interface HyperdriveBinding {
@@ -30,6 +33,7 @@ export const createDrizzleClient = (
   const connection = postgres(connectionString, {
     prepare: options.prepare,
     ...(options.max === undefined ? {} : { max: options.max }),
+    ...(options.fetchTypes === undefined ? {} : { fetch_types: options.fetchTypes }),
   })
 
   return {
@@ -67,7 +71,8 @@ const getRequestDrizzleClient = (scope: RequestScope): DrizzleClient => {
     )
   }
 
-  const { db, end } = createDrizzleClient(connectionString, { prepare: true, max: 5 })
+  // Sin fetch_types: Hyperdrive ya agrupa conexiones y el esquema no tiene columnas array nativas.
+  const { db, end } = createDrizzleClient(connectionString, { prepare: true, max: 5, fetchTypes: false })
 
   scope.cache.set(REQUEST_DB_KEY, db)
   scope.onRequestEnd(end)

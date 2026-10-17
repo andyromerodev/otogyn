@@ -22,7 +22,8 @@ const createFakeScope = (env: Record<string, unknown> = {}): FakeScope => {
 }
 
 const clientOptionsOf = (db: DrizzleClient) =>
-  (db as unknown as { $client: { options: { prepare: boolean; max: number } } }).$client.options
+  (db as unknown as { $client: { options: { prepare: boolean; max: number; fetch_types: boolean } } }).$client
+    .options
 
 describe('getDrizzleClient', () => {
   const originalDatabaseUrl = process.env.DATABASE_URL
@@ -46,6 +47,7 @@ describe('getDrizzleClient', () => {
 
     expect(getDrizzleClient()).toBe(getDrizzleClient())
     expect(clientOptionsOf(getDrizzleClient()).prepare).toBe(false)
+    expect(clientOptionsOf(getDrizzleClient()).fetch_types).toBe(true)
   })
 
   it('throws on Node when DATABASE_URL is missing', () => {
@@ -80,6 +82,7 @@ describe('getDrizzleClient', () => {
 
     expect(options.prepare).toBe(true)
     expect(options.max).toBe(5)
+    expect(options.fetch_types).toBe(false)
   })
 
   it('throws on Workers when Hyperdrive is not bound, even if DATABASE_URL is set', () => {
