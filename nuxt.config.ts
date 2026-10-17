@@ -1,6 +1,10 @@
+import { fileURLToPath } from 'node:url'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 const runtimeAuthUrl = process.env.AUTH_URL ?? 'http://localhost:3000'
 const isProduction = process.env.NODE_ENV === 'production'
+// `pnpm build:cf` fija NITRO_PRESET=cloudflare_module. Netlify no cambia su configuracion.
+const isCloudflareBuild = process.env.NITRO_PRESET === 'cloudflare_module'
 
 // CSP relajada en dev para permitir HMR de Vite y Nuxt Devtools.
 // script-src necesita 'unsafe-inline' porque Nuxt SSR inyecta scripts inline
@@ -162,4 +166,15 @@ export default defineNuxtConfig({
     strict: true,
     typeCheck: false,
   },
+  ...(isCloudflareBuild
+    ? {
+        nitro: {
+          alias: {
+            '@react-email/render': fileURLToPath(
+              new URL('./src/infrastructure/notifications/react-email-render-stub.ts', import.meta.url),
+            ),
+          },
+        },
+      }
+    : {}),
 })

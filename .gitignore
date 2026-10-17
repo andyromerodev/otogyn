@@ -31,5 +31,9 @@ backups
 # Local Netlify folder
 .netlify
 
+# Wrangler (Cloudflare Workers): estado local y variables de desarrollo con secretos
+.wrangler
+.dev.vars
+
 # Agent tooling cache
 .atl
