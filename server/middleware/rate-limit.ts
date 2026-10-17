@@ -1,4 +1,4 @@
-import { enforcePublicRateLimit } from '../utils/public-security'
+import { enforcePublicRateLimit, enforceWorkersRateLimit } from '../utils/public-security'
 
 const PUBLIC_RATE_LIMIT_BUCKETS: Record<string, Parameters<typeof enforcePublicRateLimit>[1]> = {
   'GET /api/public/security-token': 'public-token',
@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
   const bucket = PUBLIC_RATE_LIMIT_BUCKETS[`${method} ${url.pathname}`]
 
   if (bucket) {
+    await enforceWorkersRateLimit(event, method, url.pathname)
     await enforcePublicRateLimit(event, bucket)
   }
 })

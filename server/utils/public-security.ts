@@ -69,6 +69,13 @@ function signTokenPayload(action: PublicSecurityAction, issuedAt: number, nonce:
 }
 
 function getClientIp(event: Parameters<typeof getRequestIP>[0]): string {
+  // En Cloudflare, cf-connecting-ip lo fija el borde; x-forwarded-for queda como respaldo.
+  const cloudflareIp = event.context.cloudflare ? getHeader(event, 'cf-connecting-ip')?.trim() : undefined
+
+  if (cloudflareIp) {
+    return cloudflareIp
+  }
+
   return getHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim() ?? getRequestIP(event) ?? 'unknown'
 }
 
@@ -176,6 +183,37 @@ export function validatePublicHoneypot(value: unknown): void {
     throw createError({
       statusCode: 400,
       statusMessage: 'Invalid public form request.',
+    })
+  }
+}
+
+interface RateLimiterBinding {
+  limit(options: { key: string }): Promise<{ success: boolean }>
+}
+
+// Workers Rate Limiting (bindings PUBLIC_GET_LIMITER y PUBLIC_POST_LIMITER), antes del limitador
+// de base de datos. Mismas rutas y limites que netlify/edge-functions/*. Fuera de Workers no hace nada.
+export async function enforceWorkersRateLimit(
+  event: Parameters<typeof getRequestIP>[0],
+  method: string,
+  pathname: string,
+): Promise<void> {
+  const env = event.context.cloudflare?.env as Record<string, RateLimiterBinding | undefined> | undefined
+  const limiter =
+    method === 'GET' ? env?.PUBLIC_GET_LIMITER
+      : method === 'POST' ? env?.PUBLIC_POST_LIMITER
+        : undefined
+
+  if (!limiter) {
+    return
+  }
+
+  const { success } = await limiter.limit({ key: `${getClientIp(event)}:${pathname}` })
+
+  if (!success) {
+    throw createError({
+      statusCode: 429,
+      statusMessage: 'Too many requests. Please try again later.',
     })
   }
 }
