@@ -97,6 +97,7 @@ import { ResendNotificationService } from '../../src/infrastructure/notification
 import { R2AttachmentStorage, type R2BucketLike } from '../../src/infrastructure/storage/r2-attachment-storage'
 import type { AttachmentStoragePort } from '../../src/application/ports/attachment-storage'
 import { getRequestScope, type RequestScope } from '../../src/infrastructure/runtime/request-scope'
+import { IS_CLOUDFLARE_BUILD } from '../../src/infrastructure/runtime/build-target'
 
 interface AttachmentStorages {
   attachmentStorage: AttachmentStoragePort
@@ -348,6 +349,12 @@ const resolveServerServices = (): ServerServices => {
   const scope = getRequestScope()
 
   if (!scope) {
+    // Cloudflare sin ambito: no hay bindings. El contenedor Node usaria Netlify Blobs y podria
+    // dar por guardado un adjunto que nunca se almaceno. Mejor fallar.
+    if (IS_CLOUDFLARE_BUILD) {
+      throw new Error('Request scope is missing on Cloudflare; refusing the Node service container.')
+    }
+
     nodeServices ??= createServerServices(createNodeAttachmentStorages())
     return nodeServices
   }

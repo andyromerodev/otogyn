@@ -176,6 +176,8 @@ export default defineNuxtConfig({
               new URL('./src/infrastructure/notifications/react-email-render-stub.ts', import.meta.url),
             ),
           },
+          // Fija el destino de compilacion (ver src/infrastructure/runtime/build-target.ts).
+          replace: { __CLOUDFLARE_BUILD__: 'true' },
         },
       }
     : {}),
