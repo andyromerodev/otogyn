@@ -9,6 +9,7 @@ import {
   isBetterAuthEnabled,
 } from '../better-auth'
 import { demoOrganization, demoUsers } from '../../mock/demo-data'
+import { IS_CLOUDFLARE_BUILD } from '../../runtime/build-target'
 
 export class BetterAuthServerRepository implements ServerAuthRepository {
   async resolveSession(input: ServerAuthRequestContextDto): Promise<ServerSessionContextDto> {
@@ -51,6 +52,14 @@ export class BetterAuthServerRepository implements ServerAuthRepository {
           name: session.user.name,
         }
       }
+    }
+
+    // En Cloudflare, sin autenticacion configurada no se entrega la sesion demo a nadie.
+    if (IS_CLOUDFLARE_BUILD) {
+      throw createError({
+        statusCode: 503,
+        statusMessage: 'Authentication is not configured.',
+      })
     }
 
     const defaultUser = demoUsers[0]
