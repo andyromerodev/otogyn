@@ -218,6 +218,7 @@ const createServerServices = ({ attachmentStorage, consultationAttachmentStorage
         patientRepository,
         preEvaluationFormRepository,
         notificationService,
+        (work) => getRequestScope()?.waitUntil(work),
       ),
       uploadPreEvaluationAttachmentUseCase: new UploadPreEvaluationAttachmentUseCase(
         attachmentStorage,

@@ -11,6 +11,8 @@ export class CreatePreEvaluationFormUseCase {
     private readonly patientRepository: PatientRepository,
     private readonly preEvaluationFormRepository: PreEvaluationFormRepository,
     private readonly notificationService: NotificationService,
+    // Recibe el trabajo en segundo plano (el email). En Workers se registra con waitUntil.
+    private readonly trackBackgroundWork: (work: Promise<unknown>) => void = () => {},
   ) {}
 
   async execute(input: {
@@ -82,11 +84,13 @@ export class CreatePreEvaluationFormUseCase {
       updatedAt: now,
     })
 
-    this.notificationService
-      .notifyPreEvaluationFormSubmission(saved, matchedPatient !== null)
-      .catch((error) => {
-        console.error('Failed to send pre-evaluation form notification email', error)
-      })
+    this.trackBackgroundWork(
+      this.notificationService
+        .notifyPreEvaluationFormSubmission(saved, matchedPatient !== null)
+        .catch((error) => {
+          console.error('Failed to send pre-evaluation form notification email', error)
+        }),
+    )
 
     return { id: saved.id }
   }

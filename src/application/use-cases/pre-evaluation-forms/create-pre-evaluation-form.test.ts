@@ -81,6 +81,25 @@ describe('CreatePreEvaluationFormUseCase', () => {
     expect(result.id).toBeTruthy()
   })
 
+  it('hands the notification work to the background tracker', async () => {
+    const patientRepo = new MockPatientRepository([])
+    const formRepo = new MockPreEvaluationFormRepository()
+    const notificationService = new MockNotificationService()
+    const tracked: Promise<unknown>[] = []
+    const useCase = new CreatePreEvaluationFormUseCase(
+      patientRepo,
+      formRepo,
+      notificationService,
+      (work) => tracked.push(work),
+    )
+
+    await useCase.execute({ organizationId: ORG, form: makeInput() })
+
+    expect(tracked).toHaveLength(1)
+    await expect(tracked[0]).resolves.toBeUndefined()
+    expect(notificationService.calls).toHaveLength(1)
+  })
+
   it('never returns the matched patient id in the result', async () => {
     const patientRepo = new MockPatientRepository([makePatient()])
     const formRepo = new MockPreEvaluationFormRepository()
