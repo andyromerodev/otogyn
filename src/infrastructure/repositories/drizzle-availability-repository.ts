@@ -30,13 +30,15 @@ const mapBlockedSlot = (row: typeof blockedTimeSlots.$inferSelect): BlockedTimeS
   reason: row.reason,
 })
 
-const defaultWeeklyAvailability = [1, 2, 3, 4, 5].map((weekday) => ({
-  id: crypto.randomUUID(),
-  weekday,
-  startTime: '09:00',
-  endTime: '18:00',
-  isActive: true,
-}))
+// Se genera en cada uso: Workers no permite aleatoriedad en el ambito global del modulo.
+const createDefaultWeeklyAvailability = () =>
+  [1, 2, 3, 4, 5].map((weekday) => ({
+    id: crypto.randomUUID(),
+    weekday,
+    startTime: '09:00',
+    endTime: '18:00',
+    isActive: true,
+  }))
 
 export class DrizzleAvailabilityRepository implements AvailabilityRepository {
   constructor(private readonly db: DrizzleClient = getDrizzleClient()) {}
@@ -55,7 +57,7 @@ export class DrizzleAvailabilityRepository implements AvailabilityRepository {
     const createdRows = await this.db
       .insert(doctorAvailability)
       .values(
-        defaultWeeklyAvailability.map((item) => ({
+        createDefaultWeeklyAvailability().map((item) => ({
           id: item.id,
           organizationId,
           weekday: item.weekday,
