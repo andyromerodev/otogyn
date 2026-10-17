@@ -9,6 +9,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "observability": { "enabled": true },
+  "vars": { "NODE_ENV": "production" },
   "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "REPLACE_WITH_HYPERDRIVE_ID" }],
   "r2_buckets": [{ "binding": "ATTACHMENTS", "bucket_name": "otogyn-attachments-staging" }],
   "ratelimits": [

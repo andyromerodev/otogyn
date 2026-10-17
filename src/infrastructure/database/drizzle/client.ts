@@ -84,6 +84,17 @@ const getSingletonDrizzleClient = (): DrizzleClient => {
   return dbInstance
 }
 
+// Indica si hay una conexion configurada, sin abrirla. Usado por la autenticacion.
+export const hasDatabaseConnection = (): boolean => {
+  const scope = getRequestScope()
+
+  if (scope) {
+    return Boolean(resolveRequestConnectionString(scope))
+  }
+
+  return Boolean(process.env.DATABASE_URL)
+}
+
 export const getDrizzleClient = (): DrizzleClient => {
   const scope = getRequestScope()
 

@@ -2,7 +2,8 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { hashPassword } from 'better-auth/crypto'
 import { betterAuth } from 'better-auth'
 import { and, asc, count, eq } from 'drizzle-orm'
-import { getDrizzleClient } from '../database/drizzle/client'
+import { getDrizzleClient, hasDatabaseConnection } from '../database/drizzle/client'
+import { getRequestScope } from '../runtime/request-scope'
 import {
   accounts,
   organizationMembers,
@@ -18,10 +19,13 @@ const DEFAULT_ORGANIZATION = {
   slug: 'otogyn',
 }
 
-const isProduction = process.env.NODE_ENV === 'production'
+const AUTH_CACHE_KEY = 'betterAuth'
 
+// Se crea al usarse (no al cargar el modulo): en Workers process.env aun no tiene
+// las variables del request cuando se evalua este archivo.
 const createBetterAuth = () => {
   const db = getDrizzleClient()
+  const isProduction = process.env.NODE_ENV === 'production'
 
   return betterAuth({
     appName: 'OtoGyn',
@@ -74,7 +78,7 @@ type BetterAuthInstance = ReturnType<typeof createBetterAuth>
 
 let authInstance: BetterAuthInstance | null = null
 
-export const isBetterAuthEnabled = () => Boolean(process.env.DATABASE_URL && process.env.AUTH_SECRET)
+export const isBetterAuthEnabled = () => hasDatabaseConnection() && Boolean(process.env.AUTH_SECRET)
 
 const getOrCreateDefaultOrganizationId = async () => {
   const db = getDrizzleClient()
@@ -155,6 +159,23 @@ export const getBetterAuth = () => {
     return null
   }
 
+  const scope = getRequestScope()
+
+  // Workers: una instancia por request, ligada al cliente de ese request.
+  if (scope) {
+    const cached = scope.cache.get(AUTH_CACHE_KEY) as BetterAuthInstance | undefined
+
+    if (cached) {
+      return cached
+    }
+
+    const instance = createBetterAuth()
+    scope.cache.set(AUTH_CACHE_KEY, instance)
+
+    return instance
+  }
+
+  // Node: singleton de siempre.
   if (authInstance) {
     return authInstance
   }
