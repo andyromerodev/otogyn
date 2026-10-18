@@ -10,6 +10,7 @@ definePageMeta({
 const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es correcta.'
 const GENERIC_ERROR_MESSAGE = 'No se pudo cambiar la contraseña. Intenta de nuevo.'
 const SUCCESS_MESSAGE = 'Tu contraseña se cambió correctamente.'
+const STALE_SESSION_MESSAGE = 'Por seguridad, vuelve a iniciar sesión para cambiar tu contraseña.'
 
 const form = reactive({
   currentPassword: '',
@@ -20,10 +21,19 @@ const fieldErrors = ref<Record<string, string[] | undefined>>({})
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 const pending = ref(false)
+const needsReauth = ref(false)
 
 // Better Auth responde INVALID_PASSWORD (mensaje "Invalid password") cuando la contraseña actual no coincide.
 const isWrongCurrentPassword = (error: { code?: string, message?: string }) =>
   error.code === 'INVALID_PASSWORD' || error.message === 'Invalid password'
+
+// Sesiones de mas de 24 horas: Better Auth responde SESSION_NOT_FRESH. Hay que volver a entrar.
+const isStaleSession = (error: { code?: string }) => error.code === 'SESSION_NOT_FRESH'
+
+const signInAgain = async () => {
+  await getBetterAuthClient().signOut()
+  await navigateTo({ path: '/login', query: { redirect: '/cuenta/contrasena' } })
+}
 
 const submitPasswordChange = async () => {
   errorMessage.value = null
@@ -47,6 +57,12 @@ const submitPasswordChange = async () => {
     })
 
     if (error) {
+      if (isStaleSession(error)) {
+        needsReauth.value = true
+        errorMessage.value = STALE_SESSION_MESSAGE
+        return
+      }
+
       errorMessage.value = isWrongCurrentPassword(error)
         ? WRONG_CURRENT_PASSWORD_MESSAGE
         : GENERIC_ERROR_MESSAGE
@@ -125,6 +141,14 @@ const submitPasswordChange = async () => {
         <p v-if="errorMessage" class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
           {{ errorMessage }}
         </p>
+        <button
+          v-if="needsReauth"
+          type="button"
+          class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white"
+          @click="signInAgain"
+        >
+          Volver a entrar
+        </button>
         <p v-if="successMessage" class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
           {{ successMessage }}
         </p>
