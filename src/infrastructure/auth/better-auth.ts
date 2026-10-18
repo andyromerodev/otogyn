@@ -224,25 +224,6 @@ export const getOrganizationMembershipForUser = async (
   return rows[0] ?? null
 }
 
-const extractAuthErrorMessage = async (response: Response) => {
-  const payload = await response
-    .clone()
-    .json()
-    .catch(() => null)
-
-  if (payload && typeof payload === 'object') {
-    if ('message' in payload && typeof payload.message === 'string') {
-      return payload.message
-    }
-
-    if ('error' in payload && typeof payload.error === 'string') {
-      return payload.error
-    }
-  }
-
-  return 'No se pudo crear la cuenta del asistente.'
-}
-
 const createStatusError = (statusCode: number, statusMessage: string) =>
   Object.assign(new Error(statusMessage), {
     statusCode,
@@ -448,41 +429,46 @@ export const provisionCredentialUser = async (
     })
   }
 
-  const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000'
-
-  const response = await auth.handler(
-    new Request(`${baseUrl}/api/auth/sign-up/email`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json',
-      },
-      body: JSON.stringify({
-        name: input.name.trim(),
-        email: normalizedEmail,
-        password: input.password,
-      }),
-    }),
-  )
-
-  if (!response.ok) {
-    throw createStatusError(response.status, await extractAuthErrorMessage(response))
-  }
-
+  // Alta directa: el registro publico (sign-up) esta cerrado en produccion, asi que no se
+  // llama a la API de sign-up. Se crea el usuario y su contrasena con el mismo hash que usa
+  // Better Auth, y la membresia la crea el mismo paso que el registro (bootstrapMembershipForUser).
   const db = getDrizzleClient()
-  const rows = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-    })
+  const existingUsers = await db
+    .select({ id: users.id })
     .from(users)
     .where(eq(users.email, normalizedEmail))
     .limit(1)
 
-  if (!rows[0]) {
-    throw createStatusError(500, 'La cuenta se creo, pero no se pudo resolver el usuario.')
+  if (existingUsers[0]) {
+    throw createStatusError(409, 'Ya existe una cuenta con ese correo.')
   }
 
-  return rows[0]
+  const passwordHash = await hashPassword(input.password)
+  const createdUser = await db.transaction(async (tx) => {
+    const [user] = await tx
+      .insert(users)
+      .values({
+        name: input.name.trim(),
+        email: normalizedEmail,
+        emailVerified: false,
+      })
+      .returning({ id: users.id, name: users.name, email: users.email })
+
+    if (!user) {
+      throw createStatusError(500, 'No se pudo crear la cuenta del asistente.')
+    }
+
+    await tx.insert(accounts).values({
+      userId: user.id,
+      accountId: user.id,
+      providerId: 'credential',
+      password: passwordHash,
+    })
+
+    return user
+  })
+
+  await bootstrapMembershipForUser({ id: createdUser.id })
+
+  return createdUser
 }
