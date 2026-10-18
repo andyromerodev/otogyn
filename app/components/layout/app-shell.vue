@@ -138,6 +138,13 @@ if (import.meta.client) {
           >
             {{ item.label }}
           </NuxtLink>
+          <NuxtLink
+            to="/cuenta/contrasena"
+            class="sidebar-link"
+            active-class="sidebar-link-active"
+          >
+            Cambiar contraseña
+          </NuxtLink>
         </nav>
 
         <div class="sidebar-foot">
