@@ -171,6 +171,9 @@ if (import.meta.client) {
             <span class="pill">
               {{ sessionContext?.name ?? 'OtoGyn' }}
             </span>
+            <NuxtLink v-if="sessionContext" to="/cuenta/contrasena">
+              <UButton color="neutral" variant="outline">Cambiar contraseña</UButton>
+            </NuxtLink>
             <UButton
               v-if="sessionContext"
               color="neutral"
